@@ -53,7 +53,12 @@ grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ic">�
 
   function addIdea(){
     var countryOpts = [];
-    Object.keys(window.COUNTRIES_DB || {}).forEach(function(k){ countryOpts.push({v:k, l:window.COUNTRIES_DB[k].flag + ' ' + window.COUNTRIES_DB[k].name}); });
+	// ✅ بعد
+	var countries = window.getAllCountries ? window.getAllCountries() : (window.COUNTRIES_DB || {});
+	Object.keys(countries).forEach(function(k){ 
+	  countryOpts.push({v:k, l: (countries[k].flag || '🌍') + ' ' + countries[k].name}); 
+	});
+	countryOpts.push({v:'__other__', l:'🌍 أخرى / Other'});
     var sectorOpts = [];
     Object.keys(window.SECTORS_DB || {}).forEach(function(k){ sectorOpts.push({v:k, l:window.SECTORS_DB[k].icon + ' ' + window.SECTORS_DB[k].name}); });
     var typeOpts = [];

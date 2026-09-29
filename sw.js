@@ -34,6 +34,7 @@ var URLS_TO_CACHE = [
   './archive.js',
   './demo-project.js',
   './pwa.js'
+  './country-patch.js',
 ];
 
 self.addEventListener('install', function(e){
