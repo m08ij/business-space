@@ -39,6 +39,7 @@
       html[dir="rtl"] .lw-expand-btn.hidden{transform:translateY(-50%) translateX(-70px)}
       .lw-sidebar{position:fixed;top:74px;right:0;width:320px;max-width:calc(100vw - 60px);max-height:calc(100vh - 100px);padding:14px;background:var(--bg2);border:1px solid var(--border);border-right:none;border-radius:20px 0 0 20px;overflow-y:auto;z-index:402;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-lg);transform:translateX(100%);opacity:0;pointer-events:none;transition:.35s}
       html[dir="rtl"] .lw-sidebar{right:auto;left:0;border-radius:0 20px 20px 0;border-right:1px solid var(--border);border-left:none;transform:translateX(-100%)}
+      html[dir="rtl"] .lw-sidebar.open{transform:translateX(0);opacity:1;pointer-events:auto}
       .lw-sidebar.open{transform:translateX(0);opacity:1;pointer-events:auto}
       .lw-close-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;padding:0 2px}
       .lw-close-title{font-size:.72rem;font-weight:800;color:var(--muted);letter-spacing:.5px}

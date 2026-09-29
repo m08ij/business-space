@@ -1,7 +1,7 @@
 /* ============================================================
    ⚙️ sw.js — Service Worker v2 (bilingual)
    ============================================================ */
-var CACHE_NAME = 'bd-cache-v6';
+var CACHE_NAME = 'bd-cache-v7';
 var URLS_TO_CACHE = [
   './',
   './index.html',
