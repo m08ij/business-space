@@ -43,7 +43,8 @@
         '<h3>' + tr('roadmap_stages') + '</h3>' +
         '<div style="display:flex;gap:6px;align-items:center">' +
           '<span class="badge">' + esc(project.name) + '</span>' +
-          '<button class="btn btn-sm btn-ghost" data-archive-project="' + project.id + '">📦 ' + tr('nav_archive') + '</button>' +
+		'<button class="btn btn-sm btn-ghost" data-archive-project="' + project.id + '">📦 ' + tr('nav_archive') + '</button>' +
+		'<button class="btn btn-sm btn-danger" data-cascade-project="' + project.id + '" title="حذف المشروع وكل ما يرتبط به">💥</button>' +
         '</div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">';
@@ -92,7 +93,10 @@
     if(archBtn) archBtn.onclick = function(){
       if(window.archiveProject) window.archiveProject(archBtn.dataset.archiveProject);
     };
-
+	var delBtn = el.querySelector('[data-cascade-project]');
+	if(delBtn) delBtn.onclick = function(){
+	  if(window.cascadeDeleteProject) window.cascadeDeleteProject(delBtn.dataset.cascadeProject);
+	};
     el.querySelectorAll('[data-stage-set]').forEach(function(b){
       b.addEventListener('click', function(){
         project.stage = b.dataset.stageSet;

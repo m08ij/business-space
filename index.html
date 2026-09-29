@@ -773,7 +773,7 @@ function customConfirm(message, onConfirm){
   bd.innerHTML = '<div class="modal" style="max-width:400px;text-align:center">' +
     '<div style="font-size:3rem;margin-bottom:12px">⚠️</div>' +
     '<h3 style="margin-bottom:18px">' + tr('modal_confirm_delete') + '</h3>' +
-    '<p style="color:var(--muted);margin-bottom:22px;font-size:.9rem">' + esc(message) + '</p>' +
+    '<p style="color:var(--muted);margin-bottom:22px;font-size:.9rem;white-space:pre-line;text-align:start">' + esc(message) + '</p>' +
     '<div class="modal-actions" style="justify-content:center">' +
       '<button class="btn btn-sm btn-ghost" id="cCancel">' + tr('modal_delete_no') + '</button>' +
       '<button class="btn btn-sm btn-danger" id="cConfirm">' + tr('modal_delete_yes') + '</button>' +

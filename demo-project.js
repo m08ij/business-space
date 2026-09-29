@@ -1,7 +1,6 @@
 /* ============================================================
-   🎬 demo-project.js — إنشاء مشروع افتراضي كامل
-   يولّد كل شيء: فكرة، مشروع، استراتيجية، أثر، مراحل، مخاطر،
-   مهام، ميزانية، مبيعات، أصحاب مصلحة — مع عرض تقدّم خطوة بخطوة
+   🎬 demo-project.js v2 — إنشاء مشروع افتراضي كامل
+   ✅ إضافة projectId + project لكل العناصر (مهام/ميزانية/مصلحة/فرص)
    ============================================================ */
 (function(){
   'use strict';
@@ -11,14 +10,13 @@
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
   function getSpace(){ return window.space || null; }
   function save(){ if(window.saveSpace) window.saveSpace(); }
-  function daysFromNow(n){ 
-    var d = new Date(); d.setDate(d.getDate() + n); 
-    return d.toISOString().slice(0,10); 
+  function daysFromNow(n){
+    var d = new Date(); d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0,10);
   }
 
-  /* ============ البيانات الكاملة للمشروع الافتراضي ============ */
+  /* ============ البيانات ============ */
   function buildDemoData(){
-    var today = new Date().toISOString().slice(0,10);
     return {
       idea: {
         name: 'منصة الزراعة الذكية المستدامة — قطر',
@@ -107,14 +105,14 @@
         ]
       },
       tasks: [
-        { title: 'إنهاء نموذج AI للري الدقيق',       due: daysFromNow(20),  project: 'منصة الزراعة الذكية المستدامة — قطر' },
-        { title: 'اجتماع مع وزارة البلدية للتصاريح', due: daysFromNow(5),   project: 'منصة الزراعة الذكية المستدامة — قطر' },
-        { title: 'اختيار 3 موردين للحساسات',         due: daysFromNow(12),  project: 'منصة الزراعة الذكية المستدامة — قطر' },
-        { title: 'كتابة عرض QFFD للمنحة',            due: daysFromNow(8),   project: 'منصة الزراعة الذكية المستدامة — قطر' },
-        { title: 'تصميم لوحة التحكم بالعربية',       due: daysFromNow(25),  project: 'منصة الزراعة الذكية المستدامة — قطر' },
-        { title: 'توقيع عقد أول مزرعة تجريبية',      due: daysFromNow(30),  project: 'منصة الزراعة الذكية المستدامة — قطر' },
-        { title: 'بناء بروتوكول قياس الأثر (SDG)',   due: daysFromNow(18),  project: 'منصة الزراعة الذكية المستدامة — قطر' },
-        { title: 'تجهيز Pitch Deck للمستثمرين',      due: daysFromNow(22),  project: 'منصة الزراعة الذكية المستدامة — قطر' }
+        { title: 'إنهاء نموذج AI للري الدقيق',       due: daysFromNow(20) },
+        { title: 'اجتماع مع وزارة البلدية للتصاريح', due: daysFromNow(5)  },
+        { title: 'اختيار 3 موردين للحساسات',         due: daysFromNow(12) },
+        { title: 'كتابة عرض QFFD للمنحة',            due: daysFromNow(8)  },
+        { title: 'تصميم لوحة التحكم بالعربية',       due: daysFromNow(25) },
+        { title: 'توقيع عقد أول مزرعة تجريبية',      due: daysFromNow(30) },
+        { title: 'بناء بروتوكول قياس الأثر (SDG)',   due: daysFromNow(18) },
+        { title: 'تجهيز Pitch Deck للمستثمرين',      due: daysFromNow(22) }
       ],
       stakeholders: [
         { name: 'د. محمد الكواري',    role: 'مستشار زراعي',      org: 'وزارة البلدية',         contact: 'm.alkuwari@municipality.gov.qa' },
@@ -215,6 +213,7 @@
     var demo = buildDemoData();
     var projectId = uid();
     var ideaId = uid();
+    var projectName = demo.idea.name;
 
     var bd = showProgressModal();
     var step = 0;
@@ -227,18 +226,18 @@
       return new Promise(function(r){ setTimeout(r, delay || 450); });
     }
 
-    // 1) الفكرة
+    /* 1) الفكرة */
     await advance('💡', 'إنشاء الفكرة: ' + demo.idea.name);
     if(!Array.isArray(sp.ideas)) sp.ideas = [];
     sp.ideas.push(Object.assign({ id: ideaId, createdAt: new Date().toISOString() }, demo.idea));
     save();
 
-    // 2) المشروع
+    /* 2) المشروع */
     await advance('💼', 'تحويل الفكرة إلى مشروع نشط');
     if(!Array.isArray(sp.projects)) sp.projects = [];
     sp.projects.push({
       id: projectId,
-      name: demo.idea.name,
+      name: projectName,
       description: demo.idea.description,
       sector: demo.idea.sector,
       country: demo.idea.country,
@@ -253,64 +252,85 @@
     });
     save();
 
-    // 3) الاستراتيجية
+    /* 3) الاستراتيجية + الأثر */
     await advance('🎯', 'بناء SWOT + PESTEL + OKRs (2 أهداف، 6 نتائج)');
     await advance('📈', 'قياس الأثر: 6 SDG + P5 + ESG');
 
-    // 4) المهام
+    /* 4) المهام — مع projectId ✅ */
     await advance('📝', 'إضافة ' + demo.tasks.length + ' مهام موزّعة على المراحل');
     if(!Array.isArray(sp.tasks)) sp.tasks = [];
     demo.tasks.forEach(function(t){
       sp.tasks.push({
         id: uid(), done: false,
-        title: t.title, project: t.project, due: t.due
+        title: t.title,
+        project: projectName,
+        projectId: projectId,          // ✅ جديد
+        due: t.due
       });
     });
     save();
 
-    // 5) أصحاب المصلحة
+    /* 5) أصحاب المصلحة — مع projectId + project ✅ */
     await advance('👥', 'إضافة ' + demo.stakeholders.length + ' أصحاب مصلحة');
     if(!Array.isArray(sp.stakeholders)) sp.stakeholders = [];
     demo.stakeholders.forEach(function(s){
-      sp.stakeholders.push(Object.assign({ id: uid() }, s));
+      sp.stakeholders.push(Object.assign({
+        id: uid(),
+        projectId: projectId,          // ✅ جديد
+        project: projectName,          // ✅ جديد
+        createdAt: new Date().toISOString()
+      }, s));
     });
     save();
 
-    // 6) الميزانية
+    /* 6) الميزانية — مع projectId + project ✅ */
     await advance('💰', 'الميزانية: 6 بنود (400K دخل · 265K مصروف)');
     if(!Array.isArray(sp.budget)) sp.budget = [];
     demo.budget.forEach(function(b){
-      sp.budget.push(Object.assign({ id: uid() }, b));
+      sp.budget.push(Object.assign({
+        id: uid(),
+        projectId: projectId,          // ✅ جديد
+        project: projectName           // ✅ جديد
+      }, b));
     });
     save();
 
-    // 7) المبيعات
+    /* 7) المبيعات — مع projectId + project ✅ */
     await advance('💼', 'قمع المبيعات: 3 فرص + MEDDIC مُكتمل');
     if(!Array.isArray(sp.salesPipeline)) sp.salesPipeline = [];
     demo.deals.forEach(function(d){
-      sp.salesPipeline.push(Object.assign({ id: uid(), createdAt: new Date().toISOString() }, d));
+      sp.salesPipeline.push(Object.assign({
+        id: uid(),
+        projectId: projectId,          // ✅ جديد
+        project: projectName,          // ✅ جديد
+        createdAt: new Date().toISOString()
+      }, d));
     });
     save();
 
-    // 8) ربط المهام بالمشروع
+    /* 8) ربط المهام بالمراحل */
     await advance('🔗', 'ربط المهام بمراحل PRiSM');
     var proj = sp.projects.find(function(p){ return p.id === projectId; });
     if(proj){
       proj.tasks = demo.project.milestones.slice(0, 3).map(function(m){
-        return { id: uid(), title: m.title, stage: m.title.indexOf('تصميم') > -1 ? 'design' : (m.title.indexOf('بناء') > -1 ? 'build' : 'pre-project'), done: m.progress === 100 };
+        return {
+          id: uid(),
+          title: m.title,
+          stage: m.title.indexOf('تصميم') > -1 ? 'design' : (m.title.indexOf('بناء') > -1 ? 'build' : 'pre-project'),
+          done: m.progress === 100
+        };
       });
     }
     save();
 
-    // 9) التقارير
+    /* 9) التقارير */
     await advance('📊', 'توليد التقارير والتحليلات');
 
-    // 10) اكتمل
+    /* 10) اكتمل */
     await advance('🎉', 'اكتمل! المشروع جاهز للاستعراض', 800);
 
-    // عرض الملخص
-    setTimeout(function(){ 
-      bd.remove(); 
+    setTimeout(function(){
+      bd.remove();
       showSummary(proj, demo);
     }, 700);
   }
@@ -319,7 +339,6 @@
   function showSummary(project, demo){
     var bd = document.createElement('div');
     bd.className = 'modal-backdrop show';
-    var stages = window.PRISM_STAGES || {};
     var msList = (project.milestones || []).map(function(m){
       var st = m.status;
       var color = st === 'completed' ? 'var(--green)' : st === 'in-progress' ? 'var(--cyan)' : 'var(--muted)';
@@ -367,7 +386,8 @@
           '• افتح <b>المعالم الزمنية</b> ← شاهد Gantt<br>' +
           '• افتح <b>سجل المخاطر</b> ← مصفوفة 5×5<br>' +
           '• افتح <b>التقارير</b> ← تحليلات كاملة<br>' +
-          '• افتح <b>المبيعات</b> ← MEDDIC مُكتمل' +
+          '• افتح <b>المبيعات</b> ← MEDDIC مُكتمل<br>' +
+          '• 💥 اضغط <b>زر الحذف التعاقبي</b> لتجربة الحذف الشامل' +
         '</div>' +
 
         '<div class="modal-actions" style="justify-content:center;margin-top:16px">' +
@@ -413,13 +433,11 @@
     };
   }
 
-  /* ============ ربط ============ */
   window.runDemoWizard = runDemoWizard;
   window.injectDemoButton = injectDemoButton;
 
   function install(){
     injectDemoButton();
-    // أعد الزر عند كل render للـ dashboard
     if(typeof window.renderDashboard === 'function' && !window._demoHooked){
       window._demoHooked = true;
       var orig = window.renderDashboard;
@@ -434,5 +452,5 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(install, 800); });
   else setTimeout(install, 800);
 
-  console.log('🎬 Demo Project module loaded');
+  console.log('🎬 Demo Project module v2 loaded');
 })();
