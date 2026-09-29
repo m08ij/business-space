@@ -22,6 +22,7 @@ el.innerHTML = '<div class="empty"><div class="ic">📈</div><p>' + tr('impact_n
       return;
     }
 
+    if(window.ProjectContext){ window.ProjectContext.ensureValid(); currentProject = window.ProjectContext.getCurrent(); }
     if(!currentProject) currentProject = projects[0].id;
 
     // اختيار المشروع
@@ -98,7 +99,10 @@ el.innerHTML = '<div class="empty"><div class="ic">📈</div><p>' + tr('impact_n
 
     // Bind
     el.querySelectorAll('[data-imp-select]').forEach(function(b){
-      b.addEventListener('click', function(){ currentProject = b.dataset.impSelect; renderImpact(); });
+      b.addEventListener('click', function(){
+        if(window.ProjectContext) window.ProjectContext.setCurrent(b.dataset.impSelect);
+        else { currentProject = b.dataset.impSelect; renderImpact(); }
+      });
     });
     el.querySelectorAll('[data-sdg-toggle]').forEach(function(b){
       b.addEventListener('click', function(){
@@ -154,6 +158,12 @@ el.innerHTML = '<div class="empty"><div class="ic">📈</div><p>' + tr('impact_n
     window.switchTab = function(tab){
       var r = orig.apply(this, arguments);
       if(tab === 'impact') setTimeout(renderImpact, 100);
+	  if(window.ProjectContext){
+		window.ProjectContext.subscribe(function(){
+		  var active = document.querySelector('.section.active');
+		  if(active && active.id === 'impact') renderImpact();
+		});
+	  }
       return r;
     };
   }

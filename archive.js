@@ -1,25 +1,30 @@
 /* ============================================================
-   📦 archive.js — أرشيف المشاريع (مع i18n)
+   📦 archive.js v2 — أرشيف متزامن مع السحابة
+   ✅ محفوظ في space.archive (يُزامَن عبر Supabase)
+   ✅ زر "اذهب للأرشيف" بعد الأرشفة
+   ✅ نقل عناصر مرتبطة (مهام/أصحاب مصلحة/ميزانية)
    ============================================================ */
 (function(){
   'use strict';
-
-  var ARCHIVE_KEY = 'bd_archive';
 
   function tr(k, p){ return window.t ? window.t(k, p) : k; }
   function toast(m,t,d){ if(typeof window.toast === 'function') window.toast(m, t||'info', d||2200); }
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function getSpace(){ return window.space || null; }
+  function save(){ if(window.saveSpace) window.saveSpace(); }
 
+  /* ✅ الأرشيف داخل space → يُزامَن سحابياً */
   function getArchive(){
-    try{
-      var v = JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]');
-      return Array.isArray(v) ? v : [];
-    }catch(e){ return []; }
+    var sp = getSpace();
+    if(!sp) return [];
+    if(!Array.isArray(sp.archive)) sp.archive = [];
+    return sp.archive;
   }
-
   function saveArchive(arr){
-    try{ localStorage.setItem(ARCHIVE_KEY, JSON.stringify(arr)); }catch(e){}
+    var sp = getSpace();
+    if(!sp) return;
+    sp.archive = arr;
+    save();
   }
 
   function archiveProject(projectId){
@@ -27,23 +32,94 @@
     var proj = (sp.projects || []).find(function(p){ return p.id === projectId; });
     if(!proj) return;
 
-    window.customConfirm(tr('archive_move_confirm', {name: proj.name}), function(){
-      var archive = getArchive();
-      archive.unshift({
-        id: proj.id, name: proj.name, description: proj.description,
-        archivedAt: new Date().toISOString(), originalStage: proj.stage,
-        data: proj,
-        snapshot: {
-          tasks: (sp.tasks || []).filter(function(t){ return t.project === proj.name; }),
-          deals: (sp.salesPipeline || []).filter(function(d){ return d.project && d.project.indexOf(proj.name.slice(0, 20)) > -1; })
+    window.customConfirm(
+      tr('archive_move_confirm', {name: proj.name}) +
+      '\n\n' + (tr('archive_will_include') || '📦 سيتم نقل المشروع مع كل عناصره للأرشيف'),
+      function(){
+        var archive = getArchive();
+        var item = {
+          id: proj.id,
+          name: proj.name,
+          description: proj.description,
+          archivedAt: new Date().toISOString(),
+          originalStage: proj.stage,
+          data: proj,
+          snapshot: {
+            tasks: (sp.tasks || []).filter(function(t){
+              return t.projectId === proj.id || t.project === proj.name;
+            }),
+            stakeholders: (sp.stakeholders || []).filter(function(s){
+              return s.projectId === proj.id || s.project === proj.name;
+            }),
+            budget: (sp.budget || []).filter(function(b){
+              return b.projectId === proj.id || b.project === proj.name;
+            }),
+            deals: (sp.salesPipeline || []).filter(function(d){
+              return d.projectId === proj.id || (d.project && d.project.indexOf(proj.name) > -1);
+            })
+          }
+        };
+        archive.unshift(item);
+
+        /* حذف العناصر من الـ space الرئيسي */
+        if(item.snapshot.tasks.length){
+          var taskIds = item.snapshot.tasks.map(function(t){ return t.id; });
+          sp.tasks = (sp.tasks || []).filter(function(t){ return taskIds.indexOf(t.id) === -1; });
         }
-      });
-      saveArchive(archive);
-      sp.projects = (sp.projects || []).filter(function(p){ return p.id !== projectId; });
-      if(window.saveSpace) window.saveSpace();
-      toast(tr('archive_moved'), 'success');
+        if(item.snapshot.stakeholders.length){
+          var sIds = item.snapshot.stakeholders.map(function(s){ return s.id; });
+          sp.stakeholders = (sp.stakeholders || []).filter(function(s){ return sIds.indexOf(s.id) === -1; });
+        }
+        if(item.snapshot.budget.length){
+          var bIds = item.snapshot.budget.map(function(b){ return b.id; });
+          sp.budget = (sp.budget || []).filter(function(b){ return bIds.indexOf(b.id) === -1; });
+        }
+        if(item.snapshot.deals.length){
+          var dIds = item.snapshot.deals.map(function(d){ return d.id; });
+          sp.salesPipeline = (sp.salesPipeline || []).filter(function(d){ return dIds.indexOf(d.id) === -1; });
+        }
+        sp.projects = (sp.projects || []).filter(function(p){ return p.id !== projectId; });
+
+        if(window.ProjectContext) window.ProjectContext.ensureValid();
+
+        save();
+        toast(tr('archive_moved'), 'success');
+
+        /* ✅ إشعار مع زر "اذهب للأرشيف" */
+        showArchiveToast(proj.name);
+      }
+    );
+  }
+
+  /* ============ Toast مع زر ============ */
+  function showArchiveToast(name){
+    var container = document.getElementById('toastContainer');
+    if(!container){
       if(window.switchTab) window.switchTab('archive');
-    });
+      return;
+    }
+    var el = document.createElement('div');
+    el.className = 'toast success';
+    el.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 16px';
+    el.innerHTML =
+      '<span style="flex:1">📦 ' + esc(name) + ' → ' + tr('nav_archive') + '</span>' +
+      '<button class="btn btn-sm" id="goArchiveBtn" style="padding:4px 10px;font-size:.75rem">' +
+        (window.i18n && window.i18n.getLang() === 'en' ? 'Go' : 'اذهب') + ' →' +
+      '</button>';
+    container.appendChild(el);
+
+    var btn = el.querySelector('#goArchiveBtn');
+    if(btn) btn.onclick = function(){
+      el.remove();
+      if(window.switchTab) window.switchTab('archive');
+    };
+
+    setTimeout(function(){
+      if(el.parentNode){
+        el.classList.add('out');
+        setTimeout(function(){ el.remove(); }, 300);
+      }
+    }, 6000);
   }
 
   function restoreProject(archivedId){
@@ -55,11 +131,24 @@
     window.customConfirm(tr('archive_restore_confirm', {name: item.name}), function(){
       if(!Array.isArray(sp.projects)) sp.projects = [];
       sp.projects.push(item.data);
+
       if(item.snapshot){
         if(Array.isArray(item.snapshot.tasks)){
           if(!Array.isArray(sp.tasks)) sp.tasks = [];
           item.snapshot.tasks.forEach(function(t){
             if(!sp.tasks.some(function(x){ return x.id === t.id; })) sp.tasks.push(t);
+          });
+        }
+        if(Array.isArray(item.snapshot.stakeholders)){
+          if(!Array.isArray(sp.stakeholders)) sp.stakeholders = [];
+          item.snapshot.stakeholders.forEach(function(s){
+            if(!sp.stakeholders.some(function(x){ return x.id === s.id; })) sp.stakeholders.push(s);
+          });
+        }
+        if(Array.isArray(item.snapshot.budget)){
+          if(!Array.isArray(sp.budget)) sp.budget = [];
+          item.snapshot.budget.forEach(function(b){
+            if(!sp.budget.some(function(x){ return x.id === b.id; })) sp.budget.push(b);
           });
         }
         if(Array.isArray(item.snapshot.deals)){
@@ -69,8 +158,8 @@
           });
         }
       }
+
       saveArchive(archive.filter(function(x){ return x.id !== archivedId; }));
-      if(window.saveSpace) window.saveSpace();
       toast(tr('archive_restored'), 'success');
       renderArchive();
     });
@@ -111,6 +200,7 @@
       var msCount = (item.data.milestones || []).length;
       var riskCount = (item.data.risks || []).length;
       var taskCount = item.snapshot && item.snapshot.tasks ? item.snapshot.tasks.length : 0;
+      var shCount = item.snapshot && item.snapshot.stakeholders ? item.snapshot.stakeholders.length : 0;
 
       html += '<div class="card">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">' +
@@ -123,6 +213,7 @@
           '<span>🎯 ' + msCount + ' ' + tr('archive_stages') + '</span>' +
           '<span>⚠️ ' + riskCount + ' ' + tr('archive_risks') + '</span>' +
           '<span>📝 ' + taskCount + ' ' + tr('archive_tasks') + '</span>' +
+          '<span>👥 ' + shCount + ' ' + tr('nav_stakeholders') + '</span>' +
         '</div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
           '<button class="btn btn-sm" data-arch-view="' + item.id + '">' + tr('archive_view') + '</button>' +
@@ -192,5 +283,5 @@
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
-  console.log('📦 Archive module loaded');
+  console.log('📦 Archive v2 loaded (cloud-synced)');
 })();

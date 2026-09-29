@@ -3,7 +3,7 @@
    ✅ إصلاح updateToolbarStats المفقودة
    ✅ إصلاح selector الأزرار (lastElementChild)
    ✅ إضافة الفرص البيعية للحذف التعاقبي
-   ✅ زر 💥 للتمييز عن 🗑 العادي
+   ✅ زر 💥 واحد فقط للتمييز
    ============================================================ */
 (function(){
   'use strict';
@@ -189,7 +189,6 @@
     try{ localStorage.setItem('bd_classifier_view', JSON.stringify(view)); }catch(e){}
   }
 
-  /* ============ updateToolbarStats — الدالة المفقودة سابقاً ============ */
   function updateToolbarStats(){
     var stats = document.getElementById('clsStats');
     var grid = document.getElementById('ideasGrid');
@@ -202,7 +201,6 @@
       (tr('cls_of') || 'من') + ' ' + cards.length;
   }
 
-  /* ============ حقن التولبار ============ */
   function injectToolbar(){
     var ideasSection = document.getElementById('ideas');
     if(!ideasSection) return;
@@ -331,13 +329,12 @@
       if(match) visible++;
     });
 
-    /* زر الحذف التعاقبي 💥 — نستخدم آخر عنصر DIV في البطاقة (حاوية الأزرار) */
+    /* ✅ نستخدم الكلاس المحدد في idea-incubator.js */
     cards.forEach(function(card){
       if(card.querySelector('[data-cls-cascade]')) return;
 
-      var actions = card.lastElementChild;
-      if(!actions || actions.tagName !== 'DIV') return;
-      if(!actions.querySelector('button')) return;
+      var actions = card.querySelector('.cls-idea-actions');
+      if(!actions) return;
 
       var id = card.dataset.ideaCard;
       var btn = document.createElement('button');

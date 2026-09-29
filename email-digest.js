@@ -366,6 +366,60 @@
     if(!d.recipients.length && !d.cc.length){
       return toast(tr('digest_no_recipients'), 'warn', 2500);
     }
+
+    /* Web3Forms Access Key — استبدله بمفتاحك */
+    var WEB3FORMS_KEY = '34fa175f-f38c-4b19-9453-33e4b48de936';
+
+    if(WEB3FORMS_KEY === '34fa175f-f38c-4b19-9453-33e4b48de936' || !WEB3FORMS_KEY){
+      /* Fallback إلى mailto إذا لم يُضبط المفتاح */
+      return sendViaMailto(d);
+    }
+
+    var to = d.recipients.map(function(r){ return r.email; }).join(',');
+    var cc = d.cc.map(function(r){ return r.email; }).join(',');
+    var lang = window.i18n ? window.i18n.getLang() : 'ar';
+    var subject = d.subjectTemplate.replace('{date}', new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US'));
+    var body = buildEmailBody();
+
+	var payload = {
+	  access_key: WEB3FORMS_KEY,
+	  subject: subject,
+	  from_name: tr('brand'),                    // اسمك الظاهر
+	  replyto: (window.space && window.space.profile && window.space.profile.email) || '',  // ✅ بريدك
+	  to: to,
+	  cc: cc || undefined,
+	  message: body,
+	  botcheck: false
+	};
+
+    var sendBtn = document.getElementById('digestSend');
+    if(sendBtn){ sendBtn.disabled = true; sendBtn.textContent = '⏳ ' + (lang === 'en' ? 'Sending...' : 'جاري الإرسال...'); }
+
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      if(data.success){
+        d.lastSent = new Date().toISOString();
+        if(window.saveSpace) window.saveSpace();
+        toast(lang === 'en' ? '✅ Email sent!' : '✅ تم إرسال البريد!', 'success', 3500);
+      } else {
+        toast('❌ ' + (data.message || 'Send failed'), 'warn', 3500);
+      }
+    })
+    .catch(function(err){
+      console.error('Email send error:', err);
+      toast('❌ ' + (lang === 'en' ? 'Network error' : 'خطأ في الشبكة'), 'warn', 3500);
+    })
+    .finally(function(){
+      if(sendBtn){ sendBtn.disabled = false; sendBtn.textContent = tr('digest_send'); }
+    });
+  }
+
+  function sendViaMailto(d){
     var to = d.recipients.map(function(r){ return r.email; }).join(',');
     var cc = d.cc.map(function(r){ return r.email; }).join(',');
     var lang = window.i18n ? window.i18n.getLang() : 'ar';
@@ -377,11 +431,8 @@
       (cc ? '&cc=' + encodeURIComponent(cc) : '') +
       '&body=' + encodeURIComponent(body);
 
-    // Save last sent
     d.lastSent = new Date().toISOString();
     if(window.saveSpace) window.saveSpace();
-
-    // Open mail client
     window.location.href = url;
     toast(tr('digest_opened'), 'success', 3000);
   }

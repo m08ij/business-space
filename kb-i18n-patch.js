@@ -69,7 +69,31 @@
     spw_resume_draft:'You have an unfinished draft. Continue?',
     spw_err_story:'Fill description or problem at least'
   });
-
+  /* ✅ مفاتيح مسودة المعالج الجديدة */
+  Object.assign(AR, {
+    spw_draft_title: 'مسودة غير مكتملة',
+    spw_draft_continue: 'استكمال المسودة',
+    spw_draft_new: 'ابدأ مشروع جديد (حذف المسودة)',
+    spw_draft_cancel: 'إلغاء',
+    spw_discard_draft: 'تخلي عن المسودة',
+    spw_discard_confirm: 'تخلي عن هذه المسودة وابدأ من جديد؟',
+    spw_draft_cleared: '🗑 تم حذف المسودة'
+  });
+  Object.assign(EN, {
+    spw_draft_title: 'Unfinished Draft',
+    spw_draft_continue: 'Continue Draft',
+    spw_draft_new: 'Start New (delete draft)',
+    spw_draft_cancel: 'Cancel',
+    spw_discard_draft: 'Discard draft',
+    spw_discard_confirm: 'Discard this draft and start fresh?',
+    spw_draft_cleared: '🗑 Draft cleared'
+  });
+  Object.assign(AR, {
+	archive_will_include: '📦 سيتم نقل المشروع مع كل عناصره للأرشيف'
+   });
+	Object.assign(EN, {
+	  archive_will_include: '📦 Project will be moved with all its elements'
+	});
   /* ✅ لا dispatch هنا — يُطلق تلقائياً عندما يتغير setLang */
 
   console.log('🌍 KB i18n loaded');

@@ -1,6 +1,5 @@
 /* ============================================================
-   🗺️ project-lifecycle.js — دورة حياة المشروع (PRiSM)
-   ✅ مُصلَّح: showModal بدل prompt()
+   🗺️ project-lifecycle.js v3 — يستخدم ProjectContext
    ============================================================ */
 (function(){
   'use strict';
@@ -9,8 +8,7 @@
   function getSpace(){ return window.space || {projects:[]}; }
   function toast(m,t,d){ if(typeof window.toast === 'function') window.toast(m,t||'info',d||2500); }
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-  var currentProject = null;
+  function ctx(){ return window.ProjectContext || {getCurrent:function(){return null;},setCurrent:function(){},ensureValid:function(){return null;}}; }
 
   function renderRoadmap(){
     var el = document.getElementById('roadmapBody');
@@ -22,6 +20,9 @@
       el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
       return;
     }
+
+    ctx().ensureValid();
+    var currentProject = ctx().getCurrent();
     if(!currentProject) currentProject = projects[0].id;
 
     var html = '<div class="controls">';
@@ -43,8 +44,8 @@
         '<h3>' + tr('roadmap_stages') + '</h3>' +
         '<div style="display:flex;gap:6px;align-items:center">' +
           '<span class="badge">' + esc(project.name) + '</span>' +
-		'<button class="btn btn-sm btn-ghost" data-archive-project="' + project.id + '">📦 ' + tr('nav_archive') + '</button>' +
-		'<button class="btn btn-sm btn-danger" data-cascade-project="' + project.id + '" title="حذف المشروع وكل ما يرتبط به">💥</button>' +
+          '<button class="btn btn-sm btn-ghost" data-archive-project="' + project.id + '">📦 ' + tr('nav_archive') + '</button>' +
+          '<button class="btn btn-sm btn-danger" data-cascade-project="' + project.id + '" title="' + (lang === 'en' ? 'Delete project & everything' : 'حذف المشروع وكل ما يرتبط به') + '">💥</button>' +
         '</div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">';
@@ -86,17 +87,17 @@
     el.innerHTML = html;
 
     el.querySelectorAll('[data-rd-select]').forEach(function(b){
-      b.addEventListener('click', function(){ currentProject = b.dataset.rdSelect; renderRoadmap(); });
+      b.addEventListener('click', function(){ ctx().setCurrent(b.dataset.rdSelect); });
     });
 
     var archBtn = el.querySelector('[data-archive-project]');
     if(archBtn) archBtn.onclick = function(){
       if(window.archiveProject) window.archiveProject(archBtn.dataset.archiveProject);
     };
-	var delBtn = el.querySelector('[data-cascade-project]');
-	if(delBtn) delBtn.onclick = function(){
-	  if(window.cascadeDeleteProject) window.cascadeDeleteProject(delBtn.dataset.cascadeProject);
-	};
+    var delBtn = el.querySelector('[data-cascade-project]');
+    if(delBtn) delBtn.onclick = function(){
+      if(window.cascadeDeleteProject) window.cascadeDeleteProject(delBtn.dataset.cascadeProject);
+    };
     el.querySelectorAll('[data-stage-set]').forEach(function(b){
       b.addEventListener('click', function(){
         project.stage = b.dataset.stageSet;
@@ -107,7 +108,6 @@
       });
     });
 
-    // ✅ إضافة مهمة عبر showModal بدل prompt
     el.querySelectorAll('[data-stage-task-add]').forEach(function(b){
       b.addEventListener('click', function(){
         window.showModal('📝 ' + tr('roadmap_task_title'), [
@@ -141,6 +141,14 @@
     });
   }
 
+  /* ✅ الاستماع لتغيير المشروع من أي قسم آخر */
+  if(window.ProjectContext){
+    window.ProjectContext.subscribe(function(){
+      var active = document.querySelector('.section.active');
+      if(active && active.id === 'roadmap') renderRoadmap();
+    });
+  }
+
   function install(){
     if(typeof window.switchTab !== 'function'){ setTimeout(install, 500); return; }
     if(window._lifecycleInstalled) return;
@@ -162,5 +170,5 @@
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
-  console.log('🗺️ Project Lifecycle loaded');
+  console.log('🗺️ Project Lifecycle v3 loaded (context)');
 })();

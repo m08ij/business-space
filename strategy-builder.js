@@ -1,32 +1,31 @@
 /* ============================================================
-   🎯 strategy-builder.js — أدوات بناء الاستراتيجية
-   SWOT, PESTEL, OKRs, Theory of Change
+   🎯 strategy-builder.js v2 — أدوات بناء الاستراتيجية
+   ✅ إزالة prompt() واستبدالها بـ showModal
+   ✅ ترجمة كاملة
    ============================================================ */
 (function(){
   'use strict';
 
+  function tr(k, p){ return window.t ? window.t(k, p) : k; }
   function getSpace(){ return window.space || {projects:[]}; }
   function toast(m,t,d){ if(typeof window.toast === 'function') window.toast(m,t||'info',d||2500); }
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
   var currentProject = null;
 
   /* ============ استدعاء المشروع ============ */
   function selectProjectForStrategy(projectId){
-    currentProject = projectId;
-    renderStrategySelector();
+    if(window.ProjectContext) window.ProjectContext.setCurrent(projectId);
+    else { currentProject = projectId; renderStrategySelector(); }
   }
 
-  /* ============ عرض الاختيار ============ */
   function renderStrategySelector(){
     var el = document.getElementById('strategySelector');
     if(!el) return;
     var sp = getSpace();
     var projects = sp.projects || [];
     if(!projects.length){
-    var tr = window.t || function(k){ return k; };
-el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
+      el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
       return;
     }
     var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">';
@@ -40,35 +39,31 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
     el.querySelectorAll('[data-sp-select]').forEach(function(b){
       b.addEventListener('click', function(){ selectProjectForStrategy(b.dataset.spSelect); });
     });
+    if(window.ProjectContext){ window.ProjectContext.ensureValid(); currentProject = window.ProjectContext.getCurrent(); }
     if(!currentProject && projects.length) currentProject = projects[0].id;
 
     renderFrameworkTools();
   }
 
-  /* ============ عرض الأدوات ============ */
   function renderFrameworkTools(){
     var el = document.getElementById('strategyTools');
     if(!el) return;
     var sp = getSpace();
     var project = (sp.projects || []).find(function(p){ return p.id === currentProject; });
     if(!project){
-      el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:.85rem">اختر مشروعاً لعرض أدوات الاستراتيجية</div>';
+      el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:.85rem">' + tr('strategy_select_project') + '</div>';
       return;
     }
     if(!project.strategy) project.strategy = {};
     var s = project.strategy;
 
     var html = '';
-    // SWOT
     html += renderSWOT(project, s.swot || {strengths:[],weaknesses:[],opportunities:[],threats:[]});
-    // PESTEL
     html += renderPESTEL(project, s.pestel || {});
-    // OKRs
     html += renderOKRs(project, s.okrs || []);
 
     el.innerHTML = html;
 
-    // Bind SWOT
     bindSWOT(project);
     bindPESTEL(project);
     bindOKRs(project);
@@ -77,14 +72,14 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
   /* ============ SWOT ============ */
   function renderSWOT(project, swot){
     var sections = [
-      {k:'strengths',    title:'💪 نقاط القوة',   color:'var(--green)'},
-      {k:'weaknesses',   title:'⚠️ نقاط الضعف',   color:'var(--red)'},
-      {k:'opportunities',title:'🌟 الفرص',         color:'var(--cyan)'},
-      {k:'threats',      title:'🌩️ التهديدات',    color:'var(--amber)'}
+      {k:'strengths',    title:'💪 ' + tr('swot_strengths'),   color:'var(--green)'},
+      {k:'weaknesses',   title:'⚠️ ' + tr('swot_weaknesses'),   color:'var(--red)'},
+      {k:'opportunities',title:'🌟 ' + tr('swot_opportunities'), color:'var(--cyan)'},
+      {k:'threats',      title:'🌩️ ' + tr('swot_threats'),      color:'var(--amber)'}
     ];
     var html = '<div class="card" style="margin-bottom:16px">' +
-      '<div class="card-head"><h3>🎯 تحليل SWOT</h3>' +
-      '<button class="btn btn-sm btn-ghost" data-swot-export>📤 تصدير</button></div>' +
+      '<div class="card-head"><h3>' + tr('swot_title') + '</h3>' +
+      '<button class="btn btn-sm btn-ghost" data-swot-export>' + tr('export') + '</button></div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
     sections.forEach(function(sec){
       html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px">' +
@@ -97,7 +92,7 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
         '</div>';
       });
       html += '</div>' +
-        '<button class="btn btn-sm" data-swot-add="' + sec.k + '" style="width:100%;margin-top:6px;font-size:.72rem">+ إضافة</button>' +
+        '<button class="btn btn-sm" data-swot-add="' + sec.k + '" style="width:100%;margin-top:6px;font-size:.72rem">+ ' + tr('add') + '</button>' +
       '</div>';
     });
     html += '</div></div>';
@@ -108,15 +103,23 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
     document.querySelectorAll('[data-swot-add]').forEach(function(b){
       b.addEventListener('click', function(){
         var key = b.dataset.swotAdd;
-        var val = prompt('أضف عنصراً في "' + key + '":');
-        if(!val || !val.trim()) return;
-        if(!project.strategy) project.strategy = {};
-        if(!project.strategy.swot) project.strategy.swot = {strengths:[],weaknesses:[],opportunities:[],threats:[]};
-        if(!project.strategy.swot[key]) project.strategy.swot[key] = [];
-        project.strategy.swot[key].push(val.trim());
-        if(window.saveSpace) window.saveSpace();
-        renderFrameworkTools();
-        toast('✓ أُضيف', 'success', 1200);
+        var keyName = tr('swot_' + key + '_short');
+        window.showModal(
+          tr('swot_add_item') + ' "' + keyName + '"',
+          [{ key:'text', label: tr('swot_item_label'), placeholder: tr('swot_item_ph') }],
+          { text: '' },
+          function(data){
+            var val = (data.text || '').trim();
+            if(!val) return toast(tr('swot_item_required'), 'warn');
+            if(!project.strategy) project.strategy = {};
+            if(!project.strategy.swot) project.strategy.swot = {strengths:[],weaknesses:[],opportunities:[],threats:[]};
+            if(!project.strategy.swot[key]) project.strategy.swot[key] = [];
+            project.strategy.swot[key].push(val);
+            if(window.saveSpace) window.saveSpace();
+            renderFrameworkTools();
+            toast(tr('swot_added'), 'success', 1200);
+          }
+        );
       });
     });
     document.querySelectorAll('[data-swot-del]').forEach(function(b){
@@ -131,33 +134,33 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
     var exp = document.querySelector('[data-swot-export]');
     if(exp) exp.addEventListener('click', function(){
       var s = project.strategy.swot;
-      var text = '📊 تحليل SWOT — ' + project.name + '\n\n' +
-        '💪 نقاط القوة:\n' + (s.strengths||[]).map(function(x){return '• '+x;}).join('\n') + '\n\n' +
-        '⚠️ نقاط الضعف:\n' + (s.weaknesses||[]).map(function(x){return '• '+x;}).join('\n') + '\n\n' +
-        '🌟 الفرص:\n' + (s.opportunities||[]).map(function(x){return '• '+x;}).join('\n') + '\n\n' +
-        '🌩️ التهديدات:\n' + (s.threats||[]).map(function(x){return '• '+x;}).join('\n');
-      navigator.clipboard.writeText(text).then(function(){ toast('📋 نُسخ التحليل', 'success'); });
+      var text = '📊 ' + tr('swot_title') + ' — ' + project.name + '\n\n' +
+        '💪 ' + tr('swot_strengths') + ':\n' + (s.strengths||[]).map(function(x){return '• '+x;}).join('\n') + '\n\n' +
+        '⚠️ ' + tr('swot_weaknesses') + ':\n' + (s.weaknesses||[]).map(function(x){return '• '+x;}).join('\n') + '\n\n' +
+        '🌟 ' + tr('swot_opportunities') + ':\n' + (s.opportunities||[]).map(function(x){return '• '+x;}).join('\n') + '\n\n' +
+        '🌩️ ' + tr('swot_threats') + ':\n' + (s.threats||[]).map(function(x){return '• '+x;}).join('\n');
+      navigator.clipboard.writeText(text).then(function(){ toast(tr('swot_export_copied'), 'success'); });
     });
   }
 
   /* ============ PESTEL ============ */
   function renderPESTEL(project, pestel){
     var cats = [
-      {k:'political',    n:'🏛️ سياسي',    color:'var(--cyan)'},
-      {k:'economic',     n:'💰 اقتصادي',   color:'var(--green)'},
-      {k:'social',       n:'👥 اجتماعي',   color:'var(--purple)'},
-      {k:'technological',n:'💻 تكنولوجي',  color:'var(--amber)'},
-      {k:'environmental',n:'🌍 بيئي',      color:'var(--pink)'},
-      {k:'legal',        n:'⚖️ قانوني',    color:'var(--red)'}
+      {k:'political',    n: tr('pestel_political'), color:'var(--cyan)'},
+      {k:'economic',     n: tr('pestel_economic'),  color:'var(--green)'},
+      {k:'social',       n: tr('pestel_social'),    color:'var(--purple)'},
+      {k:'technological',n: tr('pestel_tech'),      color:'var(--amber)'},
+      {k:'environmental',n: tr('pestel_env'),       color:'var(--pink)'},
+      {k:'legal',        n: tr('pestel_legal'),     color:'var(--red)'}
     ];
     var html = '<div class="card" style="margin-bottom:16px">' +
-      '<div class="card-head"><h3>🌍 تحليل PESTEL</h3>' +
-      '<button class="btn btn-sm btn-ghost" data-pestel-export>📤 تصدير</button></div>' +
+      '<div class="card-head"><h3>' + tr('pestel_title') + '</h3>' +
+      '<button class="btn btn-sm btn-ghost" data-pestel-export>' + tr('export') + '</button></div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">';
     cats.forEach(function(c){
       html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px">' +
         '<div style="font-weight:800;font-size:.82rem;color:' + c.color + ';margin-bottom:6px">' + c.n + '</div>' +
-        '<textarea data-pestel="' + c.k + '" placeholder="اكتب ملاحظاتك..." style="width:100%;min-height:70px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px;font-family:inherit;font-size:.78rem;resize:vertical;outline:none">' + esc(pestel[c.k] || '') + '</textarea>' +
+        '<textarea data-pestel="' + c.k + '" placeholder="' + tr('pestel_placeholder') + '" style="width:100%;min-height:70px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px;font-family:inherit;font-size:.78rem;resize:vertical;outline:none">' + esc(pestel[c.k] || '') + '</textarea>' +
       '</div>';
     });
     html += '</div></div>';
@@ -176,24 +179,24 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
     var exp = document.querySelector('[data-pestel-export]');
     if(exp) exp.addEventListener('click', function(){
       var p = project.strategy.pestel || {};
-      var text = '🌍 تحليل PESTEL — ' + project.name + '\n\n' +
-        '🏛️ سياسي: ' + (p.political || '—') + '\n\n' +
-        '💰 اقتصادي: ' + (p.economic || '—') + '\n\n' +
-        '👥 اجتماعي: ' + (p.social || '—') + '\n\n' +
-        '💻 تكنولوجي: ' + (p.technological || '—') + '\n\n' +
-        '🌍 بيئي: ' + (p.environmental || '—') + '\n\n' +
-        '⚖️ قانوني: ' + (p.legal || '—');
-      navigator.clipboard.writeText(text).then(function(){ toast('📋 نُسخ التحليل', 'success'); });
+      var text = '🌍 ' + tr('pestel_title') + ' — ' + project.name + '\n\n' +
+        '🏛️ ' + tr('pestel_political') + ': ' + (p.political || '—') + '\n\n' +
+        '💰 ' + tr('pestel_economic') + ': ' + (p.economic || '—') + '\n\n' +
+        '👥 ' + tr('pestel_social') + ': ' + (p.social || '—') + '\n\n' +
+        '💻 ' + tr('pestel_tech') + ': ' + (p.technological || '—') + '\n\n' +
+        '🌍 ' + tr('pestel_env') + ': ' + (p.environmental || '—') + '\n\n' +
+        '⚖️ ' + tr('pestel_legal') + ': ' + (p.legal || '—');
+      navigator.clipboard.writeText(text).then(function(){ toast(tr('pestel_export_copied'), 'success'); });
     });
   }
 
   /* ============ OKRs ============ */
   function renderOKRs(project, okrs){
     var html = '<div class="card" style="margin-bottom:16px">' +
-      '<div class="card-head"><h3>🎯 الأهداف والنتائج (OKRs)</h3>' +
-      '<button class="btn btn-sm" data-okr-add>+ هدف</button></div>';
+      '<div class="card-head"><h3>' + tr('okr_title') + '</h3>' +
+      '<button class="btn btn-sm" data-okr-add>' + tr('okr_add') + '</button></div>';
     if(!okrs.length){
-      html += '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">لا توجد أهداف</div>';
+      html += '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">' + tr('okr_no_objectives') + '</div>';
     } else {
       okrs.forEach(function(okr, i){
         html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">' +
@@ -213,7 +216,7 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
             '<input type="range" min="0" max="100" value="' + pct + '" data-okr-slider="' + i + '-' + ki + '" style="width:100%;margin-top:4px">' +
           '</div>';
         });
-        html += '<button class="btn btn-sm btn-ghost" data-okr-kr-add="' + i + '" style="width:100%;margin-top:6px;font-size:.72rem">+ نتيجة رئيسية</button></div>';
+        html += '<button class="btn btn-sm btn-ghost" data-okr-kr-add="' + i + '" style="width:100%;margin-top:6px;font-size:.72rem">' + tr('okr_add_kr') + '</button></div>';
       });
     }
     html += '</div>';
@@ -221,33 +224,64 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
   }
 
   function bindOKRs(project){
+    /* ✅ إضافة هدف عبر showModal */
     var addBtn = document.querySelector('[data-okr-add]');
     if(addBtn) addBtn.addEventListener('click', function(){
-      var obj = prompt('الهدف (Objective):');
-      if(!obj || !obj.trim()) return;
-      if(!project.strategy) project.strategy = {};
-      if(!project.strategy.okrs) project.strategy.okrs = [];
-      project.strategy.okrs.push({objective: obj.trim(), keyResults: []});
-      if(window.saveSpace) window.saveSpace();
-      renderFrameworkTools();
+      window.showModal(
+        tr('okr_add_objective_title'),
+        [{ key:'objective', label: tr('okr_objective_field'), placeholder: tr('okr_objective_ph') }],
+        { objective: '' },
+        function(data){
+          var obj = (data.objective || '').trim();
+          if(!obj) return toast(tr('okr_objective_required'), 'warn');
+          if(!project.strategy) project.strategy = {};
+          if(!project.strategy.okrs) project.strategy.okrs = [];
+          project.strategy.okrs.push({objective: obj, keyResults: []});
+          if(window.saveSpace) window.saveSpace();
+          renderFrameworkTools();
+          toast(tr('okr_added'), 'success');
+        }
+      );
     });
+
+    /* حذف هدف */
     document.querySelectorAll('[data-okr-del]').forEach(function(b){
       b.addEventListener('click', function(){
-        project.strategy.okrs.splice(parseInt(b.dataset.okrDel), 1);
-        if(window.saveSpace) window.saveSpace();
-        renderFrameworkTools();
+        var idx = parseInt(b.dataset.okrDel);
+        var obj = project.strategy.okrs[idx];
+        window.customConfirm(
+          tr('okr_deleted').replace('🗑 ', '') + ' — ' + esc(obj.objective) + '؟',
+          function(){
+            project.strategy.okrs.splice(idx, 1);
+            if(window.saveSpace) window.saveSpace();
+            renderFrameworkTools();
+            toast(tr('okr_deleted'), 'success');
+          }
+        );
       });
     });
+
+    /* ✅ إضافة نتيجة رئيسية عبر showModal */
     document.querySelectorAll('[data-okr-kr-add]').forEach(function(b){
       b.addEventListener('click', function(){
         var i = parseInt(b.dataset.okrKrAdd);
-        var name = prompt('النتيجة الرئيسية:');
-        if(!name || !name.trim()) return;
-        project.strategy.okrs[i].keyResults.push({name: name.trim(), progress: 0});
-        if(window.saveSpace) window.saveSpace();
-        renderFrameworkTools();
+        window.showModal(
+          tr('okr_add_kr_title'),
+          [{ key:'kr', label: tr('okr_kr_field'), placeholder: tr('okr_kr_ph') }],
+          { kr: '' },
+          function(data){
+            var name = (data.kr || '').trim();
+            if(!name) return toast(tr('okr_kr_required'), 'warn');
+            project.strategy.okrs[i].keyResults.push({name: name, progress: 0});
+            if(window.saveSpace) window.saveSpace();
+            renderFrameworkTools();
+            toast(tr('okr_kr_added'), 'success');
+          }
+        );
       });
     });
+
+    /* sliders */
     document.querySelectorAll('[data-okr-slider]').forEach(function(sl){
       sl.addEventListener('input', function(){
         var parts = sl.dataset.okrSlider.split('-');
@@ -271,6 +305,12 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
       if(tab === 'strategy'){
         setTimeout(function(){ renderStrategySelector(); }, 100);
       }
+	  if(window.ProjectContext){
+		window.ProjectContext.subscribe(function(){
+		  var active = document.querySelector('.section.active');
+		  if(active && active.id === 'strategy') renderStrategySelector();
+		});
+	  }
       return r;
     };
   }
@@ -280,5 +320,5 @@ el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
   document.addEventListener('languagechange', function(){ renderStrategySelector(); });
-  console.log('🎯 Strategy Builder loaded');
+  console.log('🎯 Strategy Builder v2 loaded');
 })();

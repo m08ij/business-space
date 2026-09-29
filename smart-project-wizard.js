@@ -1,6 +1,9 @@
 /* ============================================================
-   🧙 smart-project-wizard.js v2 — معالج ذكي باستخدام KB
-   6 خطوات + معاينة + مشاريع مشابهة + حفظ مسودة
+   🧙 smart-project-wizard.js v3 — معالج ذكي مُصلَّح
+   ✅ إصلاح مسودة عالقة (3 خيارات: استكمال/جديد/إلغاء)
+   ✅ إصلاح pick() للأشياء {ar, en}
+   ✅ زر "إلغاء وإنشاء جديد" داخل المعالج
+   ✅ المسودة تُحذف عند الإنهاء
    ============================================================ */
 (function(){
   'use strict';
@@ -11,10 +14,21 @@
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
   function getSpace(){ return window.space || {}; }
   function getLang(){ return window.i18n ? window.i18n.getLang() : 'ar'; }
-  function pick(obj, base){
-    if(getLang() === 'en' && obj[base+'En']) return obj[base+'En'];
-    return obj[base] || '';
+
+  /* ✅ pickName للأشياء {name, nameEn} */
+  function pickName(obj){
+    if(!obj) return '';
+    if(getLang() === 'en' && obj.nameEn) return obj.nameEn;
+    return obj.name || obj.nameAr || '';
   }
+
+  /* ✅ pickLang للأشياء {ar, en} — كانت معطوبة في النسخة القديمة */
+  function pickLang(obj){
+    if(!obj) return '';
+    if(getLang() === 'en' && obj.en) return obj.en;
+    return obj.ar || obj.en || '';
+  }
+
   function KB(){ return window.PROJECT_KB || {}; }
 
   var TOTAL_STEPS = 6;
@@ -23,6 +37,7 @@
   /* ============ مسودة ============ */
   function saveDraft(){
     if(!state) return;
+    state.savedAt = Date.now();
     try{ localStorage.setItem('bd_spw_draft', JSON.stringify(state)); }catch(e){}
   }
   function loadDraft(){
@@ -55,7 +70,6 @@
         budget: 'medium',
         timeline: 'medium',
         teamSize: 'small',
-        // Type-specific
         stage: 'idea',
         market: '',
         beneficiaries: '',
@@ -69,7 +83,52 @@
     };
   }
 
-  /* ============ الرسم الرئيسي ============ */
+  /* ============ 3 خيارات عند وجود مسودة ============ */
+  function showDraftDialog(draft, onResume, onNew, onCancel){
+    document.querySelectorAll('.modal-backdrop').forEach(function(m){ m.remove(); });
+    var bd = document.createElement('div');
+    bd.className = 'modal-backdrop show';
+    var summary = '📌 ' + esc(draft.data.name || 'بدون اسم');
+    var savedAt = '';
+    try{
+      savedAt = new Date(draft.savedAt).toLocaleDateString(getLang() === 'ar' ? 'ar-EG' : 'en-US');
+    }catch(e){}
+
+    bd.innerHTML = '<div class="modal" style="max-width:500px">' +
+      '<div style="text-align:center;margin-bottom:14px">' +
+        '<div style="font-size:2.5rem">📝</div>' +
+        '<h3 style="margin:6px 0;color:var(--cyan)">' +
+          (getLang() === 'en' ? 'Unfinished Draft' : 'مسودة غير مكتملة') +
+        '</h3>' +
+      '</div>' +
+      '<div style="padding:12px;background:var(--bg2);border-radius:12px;margin-bottom:14px;font-size:.85rem;line-height:1.7">' +
+        '<div>' + summary + '</div>' +
+        (savedAt ? '<div style="font-size:.72rem;color:var(--muted2);margin-top:4px">🕐 ' + savedAt + '</div>' : '') +
+        '<div style="font-size:.72rem;color:var(--muted2);margin-top:4px">' +
+          (getLang() === 'en' ? 'Step ' : 'الخطوة ') + ((draft.step || 0) + 1) + ' / ' + TOTAL_STEPS +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px">' +
+        '<button class="btn" id="spwDraftResume" style="width:100%;justify-content:center">' +
+          '▶️ ' + (getLang() === 'en' ? 'Continue Draft' : 'استكمال المسودة') +
+        '</button>' +
+        '<button class="btn btn-ghost" id="spwDraftNew" style="width:100%;justify-content:center">' +
+          '🆕 ' + (getLang() === 'en' ? 'Start New (delete draft)' : 'ابدأ مشروع جديد (حذف المسودة)') +
+        '</button>' +
+        '<button class="btn btn-ghost" id="spwDraftCancel" style="width:100%;justify-content:center">' +
+          '✖️ ' + (getLang() === 'en' ? 'Cancel' : 'إلغاء') +
+        '</button>' +
+      '</div>' +
+    '</div>';
+    document.body.appendChild(bd);
+
+    bd.querySelector('#spwDraftResume').onclick = function(){ bd.remove(); onResume(); };
+    bd.querySelector('#spwDraftNew').onclick = function(){ bd.remove(); onNew(); };
+    bd.querySelector('#spwDraftCancel').onclick = function(){ bd.remove(); onCancel(); };
+    bd.onclick = function(e){ if(e.target === bd){ bd.remove(); onCancel(); } };
+  }
+
+  /* ============ المودال الرئيسي ============ */
   function showModal(){
     document.querySelectorAll('.modal-backdrop').forEach(function(m){ m.remove(); });
     var bd = document.createElement('div');
@@ -82,6 +141,9 @@
           '<div style="font-weight:800;font-size:1rem">' + tr('spw_title') + '</div>' +
           '<div style="font-size:.7rem;color:var(--muted)" id="spwSub">' + tr('spw_sub') + '</div>' +
         '</div>' +
+        '<button class="btn btn-sm btn-ghost" id="spwDiscard" title="' +
+          (getLang() === 'en' ? 'Discard draft' : 'تخلي عن المسودة') +
+          '" style="color:var(--red)">🗑</button>' +
         '<button class="btn btn-sm btn-ghost" id="spwClose" title="' + tr('close') + '">✕</button>' +
       '</div>' +
       '<div style="padding:14px 22px 0">' +
@@ -102,6 +164,17 @@
     document.body.appendChild(bd);
 
     bd.querySelector('#spwClose').onclick = closeWizard;
+    bd.querySelector('#spwDiscard').onclick = function(){
+      window.customConfirm(
+        getLang() === 'en' ? 'Discard this draft and start fresh?' : 'تخلي عن هذه المسودة وابدأ من جديد؟',
+        function(){
+          clearDraft();
+          state = newState();
+          renderStep();
+          toast(getLang() === 'en' ? '🗑 Draft cleared' : '🗑 تم حذف المسودة', 'success');
+        }
+      );
+    };
     bd.querySelector('#spwBack').onclick = goBack;
     bd.querySelector('#spwNext').onclick = goNext;
     bd.querySelector('#spwSkip').onclick = goSkip;
@@ -111,10 +184,7 @@
   }
 
   function closeWizard(){
-    if(state){
-      state.savedAt = Date.now();
-      saveDraft();
-    }
+    if(state){ saveDraft(); }
     var bd = document.getElementById('spwBackdrop');
     if(bd) bd.remove();
   }
@@ -130,9 +200,9 @@
       for(var i = 0; i < TOTAL_STEPS; i++){
         var active = i === state.step;
         var done = i < state.step;
-        html += '<span style="color:' + (active ? 'var(--cyan)' : done ? 'var(--green)' : 'var(--muted2)') + ';font-weight:' + (active ? '800' : '600') + '">' +
-          (done ? '✓' : (i + 1)) +
-        '</span>';
+        html += '<span style="color:' + (active ? 'var(--cyan)' : done ? 'var(--green)' : 'var(--muted2)') +
+          ';font-weight:' + (active ? '800' : '600') + '">' +
+          (done ? '✓' : (i + 1)) + '</span>';
       }
       dots.innerHTML = html;
     }
@@ -145,7 +215,6 @@
       return;
     }
     state.step++;
-    state.savedAt = Date.now();
     saveDraft();
     renderStep();
   }
@@ -155,11 +224,9 @@
     renderStep();
   }
   function goSkip(){
-    if(state.step === TOTAL_STEPS - 1){
-      finish();
-      return;
-    }
+    if(state.step === TOTAL_STEPS - 1){ finish(); return; }
     state.step++;
+    saveDraft();
     renderStep();
   }
   function validate(){
@@ -173,7 +240,6 @@
     return true;
   }
 
-  /* ============ الرسم لكل خطوة ============ */
   function renderStep(){
     updateProgress();
     var body = document.getElementById('spwBody');
@@ -197,7 +263,7 @@
       var sel = state.data.type === k;
       return '<button type="button" data-spw-type="' + k + '" style="padding:12px 8px;border-radius:11px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
         '<div style="font-size:1.4rem">' + t.icon + '</div>' +
-        '<div style="font-size:.72rem;font-weight:700;margin-top:3px">' + pick(t, 'name') + '</div>' +
+        '<div style="font-size:.72rem;font-weight:700;margin-top:3px">' + pickName(t) + '</div>' +
       '</button>';
     }).join('');
 
@@ -206,7 +272,7 @@
       var sel = state.data.sector === k;
       return '<button type="button" data-spw-sector="' + k + '" style="padding:9px 6px;border-radius:10px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
         '<div style="font-size:1.2rem">' + s.icon + '</div>' +
-        '<div style="font-size:.68rem;font-weight:700;margin-top:2px">' + pick(s, 'name') + '</div>' +
+        '<div style="font-size:.68rem;font-weight:700;margin-top:2px">' + pickName(s) + '</div>' +
       '</button>';
     }).join('');
 
@@ -215,7 +281,7 @@
     var countryBtns = codes.map(function(code){
       var c = countries.featured[code]; if(!c) return '';
       var sel = state.data.country === code;
-      return '<button type="button" data-spw-country="' + code + '" style="padding:6px 11px;border-radius:9px;border:1px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--card)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;font-size:.76rem;font-weight:600">' + (c.flag||'') + ' ' + esc(pick(c,'name')) + '</button>';
+      return '<button type="button" data-spw-country="' + code + '" style="padding:6px 11px;border-radius:9px;border:1px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--card)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;font-size:.76rem;font-weight:600">' + (c.flag||'') + ' ' + esc(pickName(c)) + '</button>';
     }).join('');
 
     return '<div>' +
@@ -260,7 +326,7 @@
 
   /* ============ خطوة 2: القصة ============ */
   function step2(){
-    var sectorName = pick((window.SECTORS_DB||{})[state.data.sector] || {}, 'name');
+    var sectorName = pickName((window.SECTORS_DB||{})[state.data.sector] || {});
     return '<div>' +
       '<div style="padding:10px 12px;background:var(--grad-soft);border-radius:10px;font-size:.78rem;margin-bottom:14px">' +
         '💡 ' + tr('spw_q3_hint_sector', { sector: sectorName }) +
@@ -276,19 +342,19 @@
     '</div>';
   }
   function bind2(){
-    var bind = function(id, key){
+    var b = function(id, key){
       var el = document.getElementById(id);
       if(el) el.oninput = function(){ state.data[key] = el.value; };
     };
-    bind('spwDesc', 'description');
-    bind('spwProblem', 'problem');
-    bind('spwSolution', 'solution');
+    b('spwDesc', 'description');
+    b('spwProblem', 'problem');
+    b('spwSolution', 'solution');
   }
 
   /* ============ خطوة 3: SDG ============ */
   function step3(){
     var suggested = KB().suggestSDG ? KB().suggestSDG(state.data.sector) : [];
-    var sectorName = pick((window.SECTORS_DB||{})[state.data.sector] || {}, 'name');
+    var sectorName = pickName((window.SECTORS_DB||{})[state.data.sector] || {});
 
     var grid = Object.keys(window.SDG_DB || {}).map(function(n){
       var sdg = window.SDG_DB[n];
@@ -388,28 +454,28 @@
       '<p style="margin:0 0 14px;font-size:.76rem;color:var(--muted)">' + tr('spw_q5_extra_hint') + '</p>';
 
     extra.forEach(function(q){
-      html += '<label style="display:block;font-size:.82rem;font-weight:700;margin-bottom:5px">' + pick(q, 'ar') + '</label>';
+      /* ✅ استخدام pickLang للأشياء {ar, en} */
+      html += '<label style="display:block;font-size:.82rem;font-weight:700;margin-bottom:5px">' + pickLang(q) + '</label>';
       if(q.options){
         html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">';
         q.options.forEach(function(o){
           var sel = state.data[q.key] === o.v;
-          html += '<button type="button" data-spw-extra="' + q.key + ':' + o.v + '" style="padding:8px 14px;border-radius:10px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:600">' + pick(o, 'ar') + '</button>';
+          html += '<button type="button" data-spw-extra="' + q.key + ':' + o.v + '" style="padding:8px 14px;border-radius:10px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:600">' + pickLang(o) + '</button>';
         });
         html += '</div>';
       } else {
-        html += '<input type="text" data-spw-extra-input="' + q.key + '" value="' + esc(state.data[q.key] || '') + '" placeholder="' + pick(q, 'ar') + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-family:inherit;font-size:.85rem;outline:none;margin-bottom:14px">';
+        html += '<input type="text" data-spw-extra-input="' + q.key + '" value="' + esc(state.data[q.key] || '') + '" placeholder="' + pickLang(q) + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-family:inherit;font-size:.85rem;outline:none;margin-bottom:14px">';
       }
     });
 
-    /* معلومات قانونية مفيدة */
     if(typeKB.legalStructure){
       html += '<div style="padding:10px 12px;background:var(--grad-soft);border-radius:10px;font-size:.76rem;margin-top:4px">' +
-        '⚖️ ' + tr('spw_q5_legal') + ': <b>' + pick(typeKB.legalStructure, 'ar') + '</b>' +
+        '⚖️ ' + tr('spw_q5_legal') + ': <b>' + pickLang(typeKB.legalStructure) + '</b>' +
       '</div>';
     }
     if(typeKB.fundingSources && typeKB.fundingSources.length){
       html += '<div style="padding:10px 12px;background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(34,211,238,.12));border-radius:10px;font-size:.76rem;margin-top:8px">' +
-        '💵 ' + tr('spw_q5_funding') + ': ' + typeKB.fundingSources.map(function(s){ return pick(s, 'ar'); }).join(' · ') +
+        '💵 ' + tr('spw_q5_funding') + ': ' + typeKB.fundingSources.map(function(s){ return pickLang(s); }).join(' · ') +
       '</div>';
     }
 
@@ -428,7 +494,6 @@
     document.querySelectorAll('[data-spw-extra-input]').forEach(function(inp){
       inp.oninput = function(){
         state.data[inp.dataset.spwExtraInput] = inp.value;
-        saveDraft();
       };
     });
   }
@@ -445,13 +510,12 @@
     var risksCount = KB().getSectorKB ? (KB().getSectorKB(d.sector).risks || []).length : 3;
     var budgetCount = KB().getSectorKB ? Object.keys(KB().getSectorKB(d.sector).budget || {}).length : 5;
 
-    /* مشاريع مشابهة */
     var similar = KB().findSimilar ? KB().findSimilar(d, getSpace().projects || []) : [];
     var similarHtml = '';
     if(similar.length){
       similarHtml = '<div style="padding:10px 12px;background:rgba(251,191,36,.1);border:1px dashed rgba(251,191,36,.4);border-radius:10px;font-size:.76rem;margin-bottom:12px">' +
         '💡 ' + tr('spw_q7_similar') + ':<br>' +
-        similar.map(function(s){ return '• ' + esc(s.project.name) + ' (' + pick((window.SECTORS_DB||{})[s.project.sector]||{}, 'name') + ')'; }).join('<br>') +
+        similar.map(function(s){ return '• ' + esc(s.project.name) + ' (' + pickName((window.SECTORS_DB||{})[s.project.sector]||{}) + ')'; }).join('<br>') +
       '</div>';
     }
 
@@ -473,16 +537,13 @@
     return '<div>' +
       '<h4 style="margin:0 0 4px;font-size:1rem">' + tr('spw_q7_summary') + '</h4>' +
       '<p style="margin:0 0 12px;font-size:.76rem;color:var(--muted)">' + tr('spw_q7_summary_hint') + '</p>' +
-
       similarHtml +
-
       '<div style="padding:12px;background:var(--bg2);border-radius:12px;margin-bottom:12px">' +
         '<div style="font-weight:800;font-size:.95rem">' + type.icon + ' ' + esc(d.name) + '</div>' +
-        '<div style="font-size:.72rem;color:var(--muted2);margin-top:3px">' + (country.flag||'🌍') + ' ' + esc(pick(country,'name')) + ' · ' + sector.icon + ' ' + esc(pick(sector,'name')) + ' · ' + pick(type,'name') + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted2);margin-top:3px">' + (country.flag||'🌍') + ' ' + esc(pickName(country)) + ' · ' + sector.icon + ' ' + esc(pickName(sector)) + ' · ' + pickName(type) + '</div>' +
         (d.description ? '<div style="font-size:.78rem;color:var(--muted);margin-top:6px;line-height:1.5">' + esc(d.description.slice(0, 120)) + (d.description.length > 120 ? '...' : '') + '</div>' : '') +
         (sdgTags ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">' + sdgTags + '</div>' : '') +
       '</div>' +
-
       '<div style="padding:12px;background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px dashed var(--glow);border-radius:12px">' +
         '<div style="font-weight:800;font-size:.82rem;color:var(--cyan);margin-bottom:6px">✨ ' + tr('spw_q7_will_create') + '</div>' +
         auto.map(function(t){ return '<div style="font-size:.78rem;padding:2px 0">' + t + '</div>'; }).join('') +
@@ -497,7 +558,6 @@
     var sp = getSpace();
     if(!sp) return;
 
-    /* ضمان المصفوفات */
     ['ideas','projects','tasks','budget','stakeholders'].forEach(function(k){
       if(!Array.isArray(sp[k])) sp[k] = [];
     });
@@ -520,7 +580,7 @@
       sdgTargets: d.sdg.slice()
     });
 
-    /* 2) المشروع — مع KB */
+    /* 2) المشروع */
     var milestones = KB().suggestMilestones ? KB().suggestMilestones(d.sector, d.timeline, today) : [];
     var risks = KB().suggestRisks ? KB().suggestRisks(d.sector) : [];
     var okrs = KB().suggestOKRs ? KB().suggestOKRs(d.name) : [];
@@ -556,15 +616,16 @@
     };
     sp.projects.push(project);
 
-    /* 3) بنود الميزانية */
+    /* 3) الميزانية */
     var budgetItems = KB().suggestBudgetBreakdown ? KB().suggestBudgetBreakdown(d.sector, d.type, d.budget) : [];
     budgetItems.forEach(function(b){
       b.projectId = projectId;
+      b.project = d.name;
       b.note = d.name;
       sp.budget.push(b);
     });
 
-    /* 4) مهام أولية */
+    /* 4) المهام */
     var tasks = [
       { ar: 'تعريف الفريق والأدوار', en: 'Define team and roles' },
       { ar: 'إعداد خطة العمل التفصيلية', en: 'Prepare detailed work plan' },
@@ -574,21 +635,21 @@
       var due = new Date(); due.setDate(due.getDate() + 7 * (i+1));
       sp.tasks.push({
         id: uid(),
-        title: pick(t, 'ar'),
+        title: pickLang(t),
         project: d.name,
         projectId: projectId,
         due: due.toISOString().slice(0,10),
         done: false
       });
     });
-    /* 4.5) ✅ إنشاء أصحاب مصلحة مبدئيين من KB */
+
+    /* 5) أصحاب المصلحة */
     if(window.PROJECT_KB && window.PROJECT_KB.getSectorKB){
       var teamKB = window.PROJECT_KB.getSectorKB(d.sector).team || [];
       teamKB.forEach(function(member){
-        var name = (getLang() === 'en' && member.en) ? member.en : member.ar;
         sp.stakeholders.push({
           id: uid(),
-          name: name,
+          name: pickLang(member),
           role: member.role || 'team',
           org: d.name,
           contact: '',
@@ -599,16 +660,13 @@
       });
     }
 
-    /* 5) حفظ */
     if(window.saveSpace) window.saveSpace();
     clearDraft();
 
-    /* إغلاق */
     var bd = document.getElementById('spwBackdrop');
     if(bd) bd.remove();
     state = null;
 
-    /* ملخص النجاح */
     showSuccess(d, project, { milestones: milestones.length, risks: risks.length, budget: budgetItems.length });
   }
 
@@ -619,18 +677,15 @@
       '<div style="font-size:3.5rem;margin:8px 0">🎉</div>' +
       '<h3 style="color:var(--cyan);margin:6px 0">' + tr('spw_success_title') + '</h3>' +
       '<p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">' + esc(d.name) + '</p>' +
-
       '<div class="grid grid-4" style="gap:8px;margin-bottom:14px">' +
         '<div class="stat"><div class="ic">🎯</div><div><div class="v">' + d.sdg.length + '</div><div class="l">SDG</div></div></div>' +
         '<div class="stat"><div class="ic">🗺️</div><div><div class="v">' + counts.milestones + '</div><div class="l">' + tr('spw_success_milestones') + '</div></div></div>' +
         '<div class="stat"><div class="ic">⚠️</div><div><div class="v">' + counts.risks + '</div><div class="l">' + tr('spw_success_risks') + '</div></div></div>' +
         '<div class="stat"><div class="ic">💰</div><div><div class="v">' + counts.budget + '</div><div class="l">' + tr('spw_success_budget') + '</div></div></div>' +
       '</div>' +
-
       '<div style="padding:11px 14px;background:var(--grad-soft);border-radius:10px;font-size:.78rem;text-align:start;line-height:1.6;margin-bottom:16px">' +
         '💡 ' + tr('spw_success_hint') +
       '</div>' +
-
       '<div class="modal-actions" style="justify-content:center">' +
         '<button class="btn btn-ghost" id="spwDoneDash">📊 ' + tr('nav_dashboard') + '</button>' +
         '<button class="btn btn-ghost" id="spwDoneIdeas">💡 ' + tr('nav_ideas') + '</button>' +
@@ -654,11 +709,23 @@
   function startWizard(){
     var draft = loadDraft();
     if(draft && draft.data && draft.data.name){
-      window.customConfirm(tr('spw_resume_draft') + '\n\n"' + draft.data.name + '"', function(){
-        state = draft;
-        state.savedAt = Date.now();
-        showModal();
-      });
+      showDraftDialog(draft,
+        function(){
+          /* Resume */
+          state = draft;
+          state.savedAt = Date.now();
+          showModal();
+        },
+        function(){
+          /* New */
+          clearDraft();
+          state = newState();
+          showModal();
+        },
+        function(){
+          /* Cancel — لا شيء */
+        }
+      );
       return;
     }
     state = newState();
@@ -667,7 +734,6 @@
 
   /* ============ أزرار التثبيت ============ */
   function injectButtons(){
-    /* زر في أفكاري */
     var ideasCtrl = document.querySelector('#ideas .controls');
     if(ideasCtrl && !document.getElementById('spwOpenBtn')){
       var btn = document.createElement('button');
@@ -678,7 +744,6 @@
       btn.onclick = startWizard;
       ideasCtrl.appendChild(btn);
     }
-    /* بطاقة في الداشبورد */
     var dash = document.getElementById('dashboard');
     if(dash && !document.getElementById('spwDashCard')){
       var head = dash.querySelector('.page-head');
@@ -696,7 +761,6 @@
         card.querySelector('#spwStartBtn').onclick = startWizard;
       }
     }
-    /* FAB */
     var fabMenu = document.getElementById('fabMenu');
     if(fabMenu && !fabMenu.querySelector('[data-fab="wizard"]')){
       var fabBtn = document.createElement('button');
@@ -731,5 +795,5 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
 
-  console.log('🧙 Smart Wizard v2 loaded');
+  console.log('🧙 Smart Wizard v3 loaded (draft fixed)');
 })();

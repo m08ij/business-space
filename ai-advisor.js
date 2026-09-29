@@ -166,10 +166,16 @@
   }
 
   /* ============ Send ============ */
+  var _conversationHistory = [];
+
   function sendAI(){
     var inp = document.getElementById('aiInput'); if(!inp) return;
     var q = inp.value.trim(); if(!q) return;
     addAIMessage('user', q); inp.value = '';
+
+    _conversationHistory.push({ role: 'user', text: q });
+    if(_conversationHistory.length > 10) _conversationHistory.shift();
+
     var c = document.getElementById('aiMessages');
     var typing = null;
     if(c){
@@ -180,7 +186,10 @@
     }
     setTimeout(function(){
       if(typing && typing.parentNode) typing.parentNode.removeChild(typing);
-      addAIMessage('bot', aiRespond(q));
+      var response = aiRespond(q);
+      _conversationHistory.push({ role: 'bot', text: response });
+      if(_conversationHistory.length > 10) _conversationHistory.shift();
+      addAIMessage('bot', response);
     }, 500);
   }
 
@@ -217,6 +226,8 @@
 
     // 8. بحث عام
     r = generalSearch(raw); if(r) return r;
+	    // 7.5 سياق: "الأول/الثاني/الثالث"
+    r = contextualReference(lower); if(r) return r;
 
     // fallback
     return '🤔 ما فهمت "' + raw + '" تماماً.\n\n' +
@@ -552,7 +563,35 @@
     }
     return null;
   }
+  /* ============ سياق: "الأول" و "الثاني" ============ */
+  function contextualReference(lower){
+    if(!_conversationHistory.length) return null;
+    var ordinals = [
+      { re: /(الاول|الاولي|1|first)/, idx: 0 },
+      { re: /(الثاني|التانيه|2|second)/, idx: 1 },
+      { re: /(الثالث|التالته|3|third)/, idx: 2 }
+    ];
+    var matched = null;
+    for(var i = 0; i < ordinals.length; i++){
+      if(ordinals[i].re.test(lower)){ matched = ordinals[i]; break; }
+    }
+    if(!matched) return null;
 
+    /* ابحث في الرسالة السابقة عن قائمة */
+    for(var j = _conversationHistory.length - 1; j >= 0; j--){
+      var prev = _conversationHistory[j];
+      if(prev.role !== 'bot') continue;
+      if(prev.text.indexOf('**') > -1 && prev.text.indexOf('•') > -1){
+        var lines = prev.text.split('\n').filter(function(l){ return l.trim().indexOf('•') === 0; });
+        if(lines[matched.idx]){
+          var item = lines[matched.idx].replace(/^•\s*/, '').replace(/\*\*/g, '').trim();
+          return '📌 ' + (matched.idx + 1) + ': **' + item + '**\n\n💡 ' +
+            (lower.indexOf('مشروع') > -1 ? 'افتح "خريطة الطريق" للمشروع.' : 'يمكنك فتح القسم المناسب لعرض التفاصيل.');
+        }
+      }
+    }
+    return null;
+  }
   /* ============ 8. بحث عام ============ */
   function generalSearch(raw){
     if(!raw || raw.length < 3) return null;

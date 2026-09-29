@@ -22,6 +22,7 @@
       el.innerHTML = '<div class="empty"><div class="ic">📁</div><p>لا توجد مشاريع</p></div>';
       return;
     }
+    if(window.ProjectContext){ window.ProjectContext.ensureValid(); currentProject = window.ProjectContext.getCurrent(); }
     if(!currentProject) currentProject = projects[0].id;
 
     var html = '<div class="controls">';
@@ -43,7 +44,10 @@
     el.innerHTML = html;
 
     el.querySelectorAll('[data-fp-select]').forEach(function(b){
-      b.addEventListener('click', function(){ currentProject = b.dataset.fpSelect; renderFiles(); });
+      b.addEventListener('click', function(){
+        if(window.ProjectContext) window.ProjectContext.setCurrent(b.dataset.fpSelect);
+        else { currentProject = b.dataset.fpSelect; renderFiles(); }
+      });
     });
 
     var uploadBtn = document.getElementById('fpUpload');
@@ -147,6 +151,12 @@
     window.switchTab = function(tab){
       var r = orig.apply(this, arguments);
       if(tab === 'files') setTimeout(renderFiles, 100);
+	  if(window.ProjectContext){
+		window.ProjectContext.subscribe(function(){
+		  var active = document.querySelector('.section.active');
+		  if(active && active.id === 'files') renderFiles();
+		});
+	  }
       return r;
     };
   }

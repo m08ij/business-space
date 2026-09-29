@@ -101,7 +101,6 @@
           '<span class="badge">' + type.name + '</span>' +
         '</div>' +
         '<div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:10px">' + esc((idea.description || '').slice(0, 140)) + (idea.description && idea.description.length > 140 ? '...' : '') + '</div>' +
-		'<div class="cls-idea-actions" style="display:flex;gap:6px;flex-wrap:wrap">' +
 		  '<button class="btn btn-sm" data-idea-view="' + idea.id + '">👁️ عرض</button>' +
           '<button class="btn btn-sm btn-ghost" data-idea-edit="' + idea.id + '">✏️</button>' +
           '<button class="btn btn-sm btn-ghost" data-idea-to-project="' + idea.id + '">🚀 تحويل لمشروع</button>' +
@@ -256,7 +255,6 @@ function deleteIdea(id){
     window.cascadeDeleteIdea(id);
     return;
   }
-  // fallback: حذف الفكرة فقط
   window.customConfirm('حذف الفكرة؟', function(){
     var sp = getSpace();
     sp.ideas = (sp.ideas || []).filter(function(x){ return x.id !== id; });

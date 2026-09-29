@@ -48,6 +48,7 @@
       el.innerHTML = '<div class="empty"><div class="ic">⚠️</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
       return;
     }
+    if(window.ProjectContext){ window.ProjectContext.ensureValid(); currentProject = window.ProjectContext.getCurrent(); }
     if(!currentProject) currentProject = projects[0].id;
 
     var html = '<div class="controls">';
@@ -94,7 +95,10 @@
     el.innerHTML = html;
 
     el.querySelectorAll('[data-risk-select]').forEach(function(b){
-      b.onclick = function(){ currentProject = b.dataset.riskSelect; renderRisks(); };
+      b.onclick = function(){
+        if(window.ProjectContext) window.ProjectContext.setCurrent(b.dataset.riskSelect);
+        else { currentProject = b.dataset.riskSelect; renderRisks(); }
+      };
     });
     var addBtn = document.getElementById('riskAdd');
     if(addBtn) addBtn.onclick = function(){ addRisk(project); };
@@ -367,6 +371,12 @@
     window.switchTab = function(tab){
       var r = orig.apply(this, arguments);
       if(tab === 'risks') setTimeout(renderRisks, 100);
+	  if(window.ProjectContext){
+		window.ProjectContext.subscribe(function(){
+		 var active = document.querySelector('.section.active');
+		 if(active && active.id === 'risks') renderRisks();
+    });
+  }
       return r;
     };
   }

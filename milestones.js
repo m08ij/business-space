@@ -33,6 +33,7 @@
       el.innerHTML = '<div class="empty"><div class="ic">🎯</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
       return;
     }
+    if(window.ProjectContext){ window.ProjectContext.ensureValid(); currentProject = window.ProjectContext.getCurrent(); }
     if(!currentProject) currentProject = projects[0].id;
 
     var html = '<div class="controls">';
@@ -82,7 +83,10 @@
 
     // Bind
     el.querySelectorAll('[data-ms-select]').forEach(function(b){
-      b.onclick = function(){ currentProject = b.dataset.msSelect; renderMilestones(); };
+      b.onclick = function(){
+        if(window.ProjectContext) window.ProjectContext.setCurrent(b.dataset.msSelect);
+        else { currentProject = b.dataset.msSelect; renderMilestones(); }
+      };
     });
     var addBtn = document.getElementById('msAdd');
     if(addBtn) addBtn.onclick = function(){ addMilestone(project); };
@@ -221,23 +225,98 @@
     return html;
   }
 
-  function bindListActions(project){
-    document.querySelectorAll('[data-ms-edit]').forEach(function(el){
-      el.onclick = function(){ editMilestone(project, el.dataset.msEdit); };
-    });
-    document.querySelectorAll('[data-ms-edit2]').forEach(function(b){
-      b.onclick = function(){ editMilestone(project, b.dataset.msEdit2); };
-    });
-    document.querySelectorAll('[data-ms-del]').forEach(function(b){
-      b.onclick = function(){
-        window.customConfirm(tr('ms_delete_confirm'), function(){
-          project.milestones = project.milestones.filter(function(x){ return x.id !== b.dataset.msDel; });
-          if(window.saveSpace) window.saveSpace();
-          renderMilestones();
-          toast(tr('ms_deleted'), 'success');
-        });
-      };
-    });
+	function bindListActions(project){
+	  document.querySelectorAll('[data-ms-edit]').forEach(function(el){
+		el.onclick = function(){ editMilestone(project, el.dataset.msEdit); };
+	  });
+	  document.querySelectorAll('[data-ms-edit2]').forEach(function(b){
+		b.onclick = function(){ editMilestone(project, b.dataset.msEdit2); };
+	  });
+	  document.querySelectorAll('[data-ms-del]').forEach(function(b){
+		b.onclick = function(){
+		  var m = project.milestones.find(function(x){ return x.id === b.dataset.msDel; });
+		  var title = m ? m.title : '';
+		  window.customConfirm(
+			tr('ms_delete_title') + '\n\n' + tr('ms_delete_msg', {title: title}),
+			function(){
+			  project.milestones = project.milestones.filter(function(x){ return x.id !== b.dataset.msDel; });
+			  if(window.saveSpace) window.saveSpace();
+			  renderMilestones();
+			  toast(tr('ms_deleted'), 'success');
+			}
+		  );
+		};
+	  });
+
+	  /* ✅ استبدال prompt() بـ showModal */
+	  document.querySelectorAll('[data-ms-progress]').forEach(function(b){
+		b.onclick = function(){
+		  var m = project.milestones.find(function(x){ return x.id === b.dataset.msProgress; });
+		  if(!m) return;
+
+		  /* بناء modal مخصص بـ range slider + input */
+		  document.querySelectorAll('.modal-backdrop').forEach(function(x){ x.remove(); });
+		  var bd = document.createElement('div');
+		  bd.className = 'modal-backdrop show';
+		  var current = Math.max(0, Math.min(100, parseInt(m.progress) || 0));
+
+		  bd.innerHTML = '<div class="modal" style="max-width:460px">' +
+			'<h3>' + tr('ms_progress_title') + '</h3>' +
+			'<p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">' + esc(m.title) + '</p>' +
+			'<p style="font-size:.76rem;color:var(--muted2);margin-bottom:12px">' + tr('ms_progress_hint') + '</p>' +
+			'<div style="text-align:center;font-size:2.2rem;font-weight:800;color:var(--cyan);margin-bottom:12px" id="msProgBigVal">' + current + '%</div>' +
+			'<input type="range" min="0" max="100" value="' + current + '" id="msProgSlider" style="width:100%;margin-bottom:12px">' +
+			'<div class="form-group">' +
+			  '<label>' + tr('ms_progress_percent') + '</label>' +
+			  '<input type="number" min="0" max="100" value="' + current + '" id="msProgInput">' +
+			'</div>' +
+			'<div class="modal-actions">' +
+			  '<button class="btn btn-sm btn-ghost" id="msProgCancel">' + tr('cancel') + '</button>' +
+			  '<button class="btn btn-sm" id="msProgSave">' + tr('save') + '</button>' +
+			'</div>' +
+		  '</div>';
+		  document.body.appendChild(bd);
+
+		  var slider = bd.querySelector('#msProgSlider');
+		  var input = bd.querySelector('#msProgInput');
+		  var bigVal = bd.querySelector('#msProgBigVal');
+
+		  function syncValue(v){
+			v = Math.max(0, Math.min(100, parseInt(v) || 0));
+			slider.value = v;
+			input.value = v;
+			bigVal.textContent = v + '%';
+		  }
+		  slider.oninput = function(){ syncValue(slider.value); };
+		  input.oninput = function(){ syncValue(input.value); };
+
+		  var close = function(){ bd.remove(); };
+		  bd.querySelector('#msProgCancel').onclick = close;
+		  bd.onclick = function(e){ if(e.target === bd) close(); };
+
+		  bd.querySelector('#msProgSave').onclick = function(){
+			var n = Math.max(0, Math.min(100, parseInt(slider.value) || 0));
+			var wasNotComplete = m.progress !== 100;
+			m.progress = n;
+
+			if(n === 100 && m.status !== 'completed'){
+			  m.status = 'completed';
+			  if(wasNotComplete) toast(tr('ms_progress_auto_complete'), 'success');
+			} else if(n > 0 && n < 100 && m.status === 'not-started'){
+			  m.status = 'in-progress';
+			  toast(tr('ms_progress_auto_start'), 'info');
+			}
+
+			if(window.saveSpace) window.saveSpace();
+			renderMilestones();
+			toast(tr('ms_progress_updated'), 'success', 1200);
+			close();
+		  };
+
+		  setTimeout(function(){ slider.focus(); }, 100);
+		};
+	  });
+	}
     document.querySelectorAll('[data-ms-progress]').forEach(function(b){
       b.onclick = function(){
         var m = project.milestones.find(function(x){ return x.id === b.dataset.msProgress; });
@@ -328,7 +407,7 @@
       lines.push(status.icon + ' ' + m.title + ' (' + m.start + ' → ' + m.end + ') — ' + (m.progress || 0) + '%');
     });
     var text = lines.join('\n');
-    if(navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ toast(tr('copied'), 'success'); });
+	if(navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ toast(tr('ms_export_copied'), 'success'); });
     else alert(text);
   }
 
@@ -353,6 +432,12 @@
   window.renderMilestones = renderMilestones;
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
+    if(window.ProjectContext){
+    window.ProjectContext.subscribe(function(){
+      var active = document.querySelector('.section.active');
+      if(active && active.id === 'milestones') renderMilestones();
+    });
+  }
   else install();
   console.log('🎯 Milestones loaded');
 })();

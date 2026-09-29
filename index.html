@@ -361,6 +361,7 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
 <!-- Sidebar -->
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 <aside class="sidebar" id="sidebar">
+  <div class="nav-item" data-tab="hub"><span class="ic">🎯</span><span class="label" data-i18n="hub_title">لوحة المشروع</span></div>
   <div class="nav-item active" data-tab="dashboard"><span class="ic">📊</span><span class="label" data-i18n="nav_dashboard">لوحة التحكم</span></div>
   <div class="nav-section" data-i18n="nav_ideas_projects">الأفكار والمشاريع</div>
   <div class="nav-item" data-tab="ideas"><span class="ic">💡</span><span class="label" data-i18n="nav_ideas">أفكاري</span></div>
@@ -388,6 +389,15 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
 
 <!-- Main -->
 <main>
+  <!-- ✅ لوحة المشروع (sibling مستقل الآن) -->
+  <section id="hub" class="section">
+    <div class="page-head">
+      <h2 class="page-title" data-i18n="hub_title">🎯 لوحة المشروع</h2>
+      <p class="page-sub" data-i18n="hub_sub">كل شيء عن مشروعك في صفحة واحدة</p>
+    </div>
+    <div id="hubBody"></div>
+  </section>
+
   <section id="dashboard" class="section active">
     <div class="page-head">
       <h2 class="page-title" data-i18n="dash_title">📊 لوحة التحكم</h2>
@@ -530,13 +540,14 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
     <div id="digestBody"></div>
   </section>
 
-	<section id="archive" class="section">
-	  <div class="page-head">
-		<h2 class="page-title" data-i18n="archive_title">📦 الأرشيف</h2>
-		<p class="page-sub" data-i18n="archive_sub">مشاريعك المؤرشفة</p>
-	  </div>
-	  <div id="archiveBody"></div>
-	</section>
+  <section id="archive" class="section">
+    <div class="page-head">
+      <h2 class="page-title" data-i18n="archive_title">📦 الأرشيف</h2>
+      <p class="page-sub" data-i18n="archive_sub">مشاريعك المؤرشفة</p>
+    </div>
+    <div id="archiveBody"></div>
+  </section>
+
   <section id="countries" class="section">
     <div class="page-head"><h2 class="page-title" data-i18n="countries_title">🌍 الدول والأطر</h2>
       <p class="page-sub" data-i18n="countries_sub">مؤشرات دولية + مكتبة الأطر</p></div>
@@ -589,18 +600,36 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
 
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- ============ Scripts ============ -->
+<!-- ============================================================
+     SCRIPTS — ترتيب صحيح ومُحسَّن
+     ============================================================ -->
+
+<!-- 1) المكتبات الأساسية -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="supabase-client.js"></script>
 <script src="business-data.js"></script>
-<script src="i18n.js"></script>
 
-<!-- ✅ جديد: patch اللغة + الإصلاحات -->
+<!-- 2) i18n الأساسي + كل التصحيحات (مباشرة بعد i18n.js) -->
+<script src="i18n.js"></script>
 <script src="i18n-patch.js"></script>
+<script src="kb-i18n-patch.js"></script>
+<script src="i18n-extra.js"></script>
+<script src="i18n-finish.js"></script>
+<script src="translation-interceptor.js"></script>
+
+<!-- 3) Project Context — قبل أي module يستخدمه -->
+<script src="project-context.js"></script>
+
+<!-- 4) Knowledge Base + Wizard -->
+<script src="project-knowledge-base.js"></script>
+<script src="smart-project-wizard.js"></script>
+
+<!-- 5) الإصلاحات السريعة -->
 <script src="qc-fix.js"></script>
 <script src="fix-buttons.js"></script>
 
+<!-- 6) الموديولات الرئيسية -->
 <script src="ai-advisor.js"></script>
 <script src="strategy-builder.js"></script>
 <script src="idea-incubator.js"></script>
@@ -615,28 +644,32 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
 <script src="file-sync-plus.js"></script>
 <script src="insights.js"></script>
 <script src="calendar-sync.js"></script>
-<script src="widgets.js"></script>
-<script src="pwa.js"></script>
-<script src="countries-global.js"></script>
-<script src="country-patch.js"></script>
-<script src="translation-interceptor.js"></script>
+
+<!-- 7) Archive + Demo + Classifier -->
 <script src="archive.js"></script>
 <script src="demo-project.js"></script>
-<script src="kb-i18n-patch.js"></script>           <!-- ✅ جديد -->
-<script src="project-knowledge-base.js"></script>  <!-- ✅ جديد -->
-<script src="smart-project-wizard.js"></script>
-<script src="project-classifier.js"></script>       <!-- ✅ جديد — بعد الأفكار -->
+<script src="project-classifier.js"></script>
 
-<script>
-/* ... existing inline boot script ... */
-</script>
+<!-- 8) الدول -->
+<script src="countries-global.js"></script>
+<script src="country-patch.js"></script>
 
+<!-- 9) Widgets + PWA -->
+<script src="widgets.js"></script>
+<script src="pwa.js"></script>
+
+<!-- 10) Hub + Undo + Keyboard + Perf (مرة واحدة فقط!) -->
+<script src="project-hub.js"></script>
+<script src="undo-stack.js"></script>
+<script src="keyboard-shortcuts.js"></script>
+<script src="perf-boost.js"></script>
+
+<!-- 11) السكربت الرئيسي (boot) -->
 <script>
 /* ==================== HELPERS ==================== */
 function tr(key, params){ return window.t ? window.t(key, params) : key; }
 
 /* ==================== STORAGE (PREFIXED) ==================== */
-/* كل مفاتيح التطبيق الجديد تبدأ بـ bd_ لتجنب التعارض مع التطبيقات الأخرى على نفس الدومين */
 var STORAGE_PREFIX = 'bd_';
 
 var space = null;
@@ -835,6 +868,7 @@ var defaultSpace = {
   notes: [],
   budget: [],
   stakeholders: [],
+  archive: [],
   leadershipAssessment: null,
   projectFiles: {}
 };
@@ -846,14 +880,14 @@ function loadAllData(){
     if(raw && typeof raw === 'object' && !Array.isArray(raw)) space = Object.assign({}, defaultSpace, raw);
     else space = Object.assign({}, defaultSpace);
   }catch(e){ space = Object.assign({}, defaultSpace); }
-  ['ideas','projects','salesPipeline','tasks','budget','stakeholders'].forEach(function(k){
+  ['ideas','projects','salesPipeline','tasks','budget','stakeholders','archive'].forEach(function(k){
     if(!Array.isArray(space[k])) space[k] = [];
   });
   try{ notes = S.get('notes', []); if(!Array.isArray(notes)) notes = []; }catch(e){ notes = []; }
   if(!space.notes) space.notes = notes;
 }
 var _saveDebounceTimer = null;
-function saveSpace(){ 
+function saveSpace(){
   S.set('space', space);
   clearTimeout(_saveDebounceTimer);
   _saveDebounceTimer = setTimeout(function(){
@@ -919,7 +953,8 @@ function switchTab(tab, pushHistory){
     stakeholders: renderStakeholders,
     milestones: window.renderMilestones,
     risks: window.renderRisks,
-    digest: window.renderDigest
+    digest: window.renderDigest,
+    hub: window.renderHub
   };
   if(fns[tab]){ try{ fns[tab](); }catch(e){ console.error('Render error:', tab, e); } }
   requestAnimationFrame(function(){
@@ -1323,7 +1358,6 @@ function renderStakeholders(){
   });
 }
 function addStakeholder(){
-  /* بناء قائمة المشاريع المتاحة */
   var projectOpts = [{v:'', l: tr('sh_no_project') || '—'}];
   (space.projects || []).forEach(function(p){
     projectOpts.push({ v: p.id, l: p.name });
