@@ -392,7 +392,7 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
   <!-- ✅ لوحة المشروع (sibling مستقل الآن) -->
   <section id="hub" class="section">
     <div class="page-head">
-      <h2 class="page-title" data-i18n="hub_title">🎯 لوحة المشروع</h2>
+	<h2 class="page-title"><span style="margin-inline-end:6px">🎯</span><span data-i18n="hub_title">لوحة المشروع</span></h2>
       <p class="page-sub" data-i18n="hub_sub">كل شيء عن مشروعك في صفحة واحدة</p>
     </div>
     <div id="hubBody"></div>
@@ -954,6 +954,7 @@ function switchTab(tab, pushHistory){
     milestones: window.renderMilestones,
     risks: window.renderRisks,
     digest: window.renderDigest,
+    archive: window.renderArchive,
     hub: window.renderHub
   };
   if(fns[tab]){ try{ fns[tab](); }catch(e){ console.error('Render error:', tab, e); } }

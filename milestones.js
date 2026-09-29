@@ -1,6 +1,8 @@
 /* ============================================================
-   🎯 milestones.js — Milestone Timeline Visualization
-   خط زمني مرئي للمشاريع مع Gantt Chart
+   🎯 milestones.js — Milestone Timeline Visualization (FIXED v2)
+   ✅ إصلاح: حذف الكود المكرر (كان يسبب Syntax Error)
+   ✅ إصلاح: slice() قبل sort
+   ✅ إصلاح: install logic + ProjectContext subscribe
    ============================================================ */
 (function(){
   'use strict';
@@ -13,7 +15,6 @@
 
   var currentProject = null;
 
-  /* ============ الحالات ============ */
   var STATUS = {
     'not-started': {name:'لم تبدأ',      nameEn:'Not Started', icon:'⏸️', color:'var(--muted)'},
     'in-progress': {name:'جارية',        nameEn:'In Progress', icon:'▶️', color:'var(--cyan)'},
@@ -22,7 +23,7 @@
     'on-hold':     {name:'معلّقة',       nameEn:'On Hold',     icon:'⏸️', color:'var(--amber)'}
   };
 
-  /* ============ الرسم الرئيسي ============ */
+  /* ============ Main ============ */
   function renderMilestones(){
     var el = document.getElementById('milestonesBody');
     if(!el) return;
@@ -48,7 +49,6 @@
 
     if(!Array.isArray(project.milestones)) project.milestones = [];
 
-    // Header with stats
     var stats = computeStats(project.milestones);
     html += '<div class="grid grid-4" style="margin-bottom:16px">' +
       '<div class="stat"><div class="ic">🎯</div><div><div class="v">' + stats.total + '</div><div class="l">' + tr('ms_total') + '</div></div></div>' +
@@ -57,21 +57,18 @@
       '<div class="stat"><div class="ic">⚠️</div><div><div class="v">' + stats.delayed + '</div><div class="l">' + tr('ms_delayed') + '</div></div></div>' +
     '</div>';
 
-    // Toolbar
     html += '<div class="controls">' +
       '<button class="btn" id="msAdd">' + tr('ms_add') + '</button>' +
       '<button class="btn btn-ghost" id="msExport">📤 ' + tr('export') + '</button>' +
       '<button class="btn btn-ghost" id="msPrint">🖨️ ' + tr('ms_print') + '</button>' +
     '</div>';
 
-    // Gantt chart
     if(!project.milestones.length){
       html += '<div class="empty"><div class="ic">🎯</div><p>' + tr('ms_empty') + '</p><p class="sub">' + tr('ms_empty_sub') + '</p></div>';
     } else {
       html += renderGantt(project.milestones);
     }
 
-    // List (cards)
     if(project.milestones.length){
       html += '<div style="margin-top:20px">';
       html += '<h3 style="font-size:.95rem;margin-bottom:12px;color:var(--cyan)">' + tr('ms_details') + '</h3>';
@@ -81,7 +78,6 @@
 
     el.innerHTML = html;
 
-    // Bind
     el.querySelectorAll('[data-ms-select]').forEach(function(b){
       b.onclick = function(){
         if(window.ProjectContext) window.ProjectContext.setCurrent(b.dataset.msSelect);
@@ -117,40 +113,32 @@
     if(!dates.length) return '';
     var minDate = new Date(Math.min.apply(null, dates));
     var maxDate = new Date(Math.max.apply(null, dates));
-    // padding: 3 days
     minDate = new Date(minDate.getTime() - 3 * 86400000);
     maxDate = new Date(maxDate.getTime() + 3 * 86400000);
     var totalDays = Math.max(1, Math.ceil((maxDate - minDate) / 86400000));
 
-    // generate month/day headers
     var days = [];
     for(var i = 0; i < totalDays; i++){
-      var d = new Date(minDate.getTime() + i * 86400000);
-      days.push(d);
+      days.push(new Date(minDate.getTime() + i * 86400000));
     }
 
     var html = '<div class="card" style="overflow-x:auto;padding:16px">' +
       '<div style="font-weight:800;font-size:.9rem;margin-bottom:12px;color:var(--cyan)">📊 ' + tr('ms_gantt') + '</div>' +
       '<div style="min-width:' + Math.max(600, totalDays * 40) + 'px;position:relative">';
 
-    // Header (dates)
     html += '<div style="display:flex;gap:0;border-bottom:2px solid var(--border);padding-bottom:8px;margin-bottom:12px">';
     html += '<div style="min-width:180px;font-weight:700;font-size:.75rem;color:var(--muted)">' + tr('ms_task') + '</div>';
     html += '<div style="flex:1;position:relative;display:flex">';
-    var lastMonth = null;
     days.forEach(function(d, i){
-      var m = d.getMonth() + 1;
-      var showLabel = false;
-      if(d.getDate() === 1 || i === 0 || d.getDate() % 7 === 0) showLabel = true;
+      var showLabel = (d.getDate() === 1 || i === 0 || d.getDate() % 7 === 0);
       html += '<div style="flex:1;min-width:40px;text-align:center;font-size:.62rem;color:var(--muted)">' +
         (showLabel ? '<div>' + d.getDate() + '</div>' : '') +
       '</div>';
     });
     html += '</div></div>';
 
-    // Rows
-    milestones.forEach(function(m, idx){
-      if(!m.start || !m.end){ 
+    milestones.forEach(function(m){
+      if(!m.start || !m.end){
         html += '<div style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);font-size:.78rem">' +
           '<div style="min-width:180px;padding-inline-end:10px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(m.title) + '</div>' +
           '<div style="flex:1;color:var(--muted2);font-style:italic">' + tr('ms_no_dates') + '</div></div>';
@@ -183,11 +171,11 @@
     return html;
   }
 
-  /* ============ List ============ */
+  /* ============ List (FIXED: slice before sort) ============ */
   function renderList(milestones){
     var html = '';
-    milestones.sort(function(a,b){ return (a.start || '').localeCompare(b.start || ''); });
-    milestones.forEach(function(m){
+    var sorted = milestones.slice().sort(function(a,b){ return (a.start || '').localeCompare(b.start || ''); });
+    sorted.forEach(function(m){
       var status = STATUS[m.status] || STATUS['not-started'];
       var lang = window.i18n ? window.i18n.getLang() : 'ar';
       var statusLabel = lang === 'en' ? status.nameEn : status.name;
@@ -225,110 +213,94 @@
     return html;
   }
 
-	function bindListActions(project){
-	  document.querySelectorAll('[data-ms-edit]').forEach(function(el){
-		el.onclick = function(){ editMilestone(project, el.dataset.msEdit); };
-	  });
-	  document.querySelectorAll('[data-ms-edit2]').forEach(function(b){
-		b.onclick = function(){ editMilestone(project, b.dataset.msEdit2); };
-	  });
-	  document.querySelectorAll('[data-ms-del]').forEach(function(b){
-		b.onclick = function(){
-		  var m = project.milestones.find(function(x){ return x.id === b.dataset.msDel; });
-		  var title = m ? m.title : '';
-		  window.customConfirm(
-			tr('ms_delete_title') + '\n\n' + tr('ms_delete_msg', {title: title}),
-			function(){
-			  project.milestones = project.milestones.filter(function(x){ return x.id !== b.dataset.msDel; });
-			  if(window.saveSpace) window.saveSpace();
-			  renderMilestones();
-			  toast(tr('ms_deleted'), 'success');
-			}
-		  );
-		};
-	  });
+  /* ============ Bind (CLEANED — no orphan code) ============ */
+  function bindListActions(project){
+    document.querySelectorAll('[data-ms-edit]').forEach(function(el){
+      el.onclick = function(){ editMilestone(project, el.dataset.msEdit); };
+    });
+    document.querySelectorAll('[data-ms-edit2]').forEach(function(b){
+      b.onclick = function(){ editMilestone(project, b.dataset.msEdit2); };
+    });
+    document.querySelectorAll('[data-ms-del]').forEach(function(b){
+      b.onclick = function(){
+        var m = project.milestones.find(function(x){ return x.id === b.dataset.msDel; });
+        var title = m ? m.title : '';
+        window.customConfirm(
+          tr('ms_delete_title') + '\n\n' + tr('ms_delete_msg', {title: title}),
+          function(){
+            project.milestones = project.milestones.filter(function(x){ return x.id !== b.dataset.msDel; });
+            if(window.saveSpace) window.saveSpace();
+            renderMilestones();
+            toast(tr('ms_deleted'), 'success');
+          }
+        );
+      };
+    });
 
-	  /* ✅ استبدال prompt() بـ showModal */
-	  document.querySelectorAll('[data-ms-progress]').forEach(function(b){
-		b.onclick = function(){
-		  var m = project.milestones.find(function(x){ return x.id === b.dataset.msProgress; });
-		  if(!m) return;
-
-		  /* بناء modal مخصص بـ range slider + input */
-		  document.querySelectorAll('.modal-backdrop').forEach(function(x){ x.remove(); });
-		  var bd = document.createElement('div');
-		  bd.className = 'modal-backdrop show';
-		  var current = Math.max(0, Math.min(100, parseInt(m.progress) || 0));
-
-		  bd.innerHTML = '<div class="modal" style="max-width:460px">' +
-			'<h3>' + tr('ms_progress_title') + '</h3>' +
-			'<p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">' + esc(m.title) + '</p>' +
-			'<p style="font-size:.76rem;color:var(--muted2);margin-bottom:12px">' + tr('ms_progress_hint') + '</p>' +
-			'<div style="text-align:center;font-size:2.2rem;font-weight:800;color:var(--cyan);margin-bottom:12px" id="msProgBigVal">' + current + '%</div>' +
-			'<input type="range" min="0" max="100" value="' + current + '" id="msProgSlider" style="width:100%;margin-bottom:12px">' +
-			'<div class="form-group">' +
-			  '<label>' + tr('ms_progress_percent') + '</label>' +
-			  '<input type="number" min="0" max="100" value="' + current + '" id="msProgInput">' +
-			'</div>' +
-			'<div class="modal-actions">' +
-			  '<button class="btn btn-sm btn-ghost" id="msProgCancel">' + tr('cancel') + '</button>' +
-			  '<button class="btn btn-sm" id="msProgSave">' + tr('save') + '</button>' +
-			'</div>' +
-		  '</div>';
-		  document.body.appendChild(bd);
-
-		  var slider = bd.querySelector('#msProgSlider');
-		  var input = bd.querySelector('#msProgInput');
-		  var bigVal = bd.querySelector('#msProgBigVal');
-
-		  function syncValue(v){
-			v = Math.max(0, Math.min(100, parseInt(v) || 0));
-			slider.value = v;
-			input.value = v;
-			bigVal.textContent = v + '%';
-		  }
-		  slider.oninput = function(){ syncValue(slider.value); };
-		  input.oninput = function(){ syncValue(input.value); };
-
-		  var close = function(){ bd.remove(); };
-		  bd.querySelector('#msProgCancel').onclick = close;
-		  bd.onclick = function(e){ if(e.target === bd) close(); };
-
-		  bd.querySelector('#msProgSave').onclick = function(){
-			var n = Math.max(0, Math.min(100, parseInt(slider.value) || 0));
-			var wasNotComplete = m.progress !== 100;
-			m.progress = n;
-
-			if(n === 100 && m.status !== 'completed'){
-			  m.status = 'completed';
-			  if(wasNotComplete) toast(tr('ms_progress_auto_complete'), 'success');
-			} else if(n > 0 && n < 100 && m.status === 'not-started'){
-			  m.status = 'in-progress';
-			  toast(tr('ms_progress_auto_start'), 'info');
-			}
-
-			if(window.saveSpace) window.saveSpace();
-			renderMilestones();
-			toast(tr('ms_progress_updated'), 'success', 1200);
-			close();
-		  };
-
-		  setTimeout(function(){ slider.focus(); }, 100);
-		};
-	  });
-	}
     document.querySelectorAll('[data-ms-progress]').forEach(function(b){
       b.onclick = function(){
         var m = project.milestones.find(function(x){ return x.id === b.dataset.msProgress; });
         if(!m) return;
-        var val = prompt(tr('ms_progress_prompt'), m.progress || 0);
-        if(val === null) return;
-        var n = Math.max(0, Math.min(100, parseInt(val) || 0));
-        m.progress = n;
-        if(n === 100) m.status = 'completed';
-        else if(n > 0 && m.status === 'not-started') m.status = 'in-progress';
-        if(window.saveSpace) window.saveSpace();
-        renderMilestones();
+
+        document.querySelectorAll('.modal-backdrop').forEach(function(x){ x.remove(); });
+        var bd = document.createElement('div');
+        bd.className = 'modal-backdrop show';
+        var current = Math.max(0, Math.min(100, parseInt(m.progress) || 0));
+
+        bd.innerHTML = '<div class="modal" style="max-width:460px">' +
+          '<h3>' + tr('ms_progress_title') + '</h3>' +
+          '<p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">' + esc(m.title) + '</p>' +
+          '<p style="font-size:.76rem;color:var(--muted2);margin-bottom:12px">' + tr('ms_progress_hint') + '</p>' +
+          '<div style="text-align:center;font-size:2.2rem;font-weight:800;color:var(--cyan);margin-bottom:12px" id="msProgBigVal">' + current + '%</div>' +
+          '<input type="range" min="0" max="100" value="' + current + '" id="msProgSlider" style="width:100%;margin-bottom:12px">' +
+          '<div class="form-group">' +
+            '<label>' + tr('ms_progress_percent') + '</label>' +
+            '<input type="number" min="0" max="100" value="' + current + '" id="msProgInput">' +
+          '</div>' +
+          '<div class="modal-actions">' +
+            '<button class="btn btn-sm btn-ghost" id="msProgCancel">' + tr('cancel') + '</button>' +
+            '<button class="btn btn-sm" id="msProgSave">' + tr('save') + '</button>' +
+          '</div>' +
+        '</div>';
+        document.body.appendChild(bd);
+
+        var slider = bd.querySelector('#msProgSlider');
+        var input = bd.querySelector('#msProgInput');
+        var bigVal = bd.querySelector('#msProgBigVal');
+
+        function syncValue(v){
+          v = Math.max(0, Math.min(100, parseInt(v) || 0));
+          slider.value = v;
+          input.value = v;
+          bigVal.textContent = v + '%';
+        }
+        slider.oninput = function(){ syncValue(slider.value); };
+        input.oninput = function(){ syncValue(input.value); };
+
+        var close = function(){ bd.remove(); };
+        bd.querySelector('#msProgCancel').onclick = close;
+        bd.onclick = function(e){ if(e.target === bd) close(); };
+
+        bd.querySelector('#msProgSave').onclick = function(){
+          var n = Math.max(0, Math.min(100, parseInt(slider.value) || 0));
+          var wasNotComplete = m.progress !== 100;
+          m.progress = n;
+
+          if(n === 100 && m.status !== 'completed'){
+            m.status = 'completed';
+            if(wasNotComplete) toast(tr('ms_progress_auto_complete'), 'success');
+          } else if(n > 0 && n < 100 && m.status === 'not-started'){
+            m.status = 'in-progress';
+            toast(tr('ms_progress_auto_start'), 'info');
+          }
+
+          if(window.saveSpace) window.saveSpace();
+          renderMilestones();
+          toast(tr('ms_progress_updated'), 'success', 1200);
+          close();
+        };
+
+        setTimeout(function(){ slider.focus(); }, 100);
       };
     });
   }
@@ -407,7 +379,7 @@
       lines.push(status.icon + ' ' + m.title + ' (' + m.start + ' → ' + m.end + ') — ' + (m.progress || 0) + '%');
     });
     var text = lines.join('\n');
-	if(navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ toast(tr('ms_export_copied'), 'success'); });
+    if(navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ toast(tr('ms_export_copied'), 'success'); });
     else alert(text);
   }
 
@@ -424,7 +396,7 @@
     };
   }
 
-  document.addEventListener('languagechange', function(){ 
+  document.addEventListener('languagechange', function(){
     var active = document.querySelector('.section.active');
     if(active && active.id === 'milestones') renderMilestones();
   });
@@ -432,12 +404,14 @@
   window.renderMilestones = renderMilestones;
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
-    if(window.ProjectContext){
+  else install();
+
+  if(window.ProjectContext){
     window.ProjectContext.subscribe(function(){
       var active = document.querySelector('.section.active');
       if(active && active.id === 'milestones') renderMilestones();
     });
   }
-  else install();
-  console.log('🎯 Milestones loaded');
+
+  console.log('🎯 Milestones loaded (FIXED v2)');
 })();

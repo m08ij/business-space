@@ -1,7 +1,7 @@
 /* ============================================================
-   ⌨️ keyboard-shortcuts.js — اختصارات لوحة المفاتيح
-   ✅ Ctrl+K: بحث  |  Ctrl+S: حفظ  |  Esc: إغلاق
-   ✅ Ctrl+Z: تراجع  |  ?: قائمة المساعدة
+   ⌨️ keyboard-shortcuts.js — اختصارات لوحة المفاتيح (FIXED v2)
+   ✅ حذف Ctrl+Z (مُدار في undo-stack.js لتجنب التنفيذ المزدوج)
+   ✅ تبسيط منطق مطابقة الاختصارات
    ============================================================ */
 (function(){
   'use strict';
@@ -11,7 +11,6 @@
   var SHORTCUTS = [
     { keys: 'Ctrl + K', label: 'kb_search',    action: searchFocus },
     { keys: 'Ctrl + S', label: 'kb_save',      action: saveAll },
-    { keys: 'Ctrl + Z', label: 'kb_undo',      action: undoAction },
     { keys: 'Esc',      label: 'kb_escape',    action: closeAll },
     { keys: 'N',        label: 'kb_new_idea',  action: newIdea },
     { keys: 'T',        label: 'kb_new_task',  action: newTask },
@@ -23,6 +22,16 @@
     { keys: '?',        label: 'kb_help',      action: showHelp }
   ];
 
+  var SINGLE_KEY_MAP = {
+    'n': newIdea,
+    't': newTask,
+    'w': newWizard,
+    'h': goHub,
+    'd': function(){ go('dashboard'); },
+    'i': function(){ go('ideas'); },
+    'r': function(){ go('roadmap'); }
+  };
+
   function searchFocus(){
     var s = document.getElementById('searchInput');
     if(s){ s.focus(); s.select(); }
@@ -31,7 +40,6 @@
     if(window.saveSpace) window.saveSpace();
     toast(tr('toast_saved_cloud') || '✓ Saved', 'success', 1200);
   }
-  function undoAction(){ if(window.Undo) window.Undo.undo(); }
   function closeAll(){
     document.querySelectorAll('.modal-backdrop').forEach(function(m){ m.remove(); });
     var sm = document.getElementById('settingsMenu'); if(sm) sm.classList.remove('show');
@@ -86,35 +94,28 @@
   }
 
   document.addEventListener('keydown', function(e){
-    /* Ctrl+K / Ctrl+S / Ctrl+Z */
+    /* Ctrl+K / Ctrl+S — Ctrl+Z مُدار في undo-stack.js */
     if(e.ctrlKey || e.metaKey){
       if(e.key === 'k' || e.key === 'K'){ e.preventDefault(); searchFocus(); return; }
       if(e.key === 's' || e.key === 'S'){ e.preventDefault(); saveAll(); return; }
-      if(e.key === 'z' || e.key === 'Z'){ e.preventDefault(); undoAction(); return; }
       return;
     }
 
-    /* Esc */
     if(e.key === 'Escape'){ closeAll(); return; }
 
-    /* ? */
     if(e.key === '?' || (e.shiftKey && e.key === '/')){ e.preventDefault(); showHelp(); return; }
 
-    /* حرف واحد فقط، بدون Ctrl/Alt، وغير داخل input */
     if(e.altKey) return;
     if(isTyping(e)) return;
     if(e.key.length !== 1) return;
 
     var k = e.key.toLowerCase();
-    var found = SHORTCUTS.find(function(s){
-      return s.keys.toLowerCase() === k || s.keys === e.key;
-    });
-    if(found && ['n','t','w','h','d','i','r'].indexOf(k) > -1){
+    if(SINGLE_KEY_MAP[k]){
       e.preventDefault();
-      found.action();
+      SINGLE_KEY_MAP[k]();
     }
   });
 
   window.KeyboardShortcuts = { showHelp: showHelp };
-  console.log('⌨️ Keyboard Shortcuts loaded');
+  console.log('⌨️ Keyboard Shortcuts loaded (FIXED v2)');
 })();

@@ -1,6 +1,7 @@
 /* ============================================================
-   📧 email-digest.js — Email Digest
-   قائمة الإيميلات + CC + جدولة + معاينة + إرسال
+   📧 email-digest.js — Email Digest (FIXED v2 — UTF-8)
+   ✅ قائمة الإيميلات + CC + جدولة + معاينة + إرسال
+   ✅ استخدام Web3Forms للإرسال الفعلي
    ============================================================ */
 (function(){
   'use strict';
@@ -11,6 +12,9 @@
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function uid(){ return 'em_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
+  /* ⚠️ استبدل المفتاح بمفتاحك من web3forms.com */
+  var WEB3FORMS_KEY = '34fa175f-f38c-4b19-9453-33e4b48de936';
+
   function ensureDigest(){
     var sp = getSpace();
     if(!sp.emailDigest){
@@ -18,13 +22,12 @@
         recipients: [],
         cc: [],
         subjectTemplate: 'Business Dev Digest — {date}',
-        schedule: 'weekly', // daily | weekly | monthly | manual
+        schedule: 'weekly',
         sections: ['tasks', 'projects', 'sales', 'budget', 'risks'],
         includeStats: true,
         lastSent: null
       };
     }
-    // normalize
     if(!Array.isArray(sp.emailDigest.recipients)) sp.emailDigest.recipients = [];
     if(!Array.isArray(sp.emailDigest.cc)) sp.emailDigest.cc = [];
     if(!Array.isArray(sp.emailDigest.sections)) sp.emailDigest.sections = ['tasks', 'projects', 'sales', 'budget'];
@@ -35,11 +38,10 @@
     var el = document.getElementById('digestBody');
     if(!el) return;
     var d = ensureDigest();
-    var lang = window.i18n ? window.i18n.getLang() : 'ar';
 
     var html = '';
 
-    // Info card
+    /* بطاقة الإعدادات */
     html += '<div class="card" style="margin-bottom:16px">' +
       '<div class="card-head"><h3>📧 ' + tr('digest_title') + '</h3></div>' +
       '<p style="font-size:.83rem;color:var(--muted);line-height:1.7;margin-bottom:14px">' + tr('digest_desc') + '</p>' +
@@ -58,22 +60,22 @@
       '</div>' +
     '</div>';
 
-    // Sections
+    /* الأقسام */
     var allSections = [
-      {k:'tasks',    l: tr('digest_sec_tasks'),    i:'📝'},
-      {k:'projects', l: tr('digest_sec_projects'), i:'💼'},
-      {k:'sales',    l: tr('digest_sec_sales'),    i:'💰'},
-      {k:'budget',   l: tr('digest_sec_budget'),   i:'💵'},
-      {k:'risks',    l: tr('digest_sec_risks'),    i:'⚠️'},
-      {k:'milestones',l: tr('digest_sec_milestones'),i:'🎯'},
-      {k:'notes',    l: tr('digest_sec_notes'),    i:'📔'}
+      {k:'tasks',      l: tr('digest_sec_tasks'),      i:'📝'},
+      {k:'projects',   l: tr('digest_sec_projects'),   i:'💼'},
+      {k:'sales',      l: tr('digest_sec_sales'),      i:'💰'},
+      {k:'budget',     l: tr('digest_sec_budget'),     i:'💵'},
+      {k:'risks',      l: tr('digest_sec_risks'),      i:'⚠️'},
+      {k:'milestones', l: tr('digest_sec_milestones'), i:'🎯'},
+      {k:'notes',      l: tr('digest_sec_notes'),      i:'📔'}
     ];
     html += '<div class="card" style="margin-bottom:16px">' +
       '<div class="card-head"><h3>📋 ' + tr('digest_sections') + '</h3></div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">';
     allSections.forEach(function(s){
       var checked = d.sections.indexOf(s.k) > -1;
-      html += '<label style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;cursor:pointer" data-digest-section="' + s.k + '">' +
+      html += '<label style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;cursor:pointer">' +
         '<input type="checkbox" data-digest-sec="' + s.k + '" ' + (checked ? 'checked' : '') + ' style="width:18px;height:18px;accent-color:var(--cyan);cursor:pointer">' +
         '<span style="font-size:1.1rem">' + s.i + '</span>' +
         '<span style="font-size:.85rem;font-weight:600">' + s.l + '</span>' +
@@ -81,7 +83,7 @@
     });
     html += '</div></div>';
 
-    // Recipients
+    /* المستلمون */
     html += '<div class="card" style="margin-bottom:16px">' +
       '<div class="card-head"><h3>👥 ' + tr('digest_recipients') + ' (' + d.recipients.length + ')</h3>' +
         '<button class="btn btn-sm" id="digestAddRecipient">' + tr('digest_add_recipient') + '</button></div>';
@@ -104,7 +106,7 @@
     }
     html += '</div>';
 
-    // CC
+    /* CC */
     html += '<div class="card" style="margin-bottom:16px">' +
       '<div class="card-head"><h3>📎 CC (' + d.cc.length + ')</h3>' +
         '<button class="btn btn-sm btn-ghost" id="digestAddCC">' + tr('digest_add_cc') + '</button></div>';
@@ -127,7 +129,7 @@
     }
     html += '</div>';
 
-    // Preview & Actions
+    /* المعاينة والإجراءات */
     html += '<div class="card">' +
       '<div class="card-head"><h3>👁️ ' + tr('digest_preview') + '</h3>' +
         '<button class="btn btn-sm btn-ghost" id="digestRefreshPreview">🔄 ' + tr('digest_refresh') + '</button></div>' +
@@ -140,7 +142,7 @@
 
     el.innerHTML = html;
 
-    // Bindings
+    /* Bindings */
     var sched = document.getElementById('digestSchedule');
     if(sched) sched.onchange = function(){ d.schedule = sched.value; if(window.saveSpace) window.saveSpace(); toast(tr('digest_saved'), 'success', 1200); };
     var subj = document.getElementById('digestSubject');
@@ -243,13 +245,12 @@
     var lang = window.i18n ? window.i18n.getLang() : 'ar';
     var name = (sp.profile && sp.profile.name) || '';
     var lines = [];
-    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     lines.push('💼 ' + tr('brand') + (name ? ' — ' + name : ''));
     lines.push('📅 ' + new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'}));
-    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     lines.push('');
 
-    // Stats summary
     if(d.includeStats){
       var projects = (sp.projects || []).length;
       var pendingTasks = (sp.tasks || []).filter(function(t){ return !t.done; }).length;
@@ -261,14 +262,12 @@
       lines.push('');
     }
 
-    // Sections
     if(d.sections.indexOf('tasks') > -1){
       var pending = (sp.tasks || []).filter(function(t){ return !t.done; }).slice(0, 10);
       if(pending.length){
         lines.push('📝 ' + tr('digest_sec_tasks') + ':');
         pending.forEach(function(t){
-          var due = t.due ? ' (' + t.due + ')' : '';
-          lines.push('  • ' + t.title + due);
+          lines.push('  • ' + t.title + (t.due ? ' (' + t.due + ')' : ''));
         });
         lines.push('');
       }
@@ -356,7 +355,7 @@
       }
     }
 
-    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     lines.push('💼 ' + tr('brand') + ' — ' + tr('digest_footer'));
     return lines.join('\n');
   }
@@ -367,11 +366,7 @@
       return toast(tr('digest_no_recipients'), 'warn', 2500);
     }
 
-    /* Web3Forms Access Key — استبدله بمفتاحك */
-    var WEB3FORMS_KEY = '34fa175f-f38c-4b19-9453-33e4b48de936';
-
-    if(WEB3FORMS_KEY === '34fa175f-f38c-4b19-9453-33e4b48de936' || !WEB3FORMS_KEY){
-      /* Fallback إلى mailto إذا لم يُضبط المفتاح */
+    if(!WEB3FORMS_KEY || WEB3FORMS_KEY.indexOf('REPLACE') > -1){
       return sendViaMailto(d);
     }
 
@@ -381,16 +376,16 @@
     var subject = d.subjectTemplate.replace('{date}', new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US'));
     var body = buildEmailBody();
 
-	var payload = {
-	  access_key: WEB3FORMS_KEY,
-	  subject: subject,
-	  from_name: tr('brand'),                    // اسمك الظاهر
-	  replyto: (window.space && window.space.profile && window.space.profile.email) || '',  // ✅ بريدك
-	  to: to,
-	  cc: cc || undefined,
-	  message: body,
-	  botcheck: false
-	};
+    var payload = {
+      access_key: WEB3FORMS_KEY,
+      subject: subject,
+      from_name: tr('brand'),
+      replyto: (window.space && window.space.profile && window.space.profile.email) || '',
+      to: to,
+      cc: cc || undefined,
+      message: body,
+      botcheck: false
+    };
 
     var sendBtn = document.getElementById('digestSend');
     if(sendBtn){ sendBtn.disabled = true; sendBtn.textContent = '⏳ ' + (lang === 'en' ? 'Sending...' : 'جاري الإرسال...'); }
@@ -459,5 +454,5 @@
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
-  console.log('📧 Email Digest loaded');
+  console.log('📧 Email Digest loaded (FIXED v2 — UTF-8)');
 })();

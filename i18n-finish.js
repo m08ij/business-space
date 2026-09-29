@@ -1,5 +1,7 @@
 /* ============================================================
-   🌍 i18n-finish.js — ترجمة نهائية لكل النصوص الصلبة المتبقية
+   🌍 i18n-finish.js — ترجمة نهائية (FIXED v2)
+   ✅ إصلاح hub_title (حذف الإيموجي المكرر)
+   ✅ إضافة more + ca_outputs_label
    ============================================================ */
 (function(){
   'use strict';
@@ -55,6 +57,7 @@
     ca_desc_label: 'الوصف',
     ca_when_label: 'متى يُستخدم',
     ca_steps_label: 'الخطوات/المكونات (كل خطوة في سطر)',
+    ca_outputs_label: 'المخرجات',
     ca_source_label: 'المصدر'
   });
   Object.assign(EN, {
@@ -104,6 +107,7 @@
     ca_desc_label: 'Description',
     ca_when_label: 'When to use',
     ca_steps_label: 'Steps (one per line)',
+    ca_outputs_label: 'Outputs',
     ca_source_label: 'Source'
   });
 
@@ -265,7 +269,7 @@
 
   /* ============ Project Hub ============ */
   Object.assign(AR, {
-    hub_title: '🎯 لوحة المشروع',
+    hub_title: 'لوحة المشروع',
     hub_sub: 'كل شيء عن مشروعك في صفحة واحدة',
     hub_no_project: 'لا يوجد مشروع محدد',
     hub_no_project_sub: 'اختر مشروعاً من الأعلى',
@@ -303,7 +307,7 @@
     hub_risk_heat: 'حرارة المخاطر'
   });
   Object.assign(EN, {
-    hub_title: '🎯 Project Hub',
+    hub_title: 'Project Hub',
     hub_sub: 'Everything about your project in one place',
     hub_no_project: 'No project selected',
     hub_no_project_sub: 'Select a project above',
@@ -341,5 +345,17 @@
     hub_risk_heat: 'Risk Heat'
   });
 
-  console.log('🌍 i18n-finish loaded — +180 keys');
+  /* ============ إضافات عامة ============ */
+  Object.assign(AR, {
+    more: 'أكثر',
+    sh_project: 'المشروع المرتبط',
+    sh_no_project: '— بدون —'
+  });
+  Object.assign(EN, {
+    more: 'more',
+    sh_project: 'Linked Project',
+    sh_no_project: '— None —'
+  });
+
+  console.log('🌍 i18n-finish loaded — FIXED v2');
 })();

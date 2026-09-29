@@ -17,11 +17,9 @@
     var projects = sp.projects || [];
 
     if(!projects.length){
-      var tr = window.t || function(k){ return k; };
-el.innerHTML = '<div class="empty"><div class="ic">📈</div><p>' + tr('impact_no_projects') + '</p><p class="sub">' + tr('impact_no_projects_sub') + '</p></div>';
+      el.innerHTML = '<div class="empty"><div class="ic">📈</div><p>' + tr('impact_no_projects') + '</p><p class="sub">' + tr('impact_no_projects_sub') + '</p></div>';
       return;
     }
-
     if(window.ProjectContext){ window.ProjectContext.ensureValid(); currentProject = window.ProjectContext.getCurrent(); }
     if(!currentProject) currentProject = projects[0].id;
 
