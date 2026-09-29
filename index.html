@@ -379,6 +379,7 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
   <div class="nav-item" data-tab="budget"><span class="ic">💰</span><span class="label" data-i18n="nav_budget">الميزانية</span></div>
   <div class="nav-item" data-tab="files"><span class="ic">📁</span><span class="label" data-i18n="nav_files">الملفات</span></div>
   <div class="nav-item" data-tab="notes"><span class="ic">📔</span><span class="label" data-i18n="nav_notes">ملاحظاتي</span></div>
+  <div class="nav-item" data-tab="archive"><span class="ic">📦</span><span class="label" data-i18n="nav_archive">الأرشيف</span></div>
   <div class="nav-item" data-tab="digest"><span class="ic">📧</span><span class="label" data-i18n="nav_digest">البريد الدوري</span></div>
   <div class="nav-section" data-i18n="nav_refs_section">المراجع</div>
   <div class="nav-item" data-tab="countries"><span class="ic">🌍</span><span class="label" data-i18n="nav_countries">الدول والأطر</span></div>
@@ -529,6 +530,13 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
     <div id="digestBody"></div>
   </section>
 
+	<section id="archive" class="section">
+	  <div class="page-head">
+		<h2 class="page-title" data-i18n="archive_title">📦 الأرشيف</h2>
+		<p class="page-sub" data-i18n="archive_sub">مشاريعك المؤرشفة</p>
+	  </div>
+	  <div id="archiveBody"></div>
+	</section>
   <section id="countries" class="section">
     <div class="page-head"><h2 class="page-title" data-i18n="countries_title">🌍 الدول والأطر</h2>
       <p class="page-sub" data-i18n="countries_sub">مؤشرات دولية + مكتبة الأطر</p></div>
@@ -588,6 +596,11 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
 <script src="business-data.js"></script>
 <script src="i18n.js"></script>
 
+<!-- ✅ جديد: patch اللغة + الإصلاحات -->
+<script src="i18n-patch.js"></script>
+<script src="qc-fix.js"></script>
+<script src="fix-buttons.js"></script>
+
 <script src="ai-advisor.js"></script>
 <script src="strategy-builder.js"></script>
 <script src="idea-incubator.js"></script>
@@ -604,6 +617,14 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
 <script src="calendar-sync.js"></script>
 <script src="widgets.js"></script>
 <script src="pwa.js"></script>
+
+<!-- ✅ جديد: الأرشيف + المشروع الافتراضي -->
+<script src="archive.js"></script>
+<script src="demo-project.js"></script>
+
+<script>
+/* ... existing inline boot script ... */
+</script>
 
 <script>
 /* ==================== HELPERS ==================== */

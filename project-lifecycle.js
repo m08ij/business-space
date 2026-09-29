@@ -10,15 +10,15 @@
 
   var currentProject = null;
 
-  function renderRoadmap(){
+    function renderRoadmap(){
     var el = document.getElementById('roadmapBody');
     if(!el) return;
     var sp = getSpace();
     var projects = sp.projects || [];
 
     if(!projects.length){
-	var tr = window.t || function(k){ return k; };
-el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
+      var tr = window.t || function(k){ return k; };
+      el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
       return;
     }
     if(!currentProject) currentProject = projects[0].id;
@@ -36,11 +36,17 @@ el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>' + tr('roadm
     var stages = window.PRISM_STAGES || {};
     var currentStage = project.stage || 'pre-project';
 
-    // شريط المراحل
+    // شريط المراحل + زر الأرشفة
     html += '<div class="card" style="margin-bottom:16px">' +
-      '<div class="card-head"><h3>🗺️ مراحل PRiSM</h3>' +
-      '<span class="badge">' + esc(project.name) + '</span></div>' +
+      '<div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">' +
+        '<h3>🗺️ مراحل PRiSM</h3>' +
+        '<div style="display:flex;gap:6px;align-items:center">' +
+          '<span class="badge">' + esc(project.name) + '</span>' +
+          '<button class="btn btn-sm btn-ghost" data-archive-project="' + project.id + '" title="نقل للأرشيف">📦 أرشفة</button>' +
+        '</div>' +
+      '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">';
+
     Object.keys(stages).forEach(function(k){
       var s = stages[k];
       var isActive = currentStage === k;
@@ -75,9 +81,21 @@ el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>' + tr('roadm
 
     el.innerHTML = html;
 
+    // === Bindings ===
+    // 1) اختيار المشروع
     el.querySelectorAll('[data-rd-select]').forEach(function(b){
       b.addEventListener('click', function(){ currentProject = b.dataset.rdSelect; renderRoadmap(); });
     });
+
+    // 2) زر الأرشفة
+    var archBtn = el.querySelector('[data-archive-project]');
+    if(archBtn){
+      archBtn.onclick = function(){
+        if(window.archiveProject) window.archiveProject(archBtn.dataset.archiveProject);
+      };
+    }
+
+    // 3) اختيار المرحلة
     el.querySelectorAll('[data-stage-set]').forEach(function(b){
       b.addEventListener('click', function(){
         project.stage = b.dataset.stageSet;
@@ -86,6 +104,8 @@ el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>' + tr('roadm
         toast('✓ المرحلة: ' + stages[project.stage].name, 'success');
       });
     });
+
+    // 4) إضافة مهمة
     el.querySelectorAll('[data-stage-task-add]').forEach(function(b){
       b.addEventListener('click', function(){
         var title = prompt('عنوان المهمة:');
@@ -96,12 +116,16 @@ el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>' + tr('roadm
         renderRoadmap();
       });
     });
+
+    // 5) Toggle مهمة
     el.querySelectorAll('[data-stage-task-toggle]').forEach(function(b){
       b.addEventListener('click', function(){
         var t = stageTasks[parseInt(b.dataset.stageTaskToggle)];
         if(t){ t.done = !t.done; if(window.saveSpace) window.saveSpace(); renderRoadmap(); }
       });
     });
+
+    // 6) حذف مهمة
     el.querySelectorAll('[data-stage-task-del]').forEach(function(b){
       b.addEventListener('click', function(){
         var t = stageTasks[parseInt(b.dataset.stageTaskDel)];

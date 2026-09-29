@@ -397,9 +397,6 @@ widgets_no_widgets: 'ما اخترت أي widget',
        toast_app_installed: '🎉 تم تثبيت التطبيق',
        toast_app_installed_already: 'التطبيق مثبت بالفعل أو غير مدعوم',
 
-// en:
-       toast_app_installed: '🎉 App installed',
-       toast_app_installed_already: 'Already installed or not supported',
       // FAB
       fab_idea: 'فكرة جديدة',
       fab_task: 'مهمة جديدة',
