@@ -10,7 +10,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%BC%3C/text%3E%3C/svg%3E">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="تطوير أعمالي">
+<meta name="apple-mobile-web-app-title" content="Business Dev">
 <style>
 :root,[data-theme="dark"]{--bg:#0b0f1a;--bg2:#0f1522;--card:#141c2e;--card2:#1a2338;--border:#243049;--border2:#2f3d5c;--text:#e8eefb;--muted:#8a96b8;--muted2:#5b6885;--cyan:#22d3ee;--purple:#a78bfa;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--grad:linear-gradient(135deg,#22d3ee,#a78bfa);--grad-soft:linear-gradient(135deg,rgba(34,211,238,.12),rgba(167,139,250,.12));--shadow:0 8px 32px rgba(0,0,0,.35);--shadow-lg:0 20px 60px rgba(0,0,0,.5);--glow:rgba(34,211,238,.35);--topbar-bg:rgba(15,21,34,.88);--radius:14px;--radius-lg:20px}
 [data-theme="aurora"]{--bg:#04101a;--bg2:#071a28;--card:#0b2434;--card2:#0f2d41;--border:#1a4560;--border2:#256b8f;--text:#d9f5ff;--muted:#7ab9d4;--muted2:#4d8298;--cyan:#14e0c8;--purple:#a78bfa;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--grad:linear-gradient(135deg,#14e0c8,#a78bfa);--grad-soft:linear-gradient(135deg,rgba(20,224,200,.16),rgba(167,139,250,.16));--shadow:0 8px 32px rgba(0,0,0,.5);--shadow-lg:0 20px 60px rgba(0,0,0,.7);--glow:rgba(20,224,200,.5);--topbar-bg:rgba(7,26,40,.88)}
@@ -59,19 +59,25 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .search-wrap input{width:100%;height:42px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:0 44px 0 16px;font-family:inherit;font-size:.9rem;outline:none;transition:.2s}
 .search-wrap input:focus{border-color:var(--cyan);box-shadow:0 0 0 4px var(--glow)}
 .search-wrap::before{content:'🔍';position:absolute;right:14px;top:50%;transform:translateY(-50%);opacity:.5;pointer-events:none}
-.topbar-actions{display:flex;gap:8px;margin-right:auto;position:relative}
-.icon-btn{width:40px;height:40px;border-radius:11px;background:var(--card);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:.22s;position:relative}
+html[dir="ltr"] .search-wrap input{padding:0 16px 0 44px}
+html[dir="ltr"] .search-wrap::before{right:auto;left:14px}
+.topbar-actions{display:flex;gap:8px;margin-left:auto;position:relative}
+html[dir="rtl"] .topbar-actions{margin-left:0;margin-right:auto}
+.icon-btn{width:40px;height:40px;border-radius:11px;background:var(--card);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:.22s;position:relative;font-family:inherit;font-weight:700}
 .icon-btn:hover{background:var(--card2);border-color:var(--cyan);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+#langBtn{font-size:.8rem;font-weight:800;color:var(--cyan)}
 .settings-wrap{position:relative}
 .settings-menu{position:absolute;top:48px;left:0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;min-width:240px;box-shadow:var(--shadow-lg);display:none;z-index:110}
+html[dir="rtl"] .settings-menu{left:auto;right:0}
 .settings-menu.show{display:block;animation:menuIn .2s ease}
 @keyframes menuIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.settings-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:inherit;font-size:.85rem;cursor:pointer;border-radius:8px;text-align:right;transition:.15s;font-weight:500}
+.settings-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:inherit;font-size:.85rem;cursor:pointer;border-radius:8px;text-align:start;transition:.15s;font-weight:500}
 .settings-item:hover{background:var(--grad-soft);color:var(--cyan)}
 .settings-item span{font-size:1.1rem;line-height:1}
 .settings-divider{height:1px;background:var(--border);margin:4px 6px}
 
 .theme-panel{position:fixed;top:78px;left:20px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);padding:16px;width:280px;transform:scale(.95) translateY(-8px);opacity:0;pointer-events:none;transition:.25s}
+html[dir="rtl"] .theme-panel{left:auto;right:20px}
 .theme-panel.show{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
 .theme-panel h4{font-size:.82rem;color:var(--muted);margin-bottom:12px;font-weight:700}
 .theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -82,23 +88,42 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .theme-swatch .sw-check{position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;background:var(--cyan);color:#0b0f1a;display:none;align-items:center;justify-content:center;font-size:.7rem;font-weight:900}
 .theme-swatch.active .sw-check{display:flex}
 
-.sidebar{position:fixed;top:80px;right:0;bottom:0;width:260px;background:var(--bg2);border-left:1px solid var(--border);padding:14px 10px;overflow-y:auto;z-index:80;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.sidebar{position:fixed;top:80px;bottom:0;width:260px;background:var(--bg2);padding:14px 10px;overflow-y:auto;z-index:80;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+html[dir="rtl"] .sidebar{right:0;left:auto;border-left:1px solid var(--border)}
+html[dir="ltr"] .sidebar{left:0;right:auto;border-right:1px solid var(--border)}
 .sidebar::-webkit-scrollbar{width:5px}
 .nav-section{font-size:.68rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;padding:14px 12px 6px 18px;font-weight:700;position:relative}
-.nav-section::before{content:'';position:absolute;right:8px;top:50%;transform:translateY(-50%);width:4px;height:4px;border-radius:50%;background:var(--cyan);opacity:.6}
+html[dir="rtl"] .nav-section{padding:14px 18px 6px 12px}
+html[dir="rtl"] .nav-section::before{content:'';position:absolute;right:8px;left:auto;top:50%;transform:translateY(-50%);width:4px;height:4px;border-radius:50%;background:var(--cyan);opacity:.6}
+html[dir="ltr"] .nav-section::before{content:'';position:absolute;left:8px;right:auto;top:50%;transform:translateY(-50%);width:4px;height:4px;border-radius:50%;background:var(--cyan);opacity:.6}
 .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;color:var(--muted);font-size:.9rem;font-weight:500;border-radius:11px;margin-bottom:2px;transition:.2s;user-select:none;position:relative;overflow:hidden}
-.nav-item:hover{background:var(--card);color:var(--text);transform:translateX(-3px)}
+.nav-item:hover{background:var(--card);color:var(--text)}
+html[dir="rtl"] .nav-item:hover{transform:translateX(-3px)}
+html[dir="ltr"] .nav-item:hover{transform:translateX(3px)}
 .nav-item.active{background:var(--grad-soft);color:var(--cyan);box-shadow:inset 0 0 0 1px var(--glow)}
-.nav-item.active::before{content:'';position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--grad);border-radius:4px 0 0 4px;box-shadow:0 0 14px var(--glow)}
+.nav-item.active::before{content:'';position:absolute;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--grad);box-shadow:0 0 14px var(--glow)}
+html[dir="rtl"] .nav-item.active::before{right:-10px;left:auto;border-radius:4px 0 0 4px}
+html[dir="ltr"] .nav-item.active::before{left:-10px;right:auto;border-radius:0 4px 4px 0}
 .nav-item .ic{font-size:1.1rem;width:22px;text-align:center}
 .nav-item .label{flex:1}
 .sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:75;opacity:0;pointer-events:none;transition:.3s}
 .sidebar-backdrop.show{opacity:1;pointer-events:auto}
 @media(min-width:901px){.menu-toggle{display:none!important}.sidebar-backdrop{display:none!important}}
-@media(max-width:900px){.sidebar{transform:translateX(100%)}.sidebar.open{transform:translateX(0)}}
+@media(max-width:900px){
+  html[dir="rtl"] .sidebar{transform:translateX(100%)}
+  html[dir="ltr"] .sidebar{transform:translateX(-100%)}
+  html[dir="rtl"] .sidebar.open{transform:translateX(0)}
+  html[dir="ltr"] .sidebar.open{transform:translateX(0)}
+}
 
-main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px;transition:.3s;position:relative;z-index:1}
-@media(max-width:900px){main{margin-right:0;padding:16px 14px 140px}}
+main{margin-top:82px;padding:24px 28px 120px;max-width:1300px;transition:.3s;position:relative;z-index:1}
+html[dir="rtl"] main{margin-right:260px}
+html[dir="ltr"] main{margin-left:260px}
+@media(max-width:900px){
+  html[dir="rtl"] main{margin-right:0}
+  html[dir="ltr"] main{margin-left:0}
+  main{padding:16px 14px 140px}
+}
 .section{display:none}
 .section.active{display:block}
 .section.tab-play > *{animation:childIn .22s cubic-bezier(.2,0,0,1) backwards}
@@ -106,6 +131,7 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 .page-head{margin-bottom:22px;position:relative;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .page-title{font-size:1.7rem;font-weight:800;margin-bottom:4px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;display:inline-block}
 .page-title::after{content:'';position:absolute;bottom:-6px;right:0;width:56px;height:3px;background:var(--grad);border-radius:3px;opacity:.75}
+html[dir="ltr"] .page-title::after{right:auto;left:0}
 .page-sub{color:var(--muted);font-size:.88rem;margin-top:8px}
 
 .grid{display:grid;gap:16px}
@@ -172,18 +198,28 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 .empty p{font-size:.88rem;font-weight:600}
 .empty .sub{font-size:.78rem;margin-top:5px;color:var(--muted2)}
 
-.fab-main{position:fixed;bottom:24px;left:24px;z-index:400;width:56px;height:56px;border-radius:50%;background:var(--grad);border:none;color:#0b0f1a;font-size:1.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px var(--glow);transition:.3s}
+.fab-main{position:fixed;bottom:24px;z-index:400;width:56px;height:56px;border-radius:50%;background:var(--grad);border:none;color:#0b0f1a;font-size:1.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px var(--glow);transition:.3s}
+html[dir="rtl"] .fab-main{left:24px;right:auto}
+html[dir="ltr"] .fab-main{right:24px;left:auto}
 .fab-main:hover{transform:scale(1.1)}
 .fab-main.active{transform:rotate(45deg)}
-.fab-menu{position:fixed;bottom:92px;left:24px;z-index:399;display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transform:translateY(20px);transition:.3s}
+.fab-menu{position:fixed;bottom:92px;z-index:399;display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transform:translateY(20px);transition:.3s}
+html[dir="rtl"] .fab-menu{left:24px;right:auto}
+html[dir="ltr"] .fab-menu{right:24px;left:auto}
 .fab-menu.show{opacity:1;pointer-events:auto;transform:translateY(0)}
 .fab-action{display:flex;align-items:center;gap:10px;padding:11px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;font-family:inherit;color:var(--text);font-size:.86rem;font-weight:600;box-shadow:var(--shadow);transition:.25s;white-space:nowrap}
-.fab-action:hover{background:var(--grad-soft);border-color:var(--cyan);transform:translateX(4px)}
+.fab-action:hover{background:var(--grad-soft);border-color:var(--cyan)}
+html[dir="rtl"] .fab-action:hover{transform:translateX(4px)}
+html[dir="ltr"] .fab-action:hover{transform:translateX(-4px)}
 
-.ai-fab{position:fixed;bottom:92px;left:24px;z-index:400;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#f472b6);border:none;color:#fff;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(167,139,250,.5);transition:.3s}
+.ai-fab{position:fixed;bottom:92px;z-index:400;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#f472b6);border:none;color:#fff;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(167,139,250,.5);transition:.3s}
+html[dir="rtl"] .ai-fab{left:24px;right:auto}
+html[dir="ltr"] .ai-fab{right:24px;left:auto}
 .ai-fab:hover{transform:scale(1.1) rotate(-8deg)}
 .ai-fab.hidden{opacity:0;pointer-events:none;transform:scale(.5)}
-.ai-panel{position:fixed;bottom:160px;left:24px;z-index:399;width:380px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 200px);background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;transform:scale(.9) translateY(20px);opacity:0;pointer-events:none;transition:.3s;overflow:hidden}
+.ai-panel{position:fixed;bottom:160px;z-index:399;width:380px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 200px);background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;transform:scale(.9) translateY(20px);opacity:0;pointer-events:none;transition:.3s;overflow:hidden}
+html[dir="rtl"] .ai-panel{left:24px;right:auto}
+html[dir="ltr"] .ai-panel{right:24px;left:auto}
 .ai-panel.show{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
 .ai-header{padding:14px 18px;background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(244,114,182,.15));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 .ai-header .ai-avatar{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#a78bfa,#f472b6);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
@@ -195,7 +231,9 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 .ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
 .ai-msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:.85rem;line-height:1.6;white-space:pre-line}
 .ai-msg.bot{background:var(--card2);border:1px solid var(--border);align-self:flex-start;border-bottom-right-radius:4px}
+html[dir="ltr"] .ai-msg.bot{align-self:flex-start;border-bottom-right-radius:14px;border-bottom-left-radius:4px}
 .ai-msg.user{background:linear-gradient(135deg,#a78bfa,#f472b6);color:#fff;align-self:flex-end;font-weight:600;border-bottom-left-radius:4px}
+html[dir="ltr"] .ai-msg.user{border-bottom-left-radius:14px;border-bottom-right-radius:4px}
 .ai-suggestions{padding:8px 14px 12px;display:flex;flex-wrap:wrap;gap:6px;max-height:110px;overflow-y:auto}
 .ai-suggestion{padding:5px 11px;background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:20px;cursor:pointer;font-family:inherit;font-size:.7rem;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .ai-suggestion:hover{border-color:var(--purple);color:var(--purple)}
@@ -241,7 +279,9 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 .budget-card.balance.neg .bc-val{color:var(--red)}
 
 .task{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;transition:.2s;position:relative;overflow:hidden}
-.task:hover{border-color:var(--cyan);transform:translateX(-3px)}
+.task:hover{border-color:var(--cyan)}
+html[dir="rtl"] .task:hover{transform:translateX(-3px)}
+html[dir="ltr"] .task:hover{transform:translateX(3px)}
 .task.done{opacity:.5}
 .task.done .task-title{text-decoration:line-through}
 .task.overdue{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.04)}
@@ -264,6 +304,9 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 .upload-course-btn:hover{background:var(--grad);color:#0b0f1a;border-style:solid}
 .upload-progress-bar{height:6px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-top:8px;display:none}
 .upload-progress-bar .inner{height:100%;background:var(--grad);width:0;transition:width .3s}
+
+[dir="rtl"] .dir-flip { transform: scaleX(1); }
+[dir="ltr"] .dir-flip { transform: scaleX(-1); }
 </style>
 </head>
 <body>
@@ -272,46 +315,47 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 <div class="welcome-overlay" id="welcomeOverlay">
   <div class="welcome-card">
     <div class="welcome-icon">💼</div>
-    <h1 id="welcomeTitle">أهلاً بك في تطوير أعمالي</h1>
-    <p id="welcomeSub">منصة شاملة لتطوير الأعمال والمشاريع المستدامة</p>
-    <input id="welcomeName" placeholder="اكتب اسمك..." autocomplete="off" maxlength="40">
+    <h1 id="welcomeTitle" data-i18n="welcome_title">أهلاً بك في تطوير أعمالي</h1>
+    <p id="welcomeSub" data-i18n="welcome_sub">منصة شاملة لتطوير الأعمال والمشاريع المستدامة</p>
+    <input id="welcomeName" placeholder="اكتب اسمك..." autocomplete="off" maxlength="40" data-i18n-placeholder="welcome_name_ph">
     <select id="welcomeCountry">
-      <option value="QA">🇶🇦 قطر</option>
-      <option value="AE">🇦🇪 الإمارات</option>
-      <option value="SA">🇸🇦 السعودية</option>
-      <option value="JO">🇯🇴 الأردن</option>
-      <option value="EG">🇪🇬 مصر</option>
-      <option value="MA">🇲🇦 المغرب</option>
-      <option value="KW">🇰🇼 الكويت</option>
-      <option value="BH">🇧🇭 البحرين</option>
-      <option value="OM">🇴🇲 عمان</option>
+      <option value="QA">🇶🇦 قطر / Qatar</option>
+      <option value="AE">🇦🇪 الإمارات / UAE</option>
+      <option value="SA">🇸🇦 السعودية / Saudi Arabia</option>
+      <option value="JO">🇯🇴 الأردن / Jordan</option>
+      <option value="EG">🇪🇬 مصر / Egypt</option>
+      <option value="MA">🇲🇦 المغرب / Morocco</option>
+      <option value="KW">🇰🇼 الكويت / Kuwait</option>
+      <option value="BH">🇧🇭 البحرين / Bahrain</option>
+      <option value="OM">🇴🇲 عمان / Oman</option>
     </select>
-    <button id="welcomeBtn" type="button">ابدأ رحلتك 🚀</button>
+    <button id="welcomeBtn" type="button" data-i18n="welcome_start">ابدأ رحلتك 🚀</button>
   </div>
 </div>
 
 <!-- Topbar -->
 <header class="topbar">
-  <button class="icon-btn menu-toggle" id="menuToggle" title="القائمة">☰</button>
+  <button class="icon-btn menu-toggle" id="menuToggle" title="Menu" data-i18n-title="menu">☰</button>
   <div class="brand">
     <div class="brand-icon">💼</div>
-    <div class="brand-name">تطوير أعمالي</div>
+    <div class="brand-name" data-i18n="brand">تطوير أعمالي</div>
   </div>
   <div class="search-wrap">
-    <input type="search" id="searchInput" placeholder="ابحث..." autocomplete="off">
+    <input type="search" id="searchInput" placeholder="ابحث..." autocomplete="off" data-i18n-placeholder="search_placeholder">
   </div>
   <div class="topbar-actions">
-    <button class="icon-btn" id="serverStatus" title="جاري الفحص...">⏳</button>
+    <button class="icon-btn" id="langBtn" title="Switch Language">EN</button>
+    <button class="icon-btn" id="serverStatus" title="...">⏳</button>
     <div class="settings-wrap">
-      <button class="icon-btn" id="settingsBtn" title="الإعدادات">⚙️</button>
+      <button class="icon-btn" id="settingsBtn" title="Settings" data-i18n-title="settings">⚙️</button>
       <div class="settings-menu" id="settingsMenu">
-        <button class="settings-item" id="pwaInstallBtn" style="display:none"><span>📲</span> تثبيت التطبيق</button>
-        <button class="settings-item" id="syncCodeBtn"><span>☁️</span> المزامنة السحابية</button>
-        <button class="settings-item" id="themeBtn"><span>🎨</span> الثيمات</button>
+        <button class="settings-item" id="pwaInstallBtn" style="display:none"><span>📲</span> <span data-i18n="set_install">تثبيت التطبيق</span></button>
+        <button class="settings-item" id="syncCodeBtn"><span>☁️</span> <span data-i18n="set_sync">المزامنة السحابية</span></button>
+        <button class="settings-item" id="themeBtn"><span>🎨</span> <span data-i18n="set_themes">الثيمات</span></button>
         <div class="settings-divider"></div>
-        <button class="settings-item" id="pdfBtn"><span>🖨️</span> تصدير PDF</button>
-        <button class="settings-item" id="backupBtn"><span>💾</span> تصدير نسخة</button>
-        <button class="settings-item" id="restoreBtn"><span>📥</span> استيراد نسخة</button>
+        <button class="settings-item" id="pdfBtn"><span>🖨️</span> <span data-i18n="set_pdf">تصدير PDF</span></button>
+        <button class="settings-item" id="backupBtn"><span>💾</span> <span data-i18n="set_backup">تصدير نسخة</span></button>
+        <button class="settings-item" id="restoreBtn"><span>📥</span> <span data-i18n="set_restore">استيراد نسخة</span></button>
       </div>
     </div>
   </div>
@@ -319,40 +363,39 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 
 <!-- Theme Panel -->
 <div class="theme-panel" id="themePanel">
-  <h4>🎨 اختر الثيم</h4>
+  <h4 data-i18n="theme_title">🎨 اختر الثيم</h4>
   <div class="theme-grid" id="themeGrid"></div>
 </div>
 
 <!-- Sidebar -->
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 <aside class="sidebar" id="sidebar">
-  <div class="nav-item active" data-tab="dashboard"><span class="ic">📊</span><span class="label">لوحة التحكم</span></div>
-  <div class="nav-section">الأفكار والمشاريع</div>
-  <div class="nav-item" data-tab="ideas"><span class="ic">💡</span><span class="label">أفكاري</span></div>
-  <div class="nav-item" data-tab="roadmap"><span class="ic">🗺️</span><span class="label">خريطة الطريق</span></div>
-  <div class="nav-section">الاستراتيجية</div>
-  <div class="nav-item" data-tab="strategy"><span class="ic">🎯</span><span class="label">الاستراتيجية</span></div>
-  <div class="nav-item" data-tab="impact"><span class="ic">📈</span><span class="label">قياس الأثر</span></div>
-  <div class="nav-item" data-tab="stakeholders"><span class="ic">👥</span><span class="label">أصحاب المصلحة</span></div>
-  <div class="nav-section">المبيعات والقيادة</div>
-  <div class="nav-item" data-tab="sales"><span class="ic">💼</span><span class="label">المبيعات</span></div>
-  <div class="nav-item" data-tab="leadership"><span class="ic">🎓</span><span class="label">القيادة</span></div>
-  <div class="nav-section">الإدارة</div>
-  <div class="nav-item" data-tab="tasks"><span class="ic">📝</span><span class="label">المهام</span></div>
-  <div class="nav-item" data-tab="budget"><span class="ic">💰</span><span class="label">الميزانية</span></div>
-  <div class="nav-item" data-tab="files"><span class="ic">📁</span><span class="label">الملفات</span></div>
-  <div class="nav-item" data-tab="notes"><span class="ic">📔</span><span class="label">ملاحظاتي</span></div>
-  <div class="nav-section">المراجع</div>
-  <div class="nav-item" data-tab="countries"><span class="ic">🌍</span><span class="label">الدول والأطر</span></div>
-  <div class="nav-item" data-tab="reports"><span class="ic">📊</span><span class="label">التقارير</span></div>
+  <div class="nav-item active" data-tab="dashboard"><span class="ic">📊</span><span class="label" data-i18n="nav_dashboard">لوحة التحكم</span></div>
+  <div class="nav-section" data-i18n="nav_ideas_projects">الأفكار والمشاريع</div>
+  <div class="nav-item" data-tab="ideas"><span class="ic">💡</span><span class="label" data-i18n="nav_ideas">أفكاري</span></div>
+  <div class="nav-item" data-tab="roadmap"><span class="ic">🗺️</span><span class="label" data-i18n="nav_roadmap">خريطة الطريق</span></div>
+  <div class="nav-section" data-i18n="nav_strategy_section">الاستراتيجية</div>
+  <div class="nav-item" data-tab="strategy"><span class="ic">🎯</span><span class="label" data-i18n="nav_strategy">الاستراتيجية</span></div>
+  <div class="nav-item" data-tab="impact"><span class="ic">📈</span><span class="label" data-i18n="nav_impact">قياس الأثر</span></div>
+  <div class="nav-item" data-tab="stakeholders"><span class="ic">👥</span><span class="label" data-i18n="nav_stakeholders">أصحاب المصلحة</span></div>
+  <div class="nav-section" data-i18n="nav_sales_section">المبيعات والقيادة</div>
+  <div class="nav-item" data-tab="sales"><span class="ic">💼</span><span class="label" data-i18n="nav_sales">المبيعات</span></div>
+  <div class="nav-item" data-tab="leadership"><span class="ic">🎓</span><span class="label" data-i18n="nav_leadership">القيادة</span></div>
+  <div class="nav-section" data-i18n="nav_mgmt_section">الإدارة</div>
+  <div class="nav-item" data-tab="tasks"><span class="ic">📝</span><span class="label" data-i18n="nav_tasks">المهام</span></div>
+  <div class="nav-item" data-tab="budget"><span class="ic">💰</span><span class="label" data-i18n="nav_budget">الميزانية</span></div>
+  <div class="nav-item" data-tab="files"><span class="ic">📁</span><span class="label" data-i18n="nav_files">الملفات</span></div>
+  <div class="nav-item" data-tab="notes"><span class="ic">📔</span><span class="label" data-i18n="nav_notes">ملاحظاتي</span></div>
+  <div class="nav-section" data-i18n="nav_refs_section">المراجع</div>
+  <div class="nav-item" data-tab="countries"><span class="ic">🌍</span><span class="label" data-i18n="nav_countries">الدول والأطر</span></div>
+  <div class="nav-item" data-tab="reports"><span class="ic">📊</span><span class="label" data-i18n="nav_reports">التقارير</span></div>
 </aside>
 
 <!-- Main -->
 <main>
-  <!-- Dashboard -->
   <section id="dashboard" class="section active">
     <div class="page-head">
-      <h2 class="page-title">📊 لوحة التحكم</h2>
+      <h2 class="page-title" data-i18n="dash_title">📊 لوحة التحكم</h2>
       <p class="page-sub" id="greetLine">—</p>
     </div>
     <div class="daily-quote" style="background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:16px">
@@ -362,179 +405,162 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
     <div class="grid grid-4" style="margin-bottom:16px" id="dashStats"></div>
     <div class="grid grid-2" style="margin-bottom:16px">
       <div class="card">
-        <div class="card-head"><h3>📌 مهام قادمة</h3></div>
+        <div class="card-head"><h3 data-i18n="dash_upcoming_tasks">📌 مهام قادمة</h3></div>
         <div id="dashTasks"></div>
       </div>
       <div class="card">
-        <div class="card-head"><h3>💼 القمع البيعي</h3></div>
+        <div class="card-head"><h3 data-i18n="dash_pipeline">💼 القمع البيعي</h3></div>
         <div id="dashSales"></div>
       </div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-head"><h3>💡 آخر الأفكار</h3></div>
+      <div class="card-head"><h3 data-i18n="dash_recent_ideas">💡 آخر الأفكار</h3></div>
       <div id="dashIdeas"></div>
     </div>
   </section>
 
-  <!-- Ideas -->
   <section id="ideas" class="section">
-    <div class="page-head"><h2 class="page-title">💡 أفكاري</h2>
-      <p class="page-sub">أفكارك ومشاريعك</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="ideas_title">💡 أفكاري</h2>
+      <p class="page-sub" data-i18n="ideas_sub">أفكارك ومشاريعك</p></div>
     <div class="controls">
-      <button class="btn" id="btnAddIdea">+ فكرة جديدة</button>
+      <button class="btn" id="btnAddIdea" data-i18n="ideas_add">+ فكرة جديدة</button>
     </div>
     <div class="grid grid-2" id="ideasGrid"></div>
   </section>
 
-  <!-- Roadmap -->
   <section id="roadmap" class="section">
-    <div class="page-head"><h2 class="page-title">🗺️ خريطة الطريق</h2>
-      <p class="page-sub">مراحل PRiSM للمشاريع</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="roadmap_title">🗺️ خريطة الطريق</h2>
+      <p class="page-sub" data-i18n="roadmap_sub">مراحل PRiSM للمشاريع</p></div>
     <div id="roadmapBody"></div>
   </section>
 
-  <!-- Strategy -->
   <section id="strategy" class="section">
-    <div class="page-head"><h2 class="page-title">🎯 الاستراتيجية</h2>
-      <p class="page-sub">SWOT · PESTEL · OKRs</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="strategy_title">🎯 الاستراتيجية</h2>
+      <p class="page-sub" data-i18n="strategy_sub">SWOT · PESTEL · OKRs</p></div>
     <div id="strategySelector"></div>
     <div id="strategyTools"></div>
   </section>
 
-  <!-- Impact -->
   <section id="impact" class="section">
-    <div class="page-head"><h2 class="page-title">📈 قياس الأثر</h2>
-      <p class="page-sub">SDG · ESG · P5</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="impact_title">📈 قياس الأثر</h2>
+      <p class="page-sub" data-i18n="impact_sub">SDG · ESG · P5</p></div>
     <div id="impactBody"></div>
   </section>
 
-  <!-- Stakeholders -->
   <section id="stakeholders" class="section">
-    <div class="page-head"><h2 class="page-title">👥 أصحاب المصلحة</h2>
-      <p class="page-sub">خريطة الأطراف المعنية</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="sh_title">👥 أصحاب المصلحة</h2>
+      <p class="page-sub" data-i18n="sh_sub">خريطة الأطراف المعنية</p></div>
     <div class="card">
-      <div class="card-head"><h3>👥 قائمة أصحاب المصلحة</h3>
-        <button class="btn btn-sm" id="btnAddStakeholder">+ جديد</button></div>
+      <div class="card-head"><h3 data-i18n="sh_list_title">👥 قائمة أصحاب المصلحة</h3>
+        <button class="btn btn-sm" id="btnAddStakeholder" data-i18n="sh_add">+ جديد</button></div>
       <div id="stakeholdersList"></div>
     </div>
   </section>
 
-  <!-- Sales -->
   <section id="sales" class="section">
-    <div class="page-head"><h2 class="page-title">💼 المبيعات</h2>
-      <p class="page-sub">Pipeline · MEDDIC · SPIN</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="sales_title">💼 المبيعات</h2>
+      <p class="page-sub" data-i18n="sales_sub">Pipeline · MEDDIC · SPIN</p></div>
     <div class="controls">
-      <button class="btn" id="btnAddDeal">+ فرصة جديدة</button>
+      <button class="btn" id="btnAddDeal" data-i18n="sales_add">+ فرصة جديدة</button>
     </div>
     <div id="salesBody"></div>
   </section>
 
-  <!-- Leadership -->
   <section id="leadership" class="section">
-    <div class="page-head"><h2 class="page-title">🎓 القيادة</h2>
-      <p class="page-sub">اكتشف نمط قيادتك</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="leadership_title">🎓 القيادة</h2>
+      <p class="page-sub" data-i18n="leadership_sub">اكتشف نمط قيادتك</p></div>
     <div id="leadershipBody"></div>
   </section>
 
-  <!-- Tasks -->
   <section id="tasks" class="section">
-    <div class="page-head"><h2 class="page-title">📝 المهام</h2>
-      <p class="page-sub">تابع مهامك</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="tasks_title">📝 المهام</h2>
+      <p class="page-sub" data-i18n="tasks_sub">تابع مهامك</p></div>
     <div class="controls">
-      <button class="btn" id="btnAddTask">+ مهمة</button>
-      <button class="chip active" data-tf="all">الكل</button>
-      <button class="chip" data-tf="pending">قيد الانتظار</button>
-      <button class="chip" data-tf="done">مكتملة</button>
+      <button class="btn" id="btnAddTask" data-i18n="tasks_add">+ مهمة</button>
+      <button class="chip active" data-tf="all" data-i18n="tasks_filter_all">الكل</button>
+      <button class="chip" data-tf="pending" data-i18n="tasks_filter_pending">قيد الانتظار</button>
+      <button class="chip" data-tf="done" data-i18n="tasks_filter_done">مكتملة</button>
     </div>
     <div id="tasksList"></div>
   </section>
 
-  <!-- Budget -->
   <section id="budget" class="section">
-    <div class="page-head"><h2 class="page-title">💰 الميزانية</h2>
-      <p class="page-sub">دخل ومصاريف ورصيد</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="budget_title">💰 الميزانية</h2>
+      <p class="page-sub" data-i18n="budget_sub">دخل ومصاريف ورصيد</p></div>
     <div class="budget-summary" id="budgetSummary"></div>
     <div class="controls">
-      <button class="btn" id="btnAddIncome">+ دخل</button>
-      <button class="btn" id="btnAddExpense">+ مصروف</button>
+      <button class="btn" id="btnAddIncome" data-i18n="budget_income">+ دخل</button>
+      <button class="btn" id="btnAddExpense" data-i18n="budget_expense">+ مصروف</button>
     </div>
     <div id="budgetList"></div>
   </section>
 
-  <!-- Files -->
   <section id="files" class="section">
-    <div class="page-head"><h2 class="page-title">📁 الملفات</h2>
-      <p class="page-sub">ملفات مشاريعك</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="files_title">📁 الملفات</h2>
+      <p class="page-sub" data-i18n="files_sub">ملفات مشاريعك</p></div>
     <div id="filesBody"></div>
   </section>
 
-  <!-- Notes -->
   <section id="notes" class="section">
-    <div class="page-head"><h2 class="page-title">📔 ملاحظاتي</h2>
-      <p class="page-sub">تُحفظ تلقائياً</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="notes_title">📔 ملاحظاتي</h2>
+      <p class="page-sub" data-i18n="notes_sub">تُحفظ تلقائياً</p></div>
     <div class="controls">
-      <button class="btn" id="btnAddNote">+ ملاحظة</button>
-      <span style="color:var(--muted);font-size:.8rem;margin-right:auto" id="notesCount">0</span>
+      <button class="btn" id="btnAddNote" data-i18n="notes_add">+ ملاحظة</button>
+      <span style="color:var(--muted);font-size:.8rem;margin-inline-start:auto" id="notesCount">0</span>
     </div>
     <div id="notesList"></div>
   </section>
 
-  <!-- Countries -->
   <section id="countries" class="section">
-    <div class="page-head"><h2 class="page-title">🌍 الدول والأطر</h2>
-      <p class="page-sub">مؤشرات دولية + مكتبة الأطر</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="countries_title">🌍 الدول والأطر</h2>
+      <p class="page-sub" data-i18n="countries_sub">مؤشرات دولية + مكتبة الأطر</p></div>
     <div class="section-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding:5px;background:var(--bg2);border-radius:14px;border:1px solid var(--border);width:fit-content">
-      <button class="chip active" data-country-tab="countries">🌍 الدول</button>
-      <button class="chip" data-country-tab="frameworks">📚 الأطر</button>
+      <button class="chip active" data-country-tab="countries" data-i18n="countries_tab_countries">🌍 الدول</button>
+      <button class="chip" data-country-tab="frameworks" data-i18n="countries_tab_frameworks">📚 الأطر</button>
     </div>
     <div id="countriesGrid" class="grid grid-2"></div>
     <div id="frameworksGrid"></div>
   </section>
 
-  <!-- Reports -->
   <section id="reports" class="section">
-    <div class="page-head"><h2 class="page-title">📊 التقارير</h2>
-      <p class="page-sub">تحليلات وإحصاءات</p></div>
+    <div class="page-head"><h2 class="page-title" data-i18n="reports_title">📊 التقارير</h2>
+      <p class="page-sub" data-i18n="reports_sub">تحليلات وإحصاءات</p></div>
     <div id="insightsBody"></div>
   </section>
 </main>
 
-<!-- FAB -->
 <button class="fab-main" id="fabMain">+</button>
 <div class="fab-menu" id="fabMenu">
-  <button class="fab-action" data-fab="idea"><span class="fa-ic">💡</span> فكرة جديدة</button>
-  <button class="fab-action" data-fab="task"><span class="fa-ic">📝</span> مهمة جديدة</button>
-  <button class="fab-action" data-fab="deal"><span class="fa-ic">💼</span> فرصة بيعية</button>
-  <button class="fab-action" data-fab="expense"><span class="fa-ic">💰</span> مصروف</button>
-  <button class="fab-action" data-fab="note"><span class="fa-ic">📔</span> ملاحظة</button>
+  <button class="fab-action" data-fab="idea"><span class="fa-ic">💡</span> <span data-i18n="fab_idea">فكرة جديدة</span></button>
+  <button class="fab-action" data-fab="task"><span class="fa-ic">📝</span> <span data-i18n="fab_task">مهمة جديدة</span></button>
+  <button class="fab-action" data-fab="deal"><span class="fa-ic">💼</span> <span data-i18n="fab_deal">فرصة بيعية</span></button>
+  <button class="fab-action" data-fab="expense"><span class="fa-ic">💰</span> <span data-i18n="fab_expense">مصروف</span></button>
+  <button class="fab-action" data-fab="note"><span class="fa-ic">📔</span> <span data-i18n="fab_note">ملاحظة</span></button>
 </div>
 
-<!-- AI -->
 <button class="ai-fab" id="aiFab">🤖</button>
 <div class="ai-panel" id="aiPanel">
   <div class="ai-header">
     <div class="ai-avatar">🤖</div>
     <div class="ai-info">
-      <div class="ai-name">مستشارك الذكي</div>
-      <div class="ai-status">متصل</div>
+      <div class="ai-name" data-i18n="ai_name">مستشارك الذكي</div>
+      <div class="ai-status" data-i18n="ai_status">متصل</div>
     </div>
     <button class="ai-close" id="aiClose">×</button>
   </div>
   <div class="ai-messages" id="aiMessages"></div>
   <div class="ai-suggestions" id="aiSuggestions"></div>
   <div class="ai-input-wrap">
-    <input id="aiInput" placeholder="اسألني عن مساحتك...">
+    <input id="aiInput" placeholder="اسألني عن مساحتك..." data-i18n-placeholder="ai_placeholder">
     <button id="aiSend">➤</button>
   </div>
 </div>
 
-<!-- Backup badge -->
 <div class="backup-badge" id="backupBadge">
   <span class="dot"></span>
-  <span id="backupText">تم الحفظ</span>
+  <span id="backupText" data-i18n="backup_badge_saved">تم الحفظ</span>
 </div>
 
-<!-- Toasts -->
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- ============ Scripts ============ -->
@@ -542,6 +568,7 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 <script src="supabase-config.js"></script>
 <script src="supabase-client.js"></script>
 <script src="business-data.js"></script>
+<script src="i18n.js"></script>
 
 <script src="ai-advisor.js"></script>
 <script src="strategy-builder.js"></script>
@@ -558,6 +585,9 @@ main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px
 <script src="pwa.js"></script>
 
 <script>
+/* ==================== HELPERS ==================== */
+function tr(key, params){ return window.t ? window.t(key, params) : key; }
+
 /* ==================== GLOBAL STATE ==================== */
 var space = null;
 var notes = [];
@@ -608,7 +638,7 @@ function scheduleBackup(){
   var badge = document.getElementById('backupBadge');
   var text = document.getElementById('backupText');
   if(badge && text){
-    text.textContent = serverOnline ? '☁️ حُفظ سحابياً' : '💾 حُفظ محلياً';
+    text.textContent = serverOnline ? tr('toast_saved_cloud') : tr('toast_saved_local');
     badge.classList.add('show');
   }
   backupTimer = setTimeout(function(){ if(badge) badge.classList.remove('show'); }, 1500);
@@ -623,7 +653,8 @@ function gatherSnapshot(){
     notes: notes,
     theme: S.get('theme', 'dark'),
     activeTab: S.get('activeTab', 'dashboard'),
-    welcomeDone: S.get('welcomeDone', false)
+    welcomeDone: S.get('welcomeDone', false),
+    lang: window.i18n ? window.i18n.getLang() : 'ar'
   };
 }
 
@@ -642,10 +673,10 @@ async function doServerSave(){
 function setServerStatus(state){
   var el = document.getElementById('serverStatus'); if(!el) return;
   if(state === 'ok'){
-    el.textContent = '☁️'; el.title = '✅ متصل — حفظ تلقائي';
+    el.textContent = '☁️'; el.title = tr('toast_server_ok');
     el.style.color = 'var(--green)'; el.onclick = null;
   } else {
-    el.textContent = '💾'; el.title = '💾 حفظ محلي';
+    el.textContent = '💾'; el.title = tr('toast_server_off');
     el.style.color = 'var(--muted)';
     el.onclick = function(){ if(window.SB && window.SB.showSyncPanel) window.SB.showSyncPanel(); };
   }
@@ -662,6 +693,7 @@ function applyServerData(data){
     if(typeof data.theme === 'string') S.set('theme', data.theme);
     if(typeof data.activeTab === 'string') S.set('activeTab', data.activeTab);
     if(typeof data.welcomeDone === 'boolean') S.set('welcomeDone', data.welcomeDone);
+    if(typeof data.lang === 'string' && window.i18n) window.i18n.setLang(data.lang, true);
   }catch(e){ console.warn('applyServerData error:', e); }
 }
 
@@ -685,11 +717,11 @@ function customConfirm(message, onConfirm){
   bd.className = 'modal-backdrop show';
   bd.innerHTML = '<div class="modal" style="max-width:400px;text-align:center">' +
     '<div style="font-size:3rem;margin-bottom:12px">⚠️</div>' +
-    '<h3 style="margin-bottom:18px">تأكيد الحذف</h3>' +
+    '<h3 style="margin-bottom:18px">' + tr('modal_confirm_delete') + '</h3>' +
     '<p style="color:var(--muted);margin-bottom:22px;font-size:.9rem">' + esc(message) + '</p>' +
     '<div class="modal-actions" style="justify-content:center">' +
-      '<button class="btn btn-sm btn-ghost" id="cCancel">إلغاء</button>' +
-      '<button class="btn btn-sm btn-danger" id="cConfirm">🗑 نعم، احذف</button>' +
+      '<button class="btn btn-sm btn-ghost" id="cCancel">' + tr('modal_delete_no') + '</button>' +
+      '<button class="btn btn-sm btn-danger" id="cConfirm">' + tr('modal_delete_yes') + '</button>' +
     '</div></div>';
   document.body.appendChild(bd);
   var close = function(){ bd.remove(); };
@@ -721,9 +753,9 @@ function showModal(title, fields, values, onSubmit, onDelete){
   });
   bd.innerHTML = '<div class="modal"><h3>' + esc(title) + '</h3>' + fieldsHtml +
     '<div class="modal-actions">' +
-      (onDelete ? '<button class="btn btn-sm btn-danger" id="mDel">🗑 حذف</button>' : '') +
-      '<button class="btn btn-sm btn-ghost" id="mCancel">إلغاء</button>' +
-      '<button class="btn btn-sm" id="mSave">حفظ</button>' +
+      (onDelete ? '<button class="btn btn-sm btn-danger" id="mDel">' + tr('delete') + '</button>' : '') +
+      '<button class="btn btn-sm btn-ghost" id="mCancel">' + tr('cancel') + '</button>' +
+      '<button class="btn btn-sm" id="mSave">' + tr('save') + '</button>' +
     '</div></div>';
   document.body.appendChild(bd);
   var close = function(){ bd.remove(); };
@@ -759,13 +791,9 @@ function loadAllData(){
     if(raw && typeof raw === 'object' && !Array.isArray(raw)) space = Object.assign({}, defaultSpace, raw);
     else space = Object.assign({}, defaultSpace);
   }catch(e){ space = Object.assign({}, defaultSpace); }
-  if(!Array.isArray(space.ideas)) space.ideas = [];
-  if(!Array.isArray(space.projects)) space.projects = [];
-  if(!Array.isArray(space.salesPipeline)) space.salesPipeline = [];
-  if(!Array.isArray(space.tasks)) space.tasks = [];
-  if(!Array.isArray(space.budget)) space.budget = [];
-  if(!Array.isArray(space.stakeholders)) space.stakeholders = [];
-
+  ['ideas','projects','salesPipeline','tasks','budget','stakeholders'].forEach(function(k){
+    if(!Array.isArray(space[k])) space[k] = [];
+  });
   try{ notes = S.get('notes', []); if(!Array.isArray(notes)) notes = []; }catch(e){ notes = []; }
   if(!space.notes) space.notes = notes;
 }
@@ -782,7 +810,7 @@ function showWelcome(){
   setTimeout(function(){ if(input) input.focus(); }, 200);
   var handle = function(){
     var name = (input && input.value || '').trim();
-    if(!name){ toast('اكتب اسمك 😊', 'warn', 2500); if(input) input.focus(); return; }
+    if(!name){ toast(tr('welcome_name_required'), 'warn', 2500); if(input) input.focus(); return; }
     space.profile = space.profile || {};
     space.profile.name = name;
     space.profile.country = country ? country.value : 'QA';
@@ -790,7 +818,7 @@ function showWelcome(){
     S.set('welcomeDone', true);
     overlay.classList.add('hide');
     setTimeout(function(){ overlay.classList.remove('show'); overlay.style.display = 'none'; }, 500);
-    setTimeout(function(){ toast('أهلاً ' + name + '! 🚀', 'success', 3500); }, 400);
+    setTimeout(function(){ toast(tr('welcome_greeting') + ' ' + name + '! 🚀', 'success', 3500); }, 400);
     try{ renderDashboard(); }catch(e){}
   };
   if(btn) btn.onclick = handle;
@@ -825,7 +853,8 @@ function switchTab(tab, pushHistory){
     dashboard: renderDashboard,
     budget: renderBudget,
     tasks: renderTasks,
-    notes: renderNotes
+    notes: renderNotes,
+    stakeholders: renderStakeholders
   };
   if(fns[tab]){ try{ fns[tab](); }catch(e){ console.error('Render error:', tab, e); } }
   requestAnimationFrame(function(){
@@ -857,15 +886,15 @@ function toggleThemePanel(){
 
 /* ==================== THEMES ==================== */
 var THEMES = [
-  {id:'dark',     name:'داكن',        colors:['#0b0f1a','#22d3ee','#a78bfa']},
-  {id:'dracula',  name:'دراكولا',     colors:['#191a21','#bd93f9','#ff79c6']},
-  {id:'sakura',   name:'ساكورا',      colors:['#1a0e14','#ff8fb8','#c084fc']},
-  {id:'nord',     name:'نورد',        colors:['#2e3440','#88c0d0','#b48ead']},
-  {id:'ocean',    name:'محيط',        colors:['#071a2e','#38bdf8','#3b82f6']},
-  {id:'royal',    name:'ملكي',        colors:['#0f0524','#a78bfa','#fbbf24']},
-  {id:'cyberpunk',name:'سايبربانك',   colors:['#0a0014','#22d3ee','#ec4899']},
-  {id:'midnight', name:'منتصف الليل', colors:['#050914','#0ea5e9','#8b5cf6']},
-  {id:'aurora',   name:'شفق',         colors:['#04101a','#14e0c8','#a78bfa']}
+  {id:'dark',     name_ar:'داكن',         name_en:'Dark',        colors:['#0b0f1a','#22d3ee','#a78bfa']},
+  {id:'dracula',  name_ar:'دراكولا',      name_en:'Dracula',     colors:['#191a21','#bd93f9','#ff79c6']},
+  {id:'sakura',   name_ar:'ساكورا',       name_en:'Sakura',      colors:['#1a0e14','#ff8fb8','#c084fc']},
+  {id:'nord',     name_ar:'نورد',         name_en:'Nord',        colors:['#2e3440','#88c0d0','#b48ead']},
+  {id:'ocean',    name_ar:'محيط',         name_en:'Ocean',       colors:['#071a2e','#38bdf8','#3b82f6']},
+  {id:'royal',    name_ar:'ملكي',         name_en:'Royal',       colors:['#0f0524','#a78bfa','#fbbf24']},
+  {id:'cyberpunk',name_ar:'سايبربانك',    name_en:'Cyberpunk',   colors:['#0a0014','#22d3ee','#ec4899']},
+  {id:'midnight', name_ar:'منتصف الليل',  name_en:'Midnight',    colors:['#050914','#0ea5e9','#8b5cf6']},
+  {id:'aurora',   name_ar:'شفق',          name_en:'Aurora',      colors:['#04101a','#14e0c8','#a78bfa']}
 ];
 function applyTheme(t){
   var validIds = THEMES.map(function(x){ return x.id; });
@@ -878,27 +907,40 @@ function applyTheme(t){
 }
 function buildThemePanel(){
   var grid = document.getElementById('themeGrid'); if(!grid) return;
+  var lang = window.i18n ? window.i18n.getLang() : 'ar';
   var html = '';
   THEMES.forEach(function(t){
-    html += '<div class="theme-swatch" data-theme="' + t.id + '" style="background:linear-gradient(135deg, ' +
+    var label = lang === 'en' ? t.name_en : t.name_ar;
+    html += '<div class="theme-swatch" data-theme="' + t.id + '" data-name-ar="' + t.name_ar + '" data-name-en="' + t.name_en + '" style="background:linear-gradient(135deg, ' +
       t.colors[0] + ' 0%, ' + t.colors[0] + ' 40%, ' + t.colors[1] + ' 40%, ' + t.colors[1] + ' 70%, ' +
       t.colors[2] + ' 70%, ' + t.colors[2] + ' 100%)">' +
-      '<div class="sw-check">✓</div><div class="sw-label">' + t.name + '</div></div>';
+      '<div class="sw-check">✓</div><div class="sw-label">' + label + '</div></div>';
   });
   grid.innerHTML = html;
   grid.querySelectorAll('.theme-swatch').forEach(function(sw){
     sw.onclick = function(){
       applyTheme(sw.dataset.theme);
-      var name = (THEMES.find(function(t){ return t.id === sw.dataset.theme; }) || {}).name || '';
-      toast('🎨 ثيم "' + name + '"', 'success', 1800);
+      var lang2 = window.i18n ? window.i18n.getLang() : 'ar';
+      var nm = lang2 === 'en' ? sw.dataset.nameEn : sw.dataset.nameAr;
+      toast('🎨 ' + nm, 'success', 1800);
     };
+  });
+}
+function refreshThemeLabels(){
+  var lang = window.i18n ? window.i18n.getLang() : 'ar';
+  document.querySelectorAll('.theme-swatch').forEach(function(sw){
+    var lbl = sw.querySelector('.sw-label');
+    if(lbl) lbl.textContent = lang === 'en' ? sw.dataset.nameEn : sw.dataset.nameAr;
   });
 }
 
 /* ==================== DASHBOARD ==================== */
 function renderDailyQuote(){
   var d = new Date();
-  var quotes = window.QUOTES || [{t:'—', a:'—'}];
+  var lang = window.i18n ? window.i18n.getLang() : 'ar';
+  // استخدم اقتباسات حسب اللغة
+  var quotes = window.QUOTES || [];
+  if(!quotes.length) return;
   var idx = (d.getFullYear()*365 + d.getMonth()*31 + d.getDate()) % quotes.length;
   var q = quotes[idx];
   var el1 = document.getElementById('dailyQuoteText'); if(el1) el1.textContent = q.t;
@@ -914,18 +956,21 @@ function renderDashboard(){
   var gl = document.getElementById('greetLine');
   if(gl){
     var hour = now.getHours();
-    var greet = hour < 12 ? '☀️ صباح الخير' : '🌤️ مساء الخير';
-    gl.textContent = greet + ' ' + (name ? name + '، ' : '') + 'لديك ' +
-      (space.projects || []).length + ' مشروع و ' +
-      (space.tasks || []).filter(function(t){ return !t.done; }).length + ' مهمة · ' + country.flag + ' ' + country.name;
+    var greet = hour < 12 ? tr('dash_greeting_morning') : tr('dash_greeting_evening');
+    gl.textContent = greet + ' ' + (name ? name + '، ' : '') +
+      tr('dash_you_have') + ' ' +
+      (space.projects || []).length + ' ' + tr('dash_projects') + ' ' +
+      tr('dash_and') + ' ' +
+      (space.tasks || []).filter(function(t){ return !t.done; }).length + ' ' + tr('dash_tasks') +
+      ' · ' + country.flag + ' ' + country.name;
   }
 
   var el = document.getElementById('dashStats');
   if(el) el.innerHTML =
-    '<div class="stat"><div class="ic">💼</div><div><div class="v">' + (space.projects || []).length + '</div><div class="l">مشروع</div></div></div>' +
-    '<div class="stat"><div class="ic">💡</div><div><div class="v">' + (space.ideas || []).length + '</div><div class="l">فكرة</div></div></div>' +
-    '<div class="stat"><div class="ic">📝</div><div><div class="v">' + (space.tasks || []).filter(function(t){ return !t.done; }).length + '</div><div class="l">مهمة متبقية</div></div></div>' +
-    '<div class="stat"><div class="ic">💼</div><div><div class="v">' + (space.salesPipeline || []).length + '</div><div class="l">فرصة بيعية</div></div></div>';
+    '<div class="stat"><div class="ic">💼</div><div><div class="v">' + (space.projects || []).length + '</div><div class="l">' + tr('dash_projects_label') + '</div></div></div>' +
+    '<div class="stat"><div class="ic">💡</div><div><div class="v">' + (space.ideas || []).length + '</div><div class="l">' + tr('dash_ideas_label') + '</div></div></div>' +
+    '<div class="stat"><div class="ic">📝</div><div><div class="v">' + (space.tasks || []).filter(function(t){ return !t.done; }).length + '</div><div class="l">' + tr('dash_pending_tasks') + '</div></div></div>' +
+    '<div class="stat"><div class="ic">💼</div><div><div class="v">' + (space.salesPipeline || []).length + '</div><div class="l">' + tr('dash_deals') + '</div></div></div>';
 
   var dt = document.getElementById('dashTasks');
   if(dt){
@@ -933,12 +978,12 @@ function renderDashboard(){
     var upcoming = (space.tasks || []).filter(function(t){ return !t.done && t.due && t.due >= today; })
       .sort(function(a,b){ return a.due.localeCompare(b.due); }).slice(0,5);
     if(!upcoming.length){
-      dt.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">✨ لا مهام قريبة</div>';
+      dt.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">' + tr('dash_no_tasks') + '</div>';
     } else {
       var h = '';
       upcoming.forEach(function(t){
         var days = Math.ceil((new Date(t.due) - new Date(today)) / 86400000);
-        var when = days === 0 ? 'اليوم' : days === 1 ? 'غداً' : 'بعد ' + days + ' يوم';
+        var when = days === 0 ? tr('dash_today') : days === 1 ? tr('dash_tomorrow') : tr('dash_in_days', {n: days});
         var col = days <= 2 ? 'var(--red)' : days <= 5 ? 'var(--amber)' : 'var(--muted)';
         h += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem;align-items:center">' +
           '<span style="color:' + col + ';font-weight:700;font-size:.72rem;min-width:60px">' + when + '</span>' +
@@ -954,7 +999,7 @@ function renderDashboard(){
     var stages = window.PIPELINE_STAGES || {};
     var stagesOrder = ['lead','qualified','proposal','negotiation','won'];
     if(!pipeline.length){
-      ds.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">💼 لا توجد فرص</div>';
+      ds.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">' + tr('dash_no_deals') + '</div>';
     } else {
       var h2 = '';
       stagesOrder.forEach(function(k){
@@ -973,7 +1018,7 @@ function renderDashboard(){
   if(di){
     var ideas = (space.ideas || []).slice(-3).reverse();
     if(!ideas.length){
-      di.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">💡 لا توجد أفكار</div>';
+      di.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">' + tr('dash_no_ideas') + '</div>';
     } else {
       var h3 = '';
       ideas.forEach(function(idea){
@@ -998,7 +1043,7 @@ function renderTasks(){
   if(currentTaskFilter === 'pending') tasks = tasks.filter(function(t){ return !t.done; });
   if(currentTaskFilter === 'done') tasks = tasks.filter(function(t){ return t.done; });
   if(!tasks.length){
-    c.innerHTML = '<div class="empty"><div class="ic">📝</div><p>لا توجد مهام</p></div>';
+    c.innerHTML = '<div class="empty"><div class="ic">📝</div><p>' + tr('tasks_empty') + '</p></div>';
     return;
   }
   var html = '';
@@ -1010,7 +1055,7 @@ function renderTasks(){
       '<div class="task-body"><div class="task-title">' + esc(t.title) + '</div>' +
       '<div class="task-meta">' +
       (t.project ? '<span>💼 ' + esc(t.project) + '</span>' : '') +
-      (t.due ? '<span>📅 ' + t.due + (daysLeft !== null ? ' (' + (daysLeft >= 0 ? 'بعد ' + daysLeft + ' يوم' : 'متأخر ' + Math.abs(daysLeft)) + ')' : '') + '</span>' : '') +
+      (t.due ? '<span>📅 ' + t.due + (daysLeft !== null ? ' (' + (daysLeft >= 0 ? tr('dash_in_days', {n: daysLeft}) : tr('dash_overdue', {n: Math.abs(daysLeft)})) + ')' : '') + '</span>' : '') +
       '</div></div>' +
       '<div class="task-actions"><button class="btn btn-sm btn-ghost" data-edit-task="' + t.id + '">✏️</button>' +
       '<button class="btn btn-sm btn-danger" data-del-task="' + t.id + '">🗑</button></div></div>';
@@ -1022,29 +1067,29 @@ function renderTasks(){
 }
 
 function addTask(){
-  window.showModal('📝 مهمة جديدة', [
-    {key:'title', label:'عنوان المهمة'},
-    {key:'project', label:'المشروع (اختياري)'},
-    {key:'due', label:'تاريخ التسليم', type:'date'}
+  window.showModal(tr('tasks_new'), [
+    {key:'title', label: tr('tasks_title_field')},
+    {key:'project', label: tr('tasks_project_field')},
+    {key:'due', label: tr('tasks_due_field'), type:'date'}
   ], {title:'', project:'', due:''}, function(data){
-    if(!data.title) return toast('أدخل عنواناً', 'warn');
+    if(!data.title) return toast(tr('tasks_title_required'), 'warn');
     space.tasks.push(Object.assign({id: uid(), done: false}, data));
     saveSpace(); renderTasks(); renderDashboard();
-    toast('✓ أُضيفت المهمة', 'success');
+    toast(tr('tasks_added'), 'success');
   });
 }
 
 function editTask(id){
   var t = space.tasks.find(function(x){ return x.id === id; }); if(!t) return;
-  window.showModal('✏️ تعديل مهمة', [
-    {key:'title', label:'العنوان'},
-    {key:'project', label:'المشروع'},
-    {key:'due', label:'التاريخ', type:'date'}
+  window.showModal(tr('tasks_edit'), [
+    {key:'title', label: tr('tasks_title_field')},
+    {key:'project', label: tr('tasks_project_field')},
+    {key:'due', label: tr('tasks_due_field'), type:'date'}
   ], t, function(data){
     Object.assign(t, data);
     saveSpace(); renderTasks(); renderDashboard();
   }, function(){
-    window.customConfirm('حذف المهمة؟', function(){
+    window.customConfirm(tr('tasks_delete_confirm'), function(){
       space.tasks = space.tasks.filter(function(x){ return x.id !== id; });
       saveSpace(); renderTasks(); renderDashboard();
     });
@@ -1053,10 +1098,10 @@ function editTask(id){
 function toggleTask(id){
   var t = space.tasks.find(function(x){ return x.id === id; }); if(!t) return;
   t.done = !t.done; saveSpace(); renderTasks(); renderDashboard();
-  if(t.done) toast('✓ أحسنت!', 'success', 1200);
+  if(t.done) toast(tr('tasks_done_msg'), 'success', 1200);
 }
 function deleteTask(id){
-  window.customConfirm('حذف المهمة؟', function(){
+  window.customConfirm(tr('tasks_delete_confirm'), function(){
     space.tasks = space.tasks.filter(function(x){ return x.id !== id; });
     saveSpace(); renderTasks(); renderDashboard();
   });
@@ -1069,14 +1114,14 @@ function renderBudget(){
   var expense = (space.budget || []).filter(function(b){ return b.type === 'expense'; }).reduce(function(a,b){ return a + (parseFloat(b.amount) || 0); }, 0);
   var balance = income - expense;
   sumEl.innerHTML =
-    '<div class="budget-card income"><div class="bc-icon">📈</div><div class="bc-val">' + income.toFixed(0) + '</div><div class="bc-lbl">إجمالي الدخل</div></div>' +
-    '<div class="budget-card expense"><div class="bc-icon">📉</div><div class="bc-val">' + expense.toFixed(0) + '</div><div class="bc-lbl">إجمالي المصاريف</div></div>' +
-    '<div class="budget-card balance ' + (balance < 0 ? 'neg' : '') + '"><div class="bc-icon">💼</div><div class="bc-val">' + balance.toFixed(0) + '</div><div class="bc-lbl">الرصيد</div></div>';
+    '<div class="budget-card income"><div class="bc-icon">📈</div><div class="bc-val">' + income.toFixed(0) + '</div><div class="bc-lbl">' + tr('budget_total_income') + '</div></div>' +
+    '<div class="budget-card expense"><div class="bc-icon">📉</div><div class="bc-val">' + expense.toFixed(0) + '</div><div class="bc-lbl">' + tr('budget_total_expense') + '</div></div>' +
+    '<div class="budget-card balance ' + (balance < 0 ? 'neg' : '') + '"><div class="bc-icon">💼</div><div class="bc-val">' + balance.toFixed(0) + '</div><div class="bc-lbl">' + tr('budget_balance') + '</div></div>';
 
   var list = document.getElementById('budgetList');
   var items = (space.budget || []).slice().sort(function(a,b){ return (b.date || '').localeCompare(a.date || ''); });
   if(!items.length){
-    list.innerHTML = '<div class="empty"><div class="ic">💰</div><p>لا توجد عناصر</p></div>';
+    list.innerHTML = '<div class="empty"><div class="ic">💰</div><p>' + tr('budget_empty') + '</p></div>';
     return;
   }
   var html = '';
@@ -1090,15 +1135,13 @@ function renderBudget(){
         (b.note ? '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">' + esc(b.note) + '</div>' : '') + '</div>' +
       '</div>' +
       '<div style="font-weight:800;font-size:.95rem;text-align:center;color:' + (b.type === 'income' ? 'var(--green)' : 'var(--red)') + '">' + sign + b.amount + '<div style="font-size:.65rem;color:var(--muted);font-weight:400">' + (b.date || '') + '</div></div>' +
-      '<div style="display:flex;gap:4px">' +
-        '<button class="btn btn-sm btn-danger" data-del-budget="' + b.id + '">🗑</button>' +
-      '</div>' +
+      '<div style="display:flex;gap:4px"><button class="btn btn-sm btn-danger" data-del-budget="' + b.id + '">🗑</button></div>' +
     '</div>';
   });
   list.innerHTML = html;
   list.querySelectorAll('[data-del-budget]').forEach(function(btn){
     btn.onclick = function(){
-      window.customConfirm('حذف العنصر؟', function(){
+      window.customConfirm(tr('budget_delete_confirm'), function(){
         space.budget = space.budget.filter(function(x){ return x.id !== btn.dataset.delBudget; });
         saveSpace(); renderBudget(); renderDashboard();
       });
@@ -1113,13 +1156,13 @@ function addBudgetItem(type){
     if(type === 'expense' && isIncome) return;
     catOpts.push({v:c.v, l:c.i + ' ' + c.l});
   });
-  window.showModal('إضافة ' + (type === 'income' ? 'دخل' : 'مصروف'), [
-    {key:'category', label:'التصنيف', type:'select', options: catOpts},
-    {key:'amount', label:'المبلغ', type:'number'},
-    {key:'date', label:'التاريخ', type:'date'},
-    {key:'note', label:'ملاحظة', type:'textarea'}
+  window.showModal(type === 'income' ? tr('budget_add_income') : tr('budget_add_expense'), [
+    {key:'category', label: tr('budget_category'), type:'select', options: catOpts},
+    {key:'amount', label: tr('budget_amount'), type:'number'},
+    {key:'date', label: tr('budget_date'), type:'date'},
+    {key:'note', label: tr('budget_note'), type:'textarea'}
   ], {category: catOpts[0].v, amount:0, date: new Date().toISOString().slice(0,10), note:''}, function(data){
-    if(!data.amount || parseFloat(data.amount) <= 0) return toast('أدخل مبلغاً', 'warn');
+    if(!data.amount || parseFloat(data.amount) <= 0) return toast(tr('budget_amount_required'), 'warn');
     space.budget.push({
       id: uid(), type: type, category: data.category,
       amount: parseFloat(data.amount),
@@ -1127,28 +1170,32 @@ function addBudgetItem(type){
       note: data.note || ''
     });
     saveSpace(); renderBudget(); renderDashboard();
-    toast('✓ أُضيف', 'success');
+    toast(tr('budget_added'), 'success');
   });
 }
 
 /* ==================== NOTES ==================== */
 function renderNotes(){
   var c = document.getElementById('notesList'); if(!c) return;
-  var cnt = document.getElementById('notesCount'); if(cnt) cnt.textContent = notes.length + ' ملاحظة';
+  var cnt = document.getElementById('notesCount');
+  if(cnt) cnt.textContent = tr('notes_count', {n: notes.length});
   if(!notes.length){
-    c.innerHTML = '<div class="empty"><div class="ic">📔</div><p>لا توجد ملاحظات</p></div>';
+    c.innerHTML = '<div class="empty"><div class="ic">📔</div><p>' + tr('notes_empty') + '</p></div>';
     return;
   }
   var html = '';
   notes.forEach(function(n, i){
     var dateStr = '';
-    try{ dateStr = new Date(n.ts).toLocaleDateString('ar-EG', {weekday:'long', year:'numeric', month:'short', day:'numeric'}); }catch(e){}
+    try{
+      var lang = window.i18n ? window.i18n.getLang() : 'ar';
+      dateStr = new Date(n.ts).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', {weekday:'long', year:'numeric', month:'short', day:'numeric'});
+    }catch(e){}
     html += '<div class="note-card">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
       '<span style="font-size:.72rem;color:var(--muted2)">' + dateStr + '</span>' +
       '<button class="btn btn-sm btn-danger" data-del-note="' + i + '">✕</button></div>' +
-      '<input value="' + esc(n.title || '') + '" placeholder="عنوان..." data-note-title="' + i + '">' +
-      '<textarea placeholder="اكتب..." data-note-body="' + i + '">' + esc(n.body || '') + '</textarea></div>';
+      '<input value="' + esc(n.title || '') + '" placeholder="' + tr('notes_title_ph') + '" data-note-title="' + i + '">' +
+      '<textarea placeholder="' + tr('notes_body_ph') + '" data-note-body="' + i + '">' + esc(n.body || '') + '</textarea></div>';
   });
   c.innerHTML = html;
   c.querySelectorAll('[data-del-note]').forEach(function(b){
@@ -1165,10 +1212,10 @@ function addNote(){
   notes.unshift({title:'', body:'', ts: Date.now()});
   S.set('notes', notes); space.notes = notes;
   renderNotes(); renderDashboard();
-  toast('✓ أُضيفت', 'success', 1500);
+  toast(tr('notes_added'), 'success', 1500);
 }
 function deleteNote(i){
-  window.customConfirm('حذف الملاحظة؟', function(){
+  window.customConfirm(tr('notes_delete_confirm'), function(){
     notes.splice(i, 1);
     S.set('notes', notes); space.notes = notes;
     renderNotes(); renderDashboard();
@@ -1180,13 +1227,13 @@ function renderStakeholders(){
   var el = document.getElementById('stakeholdersList'); if(!el) return;
   var list = space.stakeholders || [];
   if(!list.length){
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">لا يوجد أصحاب مصلحة</div>';
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">' + tr('sh_empty') + '</div>';
     return;
   }
   var html = '';
   list.forEach(function(s){
     html += '<div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg2);border-radius:10px;margin-bottom:8px">' +
-      '<div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#0b0f1a;font-weight:800">' + (s.name || '؟').charAt(0) + '</div>' +
+      '<div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#0b0f1a;font-weight:800">' + esc((s.name || '؟').charAt(0)) + '</div>' +
       '<div style="flex:1;min-width:0">' +
         '<div style="font-weight:700;font-size:.9rem">' + esc(s.name) + '</div>' +
         '<div style="font-size:.72rem;color:var(--muted)">' + esc(s.role || '') + (s.org ? ' · ' + esc(s.org) : '') + '</div>' +
@@ -1197,26 +1244,25 @@ function renderStakeholders(){
   el.innerHTML = html;
   el.querySelectorAll('[data-del-sh]').forEach(function(b){
     b.onclick = function(){
-      window.customConfirm('حذف؟', function(){
+      window.customConfirm(tr('sh_delete_confirm'), function(){
         space.stakeholders = space.stakeholders.filter(function(x){ return x.id !== b.dataset.delSh; });
         saveSpace(); renderStakeholders();
       });
     };
   });
 }
-
 function addStakeholder(){
-  window.showModal('👥 صاحب مصلحة', [
-    {key:'name', label:'الاسم'},
-    {key:'role', label:'الدور'},
-    {key:'org', label:'الجهة'},
-    {key:'contact', label:'التواصل'}
+  window.showModal(tr('sh_new'), [
+    {key:'name', label: tr('sh_name')},
+    {key:'role', label: tr('sh_role')},
+    {key:'org', label: tr('sh_org')},
+    {key:'contact', label: tr('sh_contact')}
   ], {name:'', role:'', org:'', contact:''}, function(data){
-    if(!data.name) return toast('أدخل الاسم', 'warn');
+    if(!data.name) return toast(tr('sh_name_required'), 'warn');
     if(!space.stakeholders) space.stakeholders = [];
     space.stakeholders.push(Object.assign({id: uid()}, data));
     saveSpace(); renderStakeholders();
-    toast('✓ أُضيف', 'success');
+    toast(tr('sh_added'), 'success');
   });
 }
 
@@ -1231,8 +1277,8 @@ function downloadBackup(){
     a.download = 'business-dev-' + new Date().toISOString().slice(0,10) + '.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-    toast('💾 تم التنزيل', 'success', 2500);
-  }catch(e){ toast('فشل', 'warn'); }
+    toast(tr('toast_backup_done'), 'success', 2500);
+  }catch(e){ toast(tr('toast_backup_failed'), 'warn'); }
 }
 
 function restoreFromFile(){
@@ -1247,9 +1293,9 @@ function restoreFromFile(){
         applyServerData(data);
         saveSpace();
         S.set('notes', notes);
-        toast('✅ تمت الاستعادة', 'success', 2500);
+        toast(tr('toast_restore_done'), 'success', 2500);
         setTimeout(function(){ location.reload(); }, 800);
-      }catch(err){ toast('ملف تالف', 'warn', 3000); }
+      }catch(err){ toast(tr('toast_restore_failed'), 'warn', 3000); }
     };
     reader.readAsText(file);
   };
@@ -1258,7 +1304,7 @@ function restoreFromFile(){
 
 /* ==================== PDF ==================== */
 function exportPDF(){
-  toast('🖨️ جاري التجهيز...', 'info', 1500);
+  toast(tr('toast_pdf_preparing'), 'info', 1500);
   setTimeout(function(){ window.print(); }, 400);
 }
 
@@ -1279,7 +1325,7 @@ function initSearch(){
       if((t.title || '').toLowerCase().indexOf(q) > -1) results.push({name: t.title, tab:'tasks'});
     });
     if(results.length){
-      toast('🔍 ' + results.length + ' نتيجة: ' + results[0].name, 'info', 3000);
+      toast(tr('toast_search_results', {n: results.length, name: results[0].name}), 'info', 3000);
     }
   };
 }
@@ -1316,9 +1362,9 @@ function bindAllEvents(){
   var pdfBtn = document.getElementById('pdfBtn'); if(pdfBtn) pdfBtn.onclick = function(){ closeSettingsMenu(); exportPDF(); };
 
   function bind(id, fn){ var el = document.getElementById(id); if(el) el.onclick = fn; }
-  bind('btnAddIdea', addIdea);
+  bind('btnAddIdea', function(){ if(window.addIdea) window.addIdea(); });
   bind('btnAddTask', addTask);
-  bind('btnAddDeal', addDeal);
+  bind('btnAddDeal', function(){ if(window.addDeal) window.addDeal(); });
   bind('btnAddStakeholder', addStakeholder);
   bind('btnAddIncome', function(){ addBudgetItem('income'); });
   bind('btnAddExpense', function(){ addBudgetItem('expense'); });
@@ -1333,7 +1379,6 @@ function bindAllEvents(){
     };
   });
 
-  // Country tabs
   document.querySelectorAll('[data-country-tab]').forEach(function(btn){
     btn.onclick = function(){
       var k = btn.dataset.countryTab;
@@ -1353,14 +1398,24 @@ function bindAllEvents(){
     b.onclick = function(){
       var type = b.dataset.fab;
       toggleFabMenu();
-      if(type === 'idea'){ switchTab('ideas'); setTimeout(addIdea, 250); }
+      if(type === 'idea'){ switchTab('ideas'); setTimeout(function(){ if(window.addIdea) window.addIdea(); }, 250); }
       else if(type === 'task'){ switchTab('tasks'); setTimeout(addTask, 250); }
-      else if(type === 'deal'){ switchTab('sales'); setTimeout(addDeal, 250); }
+      else if(type === 'deal'){ switchTab('sales'); setTimeout(function(){ if(window.addDeal) window.addDeal(); }, 250); }
       else if(type === 'expense'){ switchTab('budget'); setTimeout(function(){ addBudgetItem('expense'); }, 250); }
       else if(type === 'note'){ switchTab('notes'); setTimeout(addNote, 250); }
     };
   });
 }
+
+/* ==================== LANGUAGE CHANGE HOOKS ==================== */
+document.addEventListener('languagechange', function(e){
+  // تحديث الـ server status
+  setServerStatus(serverOnline ? 'ok' : 'off');
+  // تحديث اقتباس اليوم
+  try{ renderDailyQuote(); }catch(err){}
+  // تحديث أسماء الثيمات
+  try{ refreshThemeLabels(); }catch(err){}
+});
 
 /* ==================== BOOT ==================== */
 function safeRun(label, fn){
@@ -1368,7 +1423,7 @@ function safeRun(label, fn){
 }
 
 async function boot(){
-  console.log('🚀 Booting Business Dev V1...');
+  console.log('🚀 Booting Business Dev (Bilingual)...');
 
   safeRun('Load local data', loadAllData);
 
@@ -1393,8 +1448,12 @@ async function boot(){
   safeRun('Budget', renderBudget);
   safeRun('Notes', renderNotes);
   safeRun('Stakeholders', renderStakeholders);
-  safeRun('Countries', function(){ if(window.renderCountries) window.renderCountries(); });
-  safeRun('Frameworks', function(){ if(window.renderFrameworks) window.renderFrameworks(); });
+
+  // Apply translations again after boot
+  if(window.i18n){
+    safeRun('Apply i18n', function(){ window.i18n.applyTranslations(); });
+  }
+
   safeRun('AI bindings', function(){ if(typeof window.bindAIEvents === 'function') window.bindAIEvents(); });
 
   safeRun('Initial tab', function(){
@@ -1411,7 +1470,7 @@ async function boot(){
       setTimeout(function(){
         try{
           var hour = new Date().getHours();
-          var greet = hour < 12 ? 'صباح الخير' : 'مساء الخير';
+          var greet = hour < 12 ? tr('dash_greeting_morning') : tr('dash_greeting_evening');
           toast(greet + ' ' + space.profile.name.split(' ')[0] + '! 💼', 'success', 3000);
         }catch(e){}
       }, 800);

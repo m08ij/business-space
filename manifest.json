@@ -1,7 +1,7 @@
 {
-  "name": "تطوير أعمالي",
+  "name": "Business Dev - تطوير أعمالي",
   "short_name": "Business Dev",
-  "description": "منصة عربية شاملة لتطوير الأعمال وإدارة المشاريع المستدامة",
+  "description": "منصة عربية وإنجليزية شاملة لتطوير الأعمال وإدارة المشاريع المستدامة",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -18,10 +18,10 @@
     { "src": "android-chrome-512x512.png","sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "shortcuts": [
-    { "name": "فكرة جديدة",     "short_name": "فكرة",     "url": "./index.html#ideas",      "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] },
-    { "name": "الاستراتيجية",   "short_name": "استراتيجية","url": "./index.html#strategy",   "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] },
-    { "name": "المبيعات",       "short_name": "مبيعات",   "url": "./index.html#sales",      "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] },
-    { "name": "قياس الأثر",     "short_name": "أثر",      "url": "./index.html#impact",     "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] },
-    { "name": "الميزانية",      "short_name": "ميزانية",  "url": "./index.html#budget",     "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] }
+    { "name": "فكرة جديدة / New Idea",  "short_name": "Idea",     "url": "./index.html#ideas",      "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] },
+    { "name": "الاستراتيجية / Strategy","short_name": "Strategy", "url": "./index.html#strategy",   "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] },
+    { "name": "المبيعات / Sales",       "short_name": "Sales",    "url": "./index.html#sales",      "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] },
+    { "name": "قياس الأثر / Impact",    "short_name": "Impact",   "url": "./index.html#impact",     "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] },
+    { "name": "الميزانية / Budget",     "short_name": "Budget",   "url": "./index.html#budget",     "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }] }
   ]
 }

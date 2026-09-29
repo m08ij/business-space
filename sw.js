@@ -1,11 +1,12 @@
 /* ============================================================
-   ⚙️ sw.js — Service Worker v1
+   ⚙️ sw.js — Service Worker v2 (bilingual)
    ============================================================ */
-var CACHE_NAME = 'bd-cache-v1';
+var CACHE_NAME = 'bd-cache-v2';
 var URLS_TO_CACHE = [
   './',
   './index.html',
   './business-data.js',
+  './i18n.js',
   './strategy-builder.js',
   './idea-incubator.js',
   './impact-calculator.js',
@@ -46,7 +47,6 @@ self.addEventListener('fetch', function(e){
   var url = e.request.url;
   if(url.indexOf('supabase.co') > -1) return;
   if(url.indexOf('cdn.jsdelivr.net') > -1) return;
-  if(url.indexOf('translate.google.com') > -1) return;
   if(url.indexOf('api.qrserver.com') > -1) return;
   if(url.indexOf('open-meteo.com') > -1) return;
   if(url.indexOf('aladhan.com') > -1) return;
