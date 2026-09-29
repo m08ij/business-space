@@ -1,7 +1,7 @@
 /* ============================================================
    ⚙️ sw.js — Service Worker v2 (bilingual)
    ============================================================ */
-var CACHE_NAME = 'bd-cache-v3';
+var CACHE_NAME = 'bd-cache-v6';
 var URLS_TO_CACHE = [
   './',
   './index.html',
@@ -15,6 +15,9 @@ var URLS_TO_CACHE = [
   // Fixes
   './qc-fix.js',
   './fix-buttons.js',
+  // Global countries
+  './countries-global.js',
+  './country-patch.js',
   // Modules
   './ai-advisor.js',
   './strategy-builder.js',
@@ -34,8 +37,6 @@ var URLS_TO_CACHE = [
   './archive.js',
   './demo-project.js',
   './pwa.js'
-  './country-patch.js',
-  './countries-global.js',
 ];
 
 self.addEventListener('install', function(e){

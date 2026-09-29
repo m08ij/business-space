@@ -1,8 +1,7 @@
 /* ============================================================
-   🌍 country-patch.js — قائمة الدول العالمية في القوائم
-   - كل دول العالم
-   - مرتّبة أبجدياً بالإنجليزية
-   - الدول التفصيلية (9 عربية) + المخصصة في الأعلى
+   🌍 country-patch.js — قائمة الدول العالمية (نسخة محسّنة للأداء)
+   - بدون MutationObserver (كان يسبب تجميد)
+   - patch مرة واحدة عند التحميل + عند تغيير اللغة فقط
    ============================================================ */
 (function(){
   'use strict';
@@ -41,53 +40,43 @@
     return { featured: featured, featuredCodes: featuredCodes, other: otherCountries, lang: lang };
   }
 
-  /* تعبئة select بالدول */
+  /* تعبئة select بالدول (خفيف وسريع) */
   function populateSelect(sel){
     if(!sel) return;
     var current = sel.value;
     var data = buildCountryOptions();
     var lang = data.lang;
     
-    sel.innerHTML = '';
+    /* بناء HTML كامل مرة واحدة (أسرع بكثير من appendChild في حلقة) */
+    var html = '';
     
-    /* 1) الدول المميزة (تفاصيل كاملة) */
     if(data.featuredCodes.length){
-      var group1 = document.createElement('optgroup');
-      group1.label = lang === 'en' ? '⭐ Featured (full details)' : '⭐ مميزة (تفاصيل كاملة)';
+      html += '<optgroup label="' + (lang === 'en' ? '⭐ Featured (full details)' : '⭐ مميزة (تفاصيل كاملة)') + '">';
       data.featuredCodes.forEach(function(code){
         var c = data.featured[code];
-        var opt = document.createElement('option');
-        opt.value = code;
-        opt.textContent = (c.flag || '🌍') + ' ' + (lang === 'en' ? c.nameEn : c.name) +
-                         (lang === 'en' ? '' : ' / ' + c.nameEn);
-        group1.appendChild(opt);
+        var label = (c.flag || '🌍') + ' ' + (lang === 'en' ? c.nameEn : c.name) +
+                    (lang === 'en' ? '' : ' / ' + (c.nameEn || ''));
+        html += '<option value="' + code + '">' + label + '</option>';
       });
-      sel.appendChild(group1);
+      html += '</optgroup>';
     }
     
-    /* 2) باقي دول العالم أبجدياً */
     if(data.other.length){
-      var group2 = document.createElement('optgroup');
-      group2.label = lang === 'en' ? '🌍 All countries (A → Z)' : '🌍 كل الدول (أ → ي)';
+      html += '<optgroup label="' + (lang === 'en' ? '🌍 All countries (A → Z)' : '🌍 كل الدول (أ → ي)') + '">';
       data.other.forEach(function(c){
-        var opt = document.createElement('option');
-        opt.value = c.code;
-        opt.textContent = c.flag + ' ' + (lang === 'en' ? c.nameEn : c.name) +
-                         (lang === 'en' ? '' : ' / ' + c.nameEn);
-        group2.appendChild(opt);
+        var label = c.flag + ' ' + (lang === 'en' ? c.nameEn : c.name) +
+                    (lang === 'en' ? '' : ' / ' + c.nameEn);
+        html += '<option value="' + c.code + '">' + label + '</option>';
       });
-      sel.appendChild(group2);
+      html += '</optgroup>';
     }
     
-    /* 3) خيار "أخرى" */
-    var other = document.createElement('option');
-    other.value = '__other__';
-    other.textContent = lang === 'en' ? '❓ Other / Not listed' : '❓ أخرى / غير مدرجة';
-    sel.appendChild(other);
+    html += '<option value="__other__">' + (lang === 'en' ? '❓ Other / Not listed' : '❓ أخرى / غير مدرجة') + '</option>';
+    
+    sel.innerHTML = html;
     
     /* استعادة القيمة */
     if(current && sel.querySelector('option[value="' + current + '"]')) sel.value = current;
-    sel._patched = true;
   }
 
   /* هل الرمز دولة عالمية؟ */
@@ -109,27 +98,43 @@
     return { flag: '🌍', name: code, nameEn: code };
   }
 
-  function patch(){
-    populateSelect(document.getElementById('welcomeCountry'));
+  /* ✅ patch مرة واحدة فقط — بدون مراقبة DOM */
+  var _lastPatchedLang = null;
+  function patch(force){
+    var sel = document.getElementById('welcomeCountry');
+    if(!sel) return false;
+    var lang = getLang();
+    /* أعد البناء فقط إذا تغيّرت اللغة أو أول مرة */
+    if(!force && _lastPatchedLang === lang && sel.options.length > 3) return true;
+    populateSelect(sel);
+    _lastPatchedLang = lang;
+    return true;
   }
 
-  /* إعادة التعبئة عند تغيير اللغة */
+  /* ✅ استخدم setTimeout فقط، بدون MutationObserver */
+  function init(){
+    if(!patch()){
+      /* انتظر حتى يظهر الـ select (بحد أقصى 5 ثوان) */
+      var tries = 0;
+      var timer = setInterval(function(){
+        tries++;
+        if(patch() || tries > 20){
+          clearInterval(timer);
+        }
+      }, 250);
+    }
+  }
+
+  /* ✅ عند تغيير اللغة فقط (وليس كل DOM mutation) */
   document.addEventListener('languagechange', function(){
-    var s = document.getElementById('welcomeCountry');
-    if(s) s._patched = false;
-    patch();
+    setTimeout(function(){ patch(true); }, 100);
   });
 
-  /* مراقبة DOM */
-  var mo = new MutationObserver(function(){ patch(); });
-  
-  function init(){
-    mo.observe(document.body, { childList: true, subtree: true });
-    patch();
+  if(document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(init, 300); });
+  } else {
+    setTimeout(init, 300);
   }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
 
   /* تصدير للاستخدام في الموديولات الأخرى */
   window.populateCountrySelect = populateSelect;
@@ -137,5 +142,5 @@
   window.isGlobalCountry = isGlobalCountry;
   window.buildCountryOptions = buildCountryOptions;
 
-  console.log('🌍 Country patch loaded — global list ready');
+  console.log('🌍 Country patch loaded — global list ready (optimized)');
 })();
