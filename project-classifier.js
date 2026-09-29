@@ -1,6 +1,8 @@
 /* ============================================================
-   🗂️ project-classifier.js — فرز المشاريع + حذف تعاقبي
-   يستبدل عرض الأفكار في idea-incubator بعرض ذكي
+   🗂️ project-classifier.js v2 — فرز ذكي + حذف تعاقبي
+   ✅ لا يستبدل renderIdeas — يعمل كـ hook بعد العرض
+   ✅ حذف أصحاب المصلحة مرتبط
+   ✅ Progress Popup أثناء الحذف
    ============================================================ */
 (function(){
   'use strict';
@@ -8,7 +10,7 @@
   function tr(k, p){ return window.t ? window.t(k, p) : k; }
   function toast(m,t,d){ if(typeof window.toast === 'function') window.toast(m, t||'info', d||2200); }
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function getSpace(){ return window.space || {ideas:[], projects:[]}; }
+  function getSpace(){ return window.space || {ideas:[], projects:[], tasks:[], budget:[], stakeholders:[]}; }
   function save(){ if(window.saveSpace) window.saveSpace(); }
   function getLang(){ return window.i18n ? window.i18n.getLang() : 'ar'; }
   function pick(obj, base){
@@ -16,18 +18,167 @@
     return obj[base] || '';
   }
 
-  /* ============ حالة العرض ============ */
+  /* ============ Progress Popup ============ */
+  var _busyEl = null;
+  function showBusy(text){
+    hideBusy();
+    _busyEl = document.createElement('div');
+    _busyEl.id = 'clsBusyPopup';
+    _busyEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;' +
+      'background:var(--card);border:1px solid var(--cyan);border-radius:14px;padding:14px 22px;' +
+      'display:flex;align-items:center;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 30px var(--glow);' +
+      'animation:clsBusyIn .25s ease';
+    _busyEl.innerHTML =
+      '<div style="width:22px;height:22px;border:3px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:clsSpin .8s linear infinite"></div>' +
+      '<div style="font-weight:700;font-size:.85rem">' + esc(text) + '</div>';
+    /* إضافة الأنيميشن إن لم يكن موجود */
+    if(!document.getElementById('clsBusyStyle')){
+      var st = document.createElement('style');
+      st.id = 'clsBusyStyle';
+      st.textContent = '@keyframes clsSpin{to{transform:rotate(360deg)}}' +
+        '@keyframes clsBusyIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+      document.head.appendChild(st);
+    }
+    document.body.appendChild(_busyEl);
+  }
+  function hideBusy(){
+    if(_busyEl){ _busyEl.remove(); _busyEl = null; }
+  }
+
+  /* ============ ربط شامل ============ */
+  function findProject(idea){
+    var sp = getSpace();
+    return (sp.projects || []).find(function(p){ return p.ideaId === idea.id || p.name === idea.name; });
+  }
+
+  function findRelated(project, idea){
+    var sp = getSpace();
+    var names = [project && project.name, idea && idea.name].filter(Boolean);
+    var ids = [project && project.id, idea && idea.id].filter(Boolean);
+    return {
+      tasks: (sp.tasks || []).filter(function(t){
+        return ids.indexOf(t.projectId) > -1 || names.indexOf(t.project) > -1;
+      }),
+      budget: (sp.budget || []).filter(function(b){
+        if(ids.indexOf(b.projectId) > -1) return true;
+        if(b.note && names.some(function(n){ return b.note.indexOf(n) > -1; })) return true;
+        return false;
+      }),
+      stakeholders: (sp.stakeholders || []).filter(function(s){
+        if(ids.indexOf(s.projectId) > -1) return true;
+        if(names.indexOf(s.project) > -1) return true;
+        return false;
+      }),
+      milestones: project ? (project.milestones || []) : [],
+      risks: project ? (project.risks || []) : []
+    };
+  }
+
+  /* ============ الحذف التعاقبي ============ */
+  function cascadeDelete(ideaId, projectId){
+    var sp = getSpace();
+    var idea = ideaId ? (sp.ideas || []).find(function(x){ return x.id === ideaId; }) : null;
+    var project = projectId
+      ? (sp.projects || []).find(function(x){ return x.id === projectId; })
+      : (idea ? findProject(idea) : null);
+
+    if(!idea && !project){
+      toast(tr('cls_not_found'), 'warn');
+      return;
+    }
+
+    var related = findRelated(project, idea);
+    var title = idea ? idea.name : project.name;
+
+    /* بناء قائمة ما سيُحذف */
+    var lines = [];
+    if(idea) lines.push('💡 ' + tr('cls_will_delete_idea'));
+    if(project) lines.push('💼 ' + tr('cls_will_delete_project'));
+    if(related.milestones.length) lines.push('🎯 ' + related.milestones.length + ' ' + tr('ms_title'));
+    if(related.tasks.length) lines.push('📝 ' + related.tasks.length + ' ' + tr('nav_tasks'));
+    if(related.budget.length) lines.push('💰 ' + related.budget.length + ' ' + tr('nav_budget'));
+    if(related.stakeholders.length) lines.push('👥 ' + related.stakeholders.length + ' ' + tr('nav_stakeholders'));
+    if(related.risks.length) lines.push('⚠️ ' + related.risks.length + ' ' + tr('nav_risks'));
+
+    var msg = tr('cls_delete_confirm') + '\n\n📌 ' + title + '\n\n' + lines.join('\n') + '\n\n' + tr('cls_cannot_undo');
+
+    window.customConfirm(msg, function(){
+      /* إظهار progress */
+      showBusy(tr('cls_deleting') + ' "' + title + '"...');
+
+      /* تأخير بسيط لإظهار البوب أب */
+      setTimeout(function(){
+        try{
+          /* 1) المهام */
+          if(related.tasks.length){
+            var taskIds = related.tasks.map(function(t){ return t.id; });
+            sp.tasks = sp.tasks.filter(function(t){ return taskIds.indexOf(t.id) === -1; });
+          }
+          /* 2) الميزانية */
+          if(related.budget.length){
+            var bIds = related.budget.map(function(b){ return b.id; });
+            sp.budget = sp.budget.filter(function(b){ return bIds.indexOf(b.id) === -1; });
+          }
+          /* 3) أصحاب المصلحة */
+          if(related.stakeholders.length){
+            var sIds = related.stakeholders.map(function(s){ return s.id; });
+            sp.stakeholders = sp.stakeholders.filter(function(s){ return sIds.indexOf(s.id) === -1; });
+          }
+          /* 4) المشروع */
+          if(project){
+            sp.projects = sp.projects.filter(function(p){ return p.id !== project.id; });
+          }
+          /* 5) الفكرة */
+          if(idea){
+            sp.ideas = sp.ideas.filter(function(x){ return x.id !== idea.id; });
+          }
+
+          save();
+        }catch(e){
+          console.error('Cascade delete error:', e);
+        }
+
+        /* إخفاء البوب أب */
+        setTimeout(function(){
+          hideBusy();
+          toast(tr('cls_deleted'), 'success', 2500);
+
+          /* إعادة رسم الشاشة الحالية */
+          redrawCurrent();
+        }, 350);
+      }, 250);
+    });
+  }
+
+  /* ============ إعادة الرسم ============ */
+  function redrawCurrent(){
+    var active = document.querySelector('.section.active');
+    if(!active) return;
+    var id = active.id;
+    var fn = {
+      ideas: window.renderIdeas,
+      dashboard: window.renderDashboard,
+      roadmap: window.renderRoadmap,
+      stakeholders: window.renderStakeholders,
+      tasks: window.renderTasks,
+      budget: window.renderBudget,
+      reports: window.renderInsights,
+      milestones: window.renderMilestones,
+      risks: window.renderRisks
+    }[id];
+    if(typeof fn === 'function'){
+      try{ fn(); }catch(e){ console.error('redraw', id, e); }
+    }
+  }
+
+  /* ============ شريط الفلاتر ============ */
   var view = {
-    mode: 'grid',           // grid | list
-    filterType: 'all',      // all | startup | sme | social | ngo | corporate
+    filterType: 'all',
     filterSector: 'all',
-    filterCountry: 'all',
-    filterStage: 'all',     // للأفكار: all | idea | project
-    sortBy: 'recent',       // recent | name | progress | sdg
-    search: ''
+    search: '',
+    sortBy: 'recent'
   };
 
-  /* ============ قراءة إعدادات محفوظة ============ */
   function loadView(){
     try{
       var v = JSON.parse(localStorage.getItem('bd_classifier_view') || 'null');
@@ -38,397 +189,159 @@
     try{ localStorage.setItem('bd_classifier_view', JSON.stringify(view)); }catch(e){}
   }
 
-  /* ============ إحصائيات تعاقبية ============ */
-  function countRelated(idea){
-    var sp = getSpace();
-    var project = (sp.projects || []).find(function(p){ return p.ideaId === idea.id; });
-    if(!project) return {tasks:0, budget:0, milestones:0, risks:0};
-    return {
-      tasks: (sp.tasks || []).filter(function(t){ return t.project === project.name || t.projectId === project.id; }).length,
-      budget: (sp.budget || []).filter(function(b){ return b.projectId === project.id || b.note && b.note.indexOf(project.name) > -1; }).length,
-      milestones: (project.milestones || []).length,
-      risks: (project.risks || []).length
-    };
-  }
-
-  /* ============ حذف تعاقبي ============ */
-  function cascadeDeleteIdea(ideaId){
-    var sp = getSpace();
-    var idea = (sp.ideas || []).find(function(x){ return x.id === ideaId; });
-    if(!idea) return;
-    var project = (sp.projects || []).find(function(p){ return p.ideaId === ideaId; });
-
-    var related = countRelated(idea);
-    var projectName = project ? project.name : '';
-    var projectId = project ? project.id : '';
-
-    var msg = tr('cls_delete_confirm') + '\n\n' +
-      '📌 ' + idea.name + '\n' +
-      (project ? '💼 ' + tr('cls_will_delete_project') + '\n' : '') +
-      (related.tasks ? '📝 ' + related.tasks + ' ' + tr('archive_tasks') + '\n' : '') +
-      (related.budget ? '💰 ' + related.budget + ' ' + tr('budget_title') + '\n' : '') +
-      (related.milestones ? '🎯 ' + related.milestones + ' ' + tr('archive_stages') + '\n' : '') +
-      (related.risks ? '⚠️ ' + related.risks + ' ' + tr('archive_risks') + '\n' : '') +
-      '\n' + tr('cls_cannot_undo');
-
-    window.customConfirm(msg, function(){
-      /* 1) حذف المهام */
-      if(projectName || projectId){
-        sp.tasks = (sp.tasks || []).filter(function(t){
-          return !(t.project === projectName || t.projectId === projectId);
-        });
-        /* 2) حذف بنود الميزانية */
-        sp.budget = (sp.budget || []).filter(function(b){
-          if(b.projectId === projectId) return false;
-          if(projectName && b.note && b.note.indexOf(projectName) > -1) return false;
-          return true;
-        });
-        /* 3) حذف أصحاب المصلحة المرتبطين */
-        sp.stakeholders = (sp.stakeholders || []).filter(function(s){
-          return !(s.projectId === projectId || s.project === projectName);
-        });
-      }
-      /* 4) حذف المشروع */
-      if(projectId){
-        sp.projects = (sp.projects || []).filter(function(p){ return p.id !== projectId; });
-      }
-      /* 5) حذف الفكرة */
-      sp.ideas = (sp.ideas || []).filter(function(x){ return x.id !== ideaId; });
-
-      save();
-      renderClassifier();
-      toast(tr('cls_deleted'), 'success');
-    });
-  }
-
-  /* ============ حذف مشروع مباشرة ============ */
-  function cascadeDeleteProject(projectId){
-    var sp = getSpace();
-    var project = (sp.projects || []).find(function(p){ return p.id === projectId; });
-    if(!project) return;
-    var related = {
-      tasks: (sp.tasks || []).filter(function(t){ return t.project === project.name || t.projectId === project.id; }).length,
-      budget: (sp.budget || []).filter(function(b){ return b.projectId === project.id; }).length,
-      milestones: (project.milestones || []).length,
-      risks: (project.risks || []).length
-    };
-    var msg = tr('cls_delete_project_confirm') + '\n\n' +
-      '💼 ' + project.name + '\n' +
-      (related.tasks ? '📝 ' + related.tasks + ' ' + tr('archive_tasks') + '\n' : '') +
-      (related.budget ? '💰 ' + related.budget + ' ' + tr('budget_title') + '\n' : '') +
-      (related.milestones ? '🎯 ' + related.milestones + ' ' + tr('archive_stages') + '\n' : '') +
-      (related.risks ? '⚠️ ' + related.risks + ' ' + tr('archive_risks') + '\n' : '') +
-      '\n' + tr('cls_cannot_undo');
-
-    window.customConfirm(msg, function(){
-      sp.tasks = (sp.tasks || []).filter(function(t){
-        return !(t.project === project.name || t.projectId === project.id);
-      });
-      sp.budget = (sp.budget || []).filter(function(b){ return b.projectId !== project.id; });
-      sp.stakeholders = (sp.stakeholders || []).filter(function(s){
-        return !(s.projectId === project.id || s.project === project.name);
-      });
-      sp.projects = (sp.projects || []).filter(function(p){ return p.id !== projectId; });
-      save();
-      renderClassifier();
-      toast(tr('cls_deleted'), 'success');
-    });
-  }
-
-  /* ============ الفلترة ============ */
-  function applyFilters(items){
-    return items.filter(function(item){
-      if(view.filterType !== 'all' && item.type !== view.filterType) return false;
-      if(view.filterSector !== 'all' && item.sector !== view.filterSector) return false;
-      if(view.filterCountry !== 'all' && item.country !== view.filterCountry) return false;
-      if(view.search){
-        var q = view.search.toLowerCase();
-        var text = (item.name || '') + ' ' + (item.description || '') + ' ' + (item.problem || '');
-        if(text.toLowerCase().indexOf(q) === -1) return false;
-      }
-      return true;
-    });
-  }
-
-  function sortItems(items){
-    var arr = items.slice();
-    if(view.sortBy === 'name'){
-      arr.sort(function(a,b){ return (a.name||'').localeCompare(b.name||'', getLang()); });
-    } else if(view.sortBy === 'progress'){
-      arr.sort(function(a,b){
-        var pa = a.impact ? (a.impact.sdg || []).length : 0;
-        var pb = b.impact ? (b.impact.sdg || []).length : 0;
-        return pb - pa;
-      });
-    } else if(view.sortBy === 'sdg'){
-      arr.sort(function(a,b){
-        var sa = (a.sdgTargets || []).length;
-        var sb = (b.sdgTargets || []).length;
-        return sb - sa;
-      });
-    } else {
-      arr.sort(function(a,b){
-        return (b.createdAt || '').localeCompare(a.createdAt || '');
-      });
+  /* ============ injectToolbar (تعمل مرة واحدة) ============ */
+  function injectToolbar(){
+    var ideasSection = document.getElementById('ideas');
+    if(!ideasSection) return;
+    if(ideasSection.querySelector('#clsToolbar')) {
+      updateToolbarStats();
+      return;
     }
-    return arr;
+
+    var controls = ideasSection.querySelector('.controls');
+    if(!controls) return;
+
+    var bar = document.createElement('div');
+    bar.id = 'clsToolbar';
+    bar.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;flex-direction:column;gap:10px';
+    bar.innerHTML = '' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+        '<input id="clsSearch" type="text" placeholder="' + tr('cls_search_ph') + '" ' +
+          'style="flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:inherit;font-size:.82rem;outline:none">' +
+        '<select id="clsFilterType" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:9px;font-family:inherit;font-size:.8rem;outline:none"></select>' +
+        '<select id="clsFilterSector" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:9px;font-family:inherit;font-size:.8rem;outline:none"></select>' +
+        '<select id="clsSortBy" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:9px;font-family:inherit;font-size:.8rem;outline:none"></select>' +
+        '<button class="btn btn-sm btn-ghost" id="clsClear" title="' + tr('cls_clear') + '">✖️</button>' +
+      '</div>' +
+      '<div id="clsStats" style="font-size:.74rem;color:var(--muted);text-align:center"></div>';
+
+    /* إدراج قبل الفلاتر الحالية */
+    controls.parentNode.insertBefore(bar, controls.nextSibling);
+
+    /* تعبئة selectors */
+    fillSelectors();
+    bindToolbarEvents();
+    applyFiltersToCards();
   }
 
-  /* ============ شريط الأدوات ============ */
-  function renderToolbar(filteredCount, totalCount){
+  function fillSelectors(){
     var types = window.IDEA_TYPES || {};
     var sectors = window.SECTORS_DB || {};
-    var countries = window.getAllCountries ? window.getAllCountries() : (window.COUNTRIES_DB || {});
 
-    var typeOpts = '<option value="all">' + tr('cls_all_types') + '</option>';
-    Object.keys(types).forEach(function(k){
-      var t = types[k];
-      typeOpts += '<option value="' + k + '"' + (view.filterType === k ? ' selected' : '') + '>' + t.icon + ' ' + pick(t, 'name') + '</option>';
-    });
-
-    var sectorOpts = '<option value="all">' + tr('cls_all_sectors') + '</option>';
-    Object.keys(sectors).forEach(function(k){
-      var s = sectors[k];
-      sectorOpts += '<option value="' + k + '"' + (view.filterSector === k ? ' selected' : '') + '>' + s.icon + ' ' + pick(s, 'name') + '</option>';
-    });
-
-    var countryOpts = '<option value="all">' + tr('cls_all_countries') + '</option>';
-    Object.keys(countries).slice(0, 30).forEach(function(k){
-      var c = countries[k];
-      countryOpts += '<option value="' + k + '"' + (view.filterCountry === k ? ' selected' : '') + '>' + (c.flag||'') + ' ' + pick(c, 'name') + '</option>';
-    });
-
-    var sortOpts =
-      '<option value="recent"' + (view.sortBy === 'recent' ? ' selected' : '') + '>' + tr('cls_sort_recent') + '</option>' +
-      '<option value="name"' + (view.sortBy === 'name' ? ' selected' : '') + '>' + tr('cls_sort_name') + '</option>' +
-      '<option value="progress"' + (view.sortBy === 'progress' ? ' selected' : '') + '>' + tr('cls_sort_progress') + '</option>' +
-      '<option value="sdg"' + (view.sortBy === 'sdg' ? ' selected' : '') + '>' + tr('cls_sort_sdg') + '</option>';
-
-    return '' +
-    '<div class="card" style="margin-bottom:16px;padding:14px">' +
-      '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">' +
-        '<div style="flex:1;min-width:200px;position:relative">' +
-          '<input id="clsSearch" type="text" value="' + esc(view.search) + '" placeholder="' + tr('cls_search_ph') + '" ' +
-            'style="width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:10px;font-family:inherit;font-size:.85rem;outline:none">' +
-        '</div>' +
-        '<button class="btn btn-sm" id="clsToggleView" title="' + tr('cls_toggle_view') + '">' + (view.mode === 'grid' ? '📋' : '▦') + '</button>' +
-        '<button class="btn btn-sm btn-ghost" id="clsClearFilters" title="' + tr('cls_clear') + '">✖️</button>' +
-      '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">' +
-        '<select id="clsFilterType" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:9px;font-family:inherit;font-size:.82rem;outline:none">' + typeOpts + '</select>' +
-        '<select id="clsFilterSector" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:9px;font-family:inherit;font-size:.82rem;outline:none">' + sectorOpts + '</select>' +
-        '<select id="clsFilterCountry" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:9px;font-family:inherit;font-size:.82rem;outline:none">' + countryOpts + '</select>' +
-        '<select id="clsSortBy" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:9px;font-family:inherit;font-size:.82rem;outline:none">' + sortOpts + '</select>' +
-      '</div>' +
-      '<div style="text-align:center;font-size:.76rem;color:var(--muted);margin-top:10px">' +
-        '📊 ' + tr('cls_showing') + ' <b style="color:var(--cyan)">' + filteredCount + '</b> ' + tr('cls_of') + ' ' + totalCount +
-      '</div>' +
-    '</div>';
-  }
-
-  /* ============ كارت فكرة ============ */
-  function renderIdeaCard(idea){
-    var type = (window.IDEA_TYPES || {})[idea.type] || {icon:'💡', name:'—'};
-    var sector = (window.SECTORS_DB || {})[idea.sector] || {icon:'📦', name:'—'};
-    var country = window.getCountryDisplay ? window.getCountryDisplay(idea.country) : {flag:'🌍', name:idea.country};
-    var related = countRelated(idea);
-    var hasProject = (getSpace().projects || []).some(function(p){ return p.ideaId === idea.id; });
-
-    var sdgTags = (idea.sdgTargets || []).slice(0, 4).map(function(n){
-      var s = window.SDG_DB[n]; if(!s) return '';
-      return '<span style="font-size:.62rem;padding:2px 6px;border-radius:5px;background:' + s.color + '20;color:' + s.color + ';font-weight:700">' + s.icon + ' ' + n + '</span>';
-    }).join('');
-
-    var relatedSummary = '';
-    if(hasProject){
-      relatedSummary = '<div style="display:flex;gap:10px;font-size:.7rem;color:var(--muted);padding-top:8px;border-top:1px solid var(--border);margin-top:8px">' +
-        (related.milestones ? '<span>🎯 ' + related.milestones + '</span>' : '') +
-        (related.tasks ? '<span>📝 ' + related.tasks + '</span>' : '') +
-        (related.risks ? '<span>⚠️ ' + related.risks + '</span>' : '') +
-        (related.budget ? '<span>💰 ' + related.budget + '</span>' : '') +
-        '<span style="color:var(--green);font-weight:700;margin-inline-start:auto">✓ ' + tr('cls_has_project') + '</span>' +
-      '</div>';
+    var tSel = document.getElementById('clsFilterType');
+    if(tSel){
+      tSel.innerHTML = '<option value="all">' + tr('cls_all_types') + '</option>' +
+        Object.keys(types).map(function(k){
+          return '<option value="' + k + '"' + (view.filterType === k ? ' selected' : '') + '>' + types[k].icon + ' ' + pick(types[k], 'name') + '</option>';
+        }).join('');
+    }
+    var sSel = document.getElementById('clsFilterSector');
+    if(sSel){
+      sSel.innerHTML = '<option value="all">' + tr('cls_all_sectors') + '</option>' +
+        Object.keys(sectors).map(function(k){
+          return '<option value="' + k + '"' + (view.filterSector === k ? ' selected' : '') + '>' + sectors[k].icon + ' ' + pick(sectors[k], 'name') + '</option>';
+        }).join('');
+    }
+    var sortSel = document.getElementById('clsSortBy');
+    if(sortSel){
+      sortSel.innerHTML =
+        '<option value="recent"' + (view.sortBy === 'recent' ? ' selected' : '') + '>' + tr('cls_sort_recent') + '</option>' +
+        '<option value="name"' + (view.sortBy === 'name' ? ' selected' : '') + '>' + tr('cls_sort_name') + '</option>';
     }
 
-    return '<div class="card" data-idea-card="' + idea.id + '" style="position:relative">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">' +
-        '<div style="flex:1;min-width:0">' +
-          '<div style="font-weight:800;font-size:.95rem">' + type.icon + ' ' + esc(idea.name) + '</div>' +
-          '<div style="font-size:.7rem;color:var(--muted2);margin-top:2px">' + (country.flag||'🌍') + ' ' + esc(country.name) + ' · ' + sector.icon + ' ' + esc(pick(sector,'name')) + '</div>' +
-        '</div>' +
-        '<span class="badge" style="background:var(--grad-soft);color:var(--cyan);font-size:.62rem">' + pick(type,'name') + '</span>' +
-      '</div>' +
-      '<div style="font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:8px">' + esc((idea.description||'').slice(0,120)) + ((idea.description||'').length > 120 ? '...' : '') + '</div>' +
-      (sdgTags ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">' + sdgTags + '</div>' : '') +
-      '<div style="display:flex;gap:5px;flex-wrap:wrap">' +
-        '<button class="btn btn-sm" data-cls-view="' + idea.id + '">👁️</button>' +
-        '<button class="btn btn-sm btn-ghost" data-cls-edit="' + idea.id + '">✏️</button>' +
-        (hasProject
-          ? '<button class="btn btn-sm btn-ghost" data-cls-goto="' + idea.id + '" style="color:var(--green)">🗺️</button>'
-          : '<button class="btn btn-sm btn-ghost" data-cls-toproject="' + idea.id + '">🚀</button>') +
-        '<button class="btn btn-sm btn-danger" data-cls-delete="' + idea.id + '" style="margin-inline-start:auto" title="' + tr('cls_delete_all') + '">🗑</button>' +
-      '</div>' +
-      relatedSummary +
-    '</div>';
-  }
-
-  /* ============ كارت مشروع ============ */
-  function renderProjectCard(project){
-    var sector = (window.SECTORS_DB || {})[project.sector] || {icon:'📦', name:'—'};
-    var country = window.getCountryDisplay ? window.getCountryDisplay(project.country) : {flag:'🌍', name:project.country};
-    var stage = (window.PRISM_STAGES || {})[project.stage] || {icon:'❓', name:'—'};
-    var sp = getSpace();
-    var taskCount = (sp.tasks || []).filter(function(t){ return t.project === project.name || t.projectId === project.id; }).length;
-    var budgetCount = (sp.budget || []).filter(function(b){ return b.projectId === project.id; }).length;
-    var sdgTags = (project.impact && project.impact.sdg || []).slice(0, 4).map(function(n){
-      var s = window.SDG_DB[n]; if(!s) return '';
-      return '<span style="font-size:.62rem;padding:2px 6px;border-radius:5px;background:' + s.color + '20;color:' + s.color + ';font-weight:700">' + s.icon + ' ' + n + '</span>';
-    }).join('');
-
-    return '<div class="card" data-project-card="' + project.id + '">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">' +
-        '<div style="flex:1;min-width:0">' +
-          '<div style="font-weight:800;font-size:.95rem">💼 ' + esc(project.name) + '</div>' +
-          '<div style="font-size:.7rem;color:var(--muted2);margin-top:2px">' + (country.flag||'🌍') + ' ' + esc(country.name) + ' · ' + sector.icon + ' ' + esc(pick(sector,'name')) + '</div>' +
-        '</div>' +
-        '<span class="badge" style="font-size:.62rem">' + stage.icon + ' ' + pick(stage,'name') + '</span>' +
-      '</div>' +
-      (sdgTags ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">' + sdgTags + '</div>' : '') +
-      '<div style="display:flex;gap:10px;font-size:.7rem;color:var(--muted);padding-top:8px;border-top:1px solid var(--border)">' +
-        '<span>🎯 ' + (project.milestones||[]).length + '</span>' +
-        '<span>📝 ' + taskCount + '</span>' +
-        '<span>⚠️ ' + (project.risks||[]).length + '</span>' +
-        '<span>💰 ' + budgetCount + '</span>' +
-      '</div>' +
-      '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px">' +
-        '<button class="btn btn-sm btn-ghost" data-cls-goto-project="' + project.id + '">🗺️ ' + tr('view') + '</button>' +
-        '<button class="btn btn-sm btn-danger" data-cls-delete-project="' + project.id + '" style="margin-inline-start:auto">🗑</button>' +
-      '</div>' +
-    '</div>';
-  }
-
-  /* ============ الرسم الرئيسي ============ */
-  function renderClassifier(){
-    var grid = document.getElementById('ideasGrid');
-    if(!grid) return;
-    var sp = getSpace();
-    var allIdeas = sp.ideas || [];
-    var allProjects = sp.projects || [];
-
-    /* اختيار العناصر حسب الفلتر */
-    var showIdeas = allIdeas;
-    var showProjects = view.filterStage === 'all' || view.filterStage === 'project' ? allProjects : [];
-
-    var filteredIdeas = applyFilters(showIdeas);
-    var filteredProjects = applyFilters(showProjects);
-    var allFiltered = sortItems(filteredIdeas.concat(filteredProjects.map(function(p){ 
-      return Object.assign({}, p, { _isProject: true }); 
-    })));
-
-    /* Toolbar */
-    var toolbar = renderToolbar(allFiltered.length, allIdeas.length + allProjects.length);
-
-    /* Grid */
-    var gridClass = view.mode === 'grid' ? 'grid grid-2' : '';
-    var gridStyle = view.mode === 'grid' ? '' : 'display:flex;flex-direction:column;gap:10px';
-
-    var bodyHtml = '<div class="' + gridClass + '" style="' + gridStyle + '">';
-    if(!allFiltered.length){
-      bodyHtml += '<div class="empty" style="grid-column:1/-1"><div class="ic">💡</div><p>' + tr('cls_no_results') + '</p><p class="sub">' + tr('cls_no_results_hint') + '</p></div>';
-    } else {
-      allFiltered.forEach(function(item){
-        if(item._isProject){
-          bodyHtml += renderProjectCard(item);
-        } else {
-          bodyHtml += renderIdeaCard(item);
-        }
-      });
-    }
-    bodyHtml += '</div>';
-
-    grid.parentNode.innerHTML = toolbar + bodyHtml;
-
-    bindClassifierEvents();
-  }
-
-  /* ============ الأحداث ============ */
-  function bindClassifierEvents(){
-    /* Search */
     var search = document.getElementById('clsSearch');
-    if(search){
+    if(search && !search._bound) search.value = view.search || '';
+  }
+
+  function bindToolbarEvents(){
+    var search = document.getElementById('clsSearch');
+    if(search && !search._bound){
+      search._bound = true;
       search.oninput = function(){
         view.search = search.value;
         saveView();
-        renderClassifier();
-        var s = document.getElementById('clsSearch');
-        if(s){ s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
+        applyFiltersToCards();
       };
     }
-    /* Filters */
-    ['clsFilterType:filterType','clsFilterSector:filterSector','clsFilterCountry:filterCountry','clsSortBy:sortBy'].forEach(function(pair){
-      var parts = pair.split(':');
-      var el = document.getElementById(parts[0]);
-      if(el){
-        el.onchange = function(){
-          view[parts[1]] = el.value;
-          saveView();
-          renderClassifier();
-        };
-      }
-    });
-    /* Toggle view */
-    var tv = document.getElementById('clsToggleView');
-    if(tv) tv.onclick = function(){
-      view.mode = view.mode === 'grid' ? 'list' : 'grid';
-      saveView();
-      renderClassifier();
-    };
-    /* Clear */
-    var clr = document.getElementById('clsClearFilters');
-    if(clr) clr.onclick = function(){
-      view.filterType = 'all';
-      view.filterSector = 'all';
-      view.filterCountry = 'all';
-      view.sortBy = 'recent';
-      view.search = '';
-      saveView();
-      renderClassifier();
-    };
+    var tSel = document.getElementById('clsFilterType');
+    if(tSel && !tSel._bound){
+      tSel._bound = true;
+      tSel.onchange = function(){ view.filterType = tSel.value; saveView(); applyFiltersToCards(); };
+    }
+    var sSel = document.getElementById('clsFilterSector');
+    if(sSel && !sSel._bound){
+      sSel._bound = true;
+      sSel.onchange = function(){ view.filterSector = sSel.value; saveView(); applyFiltersToCards(); };
+    }
+    var sortSel = document.getElementById('clsSortBy');
+    if(sortSel && !sortSel._bound){
+      sortSel._bound = true;
+      sortSel.onchange = function(){ view.sortBy = sortSel.value; saveView(); applyFiltersToCards(); };
+    }
+    var clr = document.getElementById('clsClear');
+    if(clr && !clr._bound){
+      clr._bound = true;
+      clr.onclick = function(){
+        view = { filterType: 'all', filterSector: 'all', search: '', sortBy: 'recent' };
+        saveView();
+        fillSelectors();
+        applyFiltersToCards();
+      };
+    }
+  }
 
-    /* Idea actions */
-    document.querySelectorAll('[data-cls-view]').forEach(function(b){
-      b.onclick = function(){ if(window.viewIdea) window.viewIdea(b.dataset.clsView); };
+  /* ============ تطبيق الفلاتر على الكروت الموجودة ============ */
+  function applyFiltersToCards(){
+    var grid = document.getElementById('ideasGrid');
+    if(!grid) return;
+
+    var cards = grid.querySelectorAll('[data-idea-card]');
+    var visible = 0;
+    var total = cards.length;
+
+    cards.forEach(function(card){
+      var id = card.dataset.ideaCard;
+      var sp = getSpace();
+      var idea = (sp.ideas || []).find(function(x){ return x.id === id; });
+      if(!idea){ card.style.display = 'none'; return; }
+
+      var match = true;
+      if(view.filterType !== 'all' && idea.type !== view.filterType) match = false;
+      if(view.filterSector !== 'all' && idea.sector !== view.filterSector) match = false;
+      if(view.search){
+        var q = view.search.toLowerCase();
+        var text = ((idea.name||'') + ' ' + (idea.description||'') + ' ' + (idea.problem||'')).toLowerCase();
+        if(text.indexOf(q) === -1) match = false;
+      }
+
+      card.style.display = match ? '' : 'none';
+      if(match) visible++;
     });
-    document.querySelectorAll('[data-cls-edit]').forEach(function(b){
-      b.onclick = function(){ if(window.editIdea) window.editIdea(b.dataset.clsEdit); };
-    });
-    document.querySelectorAll('[data-cls-toproject]').forEach(function(b){
-      b.onclick = function(){ if(window.convertToProject) window.convertToProject(b.dataset.clsToproject); };
-    });
-    document.querySelectorAll('[data-cls-goto]').forEach(function(b){
-      b.onclick = function(){
-        var idea = (getSpace().ideas || []).find(function(x){ return x.id === b.dataset.clsGoto; });
-        if(!idea) return;
-        var proj = (getSpace().projects || []).find(function(p){ return p.ideaId === idea.id; });
-        if(proj && window.switchTab) window.switchTab('roadmap');
-      };
-    });
-    /* ← الحذف التعاقبي بكبسة واحدة */
-    document.querySelectorAll('[data-cls-delete]').forEach(function(b){
-      b.onclick = function(e){
+
+    /* إضافة زر الحذف التعاقبي لكل كارت ظاهر */
+    cards.forEach(function(card){
+      if(card.querySelector('[data-cls-cascade]')) return;
+      var id = card.dataset.ideaCard;
+      var actions = card.querySelector('div[style*="display:flex"][style*="gap"]');
+      if(!actions) return;
+      var btn = document.createElement('button');
+      btn.className = 'btn btn-sm btn-danger';
+      btn.dataset.clsCascade = id;
+      btn.title = tr('cls_delete_all');
+      btn.style.marginInlineStart = 'auto';
+      btn.textContent = '🗑';
+      btn.onclick = function(e){
         e.stopPropagation();
-        cascadeDeleteIdea(b.dataset.clsDelete);
+        cascadeDelete(id, null);
       };
+      actions.appendChild(btn);
     });
-    document.querySelectorAll('[data-cls-delete-project]').forEach(function(b){
-      b.onclick = function(e){
-        e.stopPropagation();
-        cascadeDeleteProject(b.dataset.clsDeleteProject);
-      };
-    });
-    document.querySelectorAll('[data-cls-goto-project]').forEach(function(b){
-      b.onclick = function(){ if(window.switchTab) window.switchTab('roadmap'); };
-    });
+
+    /* تحديث الإحصاء */
+    var stats = document.getElementById('clsStats');
+    if(stats){
+      stats.innerHTML = '📊 ' + tr('cls_showing') + ' <b style="color:var(--cyan)">' + visible + '</b> ' + tr('cls_of') + ' ' + total;
+    }
   }
 
   /* ============ Hook على switchTab ============ */
@@ -441,28 +354,51 @@
     var orig = window.switchTab;
     window.switchTab = function(tab){
       var r = orig.apply(this, arguments);
-      if(tab === 'ideas') setTimeout(renderClassifier, 120);
+      if(tab === 'ideas'){
+        setTimeout(function(){
+          injectToolbar();
+          applyFiltersToCards();
+        }, 180);
+      }
       return r;
     };
 
-    /* استبدال renderIdeas الأصلي */
-    if(typeof window.renderIdeas === 'function'){
-      window._origRenderIdeas = window.renderIdeas;
-      window.renderIdeas = renderClassifier;
+    /* hook على renderIdeas الأصلي */
+    if(typeof window.renderIdeas === 'function' && !window._clsRenderHook){
+      window._clsRenderHook = true;
+      var origRender = window.renderIdeas;
+      window.renderIdeas = function(){
+        var r = origRender.apply(this, arguments);
+        setTimeout(function(){
+          injectToolbar();
+          applyFiltersToCards();
+        }, 60);
+        return r;
+      };
     }
   }
 
   document.addEventListener('languagechange', function(){
     var active = document.querySelector('.section.active');
-    if(active && active.id === 'ideas') renderClassifier();
+    if(active && active.id === 'ideas'){
+      setTimeout(function(){
+        /* إعادة بناء الـ toolbar باللغة الجديدة */
+        var bar = document.getElementById('clsToolbar');
+        if(bar) bar.remove();
+        injectToolbar();
+        applyFiltersToCards();
+      }, 150);
+    }
   });
 
-  window.renderClassifier = renderClassifier;
-  window.cascadeDeleteIdea = cascadeDeleteIdea;
-  window.cascadeDeleteProject = cascadeDeleteProject;
+  window.renderClassifier = function(){ injectToolbar(); applyFiltersToCards(); };
+  window.cascadeDeleteIdea = function(id){ cascadeDelete(id, null); };
+  window.cascadeDeleteProject = function(id){ cascadeDelete(null, id); };
+  window.clsShowBusy = showBusy;
+  window.clsHideBusy = hideBusy;
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
 
-  console.log('🗂️ Project Classifier loaded');
+  console.log('🗂️ Classifier v2 loaded (light)');
 })();

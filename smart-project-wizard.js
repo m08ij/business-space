@@ -581,6 +581,23 @@
         done: false
       });
     });
+    /* 4.5) ✅ إنشاء أصحاب مصلحة مبدئيين من KB */
+    if(window.PROJECT_KB && window.PROJECT_KB.getSectorKB){
+      var teamKB = window.PROJECT_KB.getSectorKB(d.sector).team || [];
+      teamKB.forEach(function(member){
+        var name = (getLang() === 'en' && member.en) ? member.en : member.ar;
+        sp.stakeholders.push({
+          id: uid(),
+          name: name,
+          role: member.role || 'team',
+          org: d.name,
+          contact: '',
+          projectId: projectId,
+          project: d.name,
+          createdAt: new Date().toISOString()
+        });
+      });
+    }
 
     /* 5) حفظ */
     if(window.saveSpace) window.saveSpace();

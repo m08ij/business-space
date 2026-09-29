@@ -852,9 +852,13 @@ function loadAllData(){
   try{ notes = S.get('notes', []); if(!Array.isArray(notes)) notes = []; }catch(e){ notes = []; }
   if(!space.notes) space.notes = notes;
 }
+var _saveDebounceTimer = null;
 function saveSpace(){ 
-  S.set('space', space); 
-  document.dispatchEvent(new CustomEvent('spacesave'));
+  S.set('space', space);
+  clearTimeout(_saveDebounceTimer);
+  _saveDebounceTimer = setTimeout(function(){
+    document.dispatchEvent(new CustomEvent('spacesave'));
+  }, 250);
 }
 
 /* ==================== WELCOME ==================== */
@@ -1319,15 +1323,32 @@ function renderStakeholders(){
   });
 }
 function addStakeholder(){
+  /* بناء قائمة المشاريع المتاحة */
+  var projectOpts = [{v:'', l: tr('sh_no_project') || '—'}];
+  (space.projects || []).forEach(function(p){
+    projectOpts.push({ v: p.id, l: p.name });
+  });
+
   window.showModal(tr('sh_new'), [
     {key:'name', label: tr('sh_name')},
     {key:'role', label: tr('sh_role')},
     {key:'org', label: tr('sh_org')},
-    {key:'contact', label: tr('sh_contact')}
-  ], {name:'', role:'', org:'', contact:''}, function(data){
+    {key:'contact', label: tr('sh_contact')},
+    {key:'projectId', label: tr('sh_project') || 'المشروع', type:'select', options: projectOpts}
+  ], {name:'', role:'', org:'', contact:'', projectId:''}, function(data){
     if(!data.name) return toast(tr('sh_name_required'), 'warn');
     if(!space.stakeholders) space.stakeholders = [];
-    space.stakeholders.push(Object.assign({id: uid()}, data));
+    var proj = data.projectId ? (space.projects || []).find(function(p){ return p.id === data.projectId; }) : null;
+    space.stakeholders.push({
+      id: uid(),
+      name: data.name,
+      role: data.role,
+      org: data.org,
+      contact: data.contact,
+      projectId: data.projectId || '',
+      project: proj ? proj.name : '',
+      createdAt: new Date().toISOString()
+    });
     saveSpace(); renderStakeholders();
     toast(tr('sh_added'), 'success');
   });
