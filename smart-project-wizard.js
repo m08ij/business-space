@@ -1,6 +1,6 @@
 /* ============================================================
-   🧙 smart-project-wizard.js — معالج إضافة مشروع ذكي
-   يسأل خطوة بخطوة + يُنشئ كل شيء تلقائياً
+   🧙 smart-project-wizard.js v2 — معالج ذكي باستخدام KB
+   6 خطوات + معاينة + مشاريع مشابهة + حفظ مسودة
    ============================================================ */
 (function(){
   'use strict';
@@ -11,110 +11,89 @@
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
   function getSpace(){ return window.space || {}; }
   function getLang(){ return window.i18n ? window.i18n.getLang() : 'ar'; }
-  function pickLang(obj, base){ 
-    if(getLang() === 'en' && obj[base+'En']) return obj[base+'En']; 
+  function pick(obj, base){
+    if(getLang() === 'en' && obj[base+'En']) return obj[base+'En'];
     return obj[base] || '';
   }
+  function KB(){ return window.PROJECT_KB || {}; }
 
-  /* ============ اقتراحات SDG حسب القطاع ============ */
-  var SECTOR_SDG_SUGGEST = {
-    energy: [7, 13, 9], tech: [9, 8, 4], health: [3, 10], education: [4, 10],
-    tourism: [8, 12, 11], manufacturing: [9, 12, 13], agriculture: [2, 6, 15],
-    finance: [8, 9, 1], logistics: [9, 11, 13], retail: [8, 12]
-  };
+  var TOTAL_STEPS = 6;
+  var state = null;
 
-  /* ============ اقتراح التصنيفات حسب النوع ============ */
-  var TYPE_BUDGET = {
-    startup: ['setup', 'marketing', 'rnd', 'salaries', 'tech', 'contingency'],
-    sme: ['setup', 'marketing', 'office', 'salaries', 'contingency'],
-    social: ['setup', 'marketing', 'grant', 'contingency'],
-    ngo: ['setup', 'grant', 'office', 'salaries'],
-    corporate: ['setup', 'marketing', 'tech', 'legal', 'office']
-  };
-
-  /* ============ مراحل تلقائية حسب المدة ============ */
-  function genMilestones(timeline, startDate){
-    var start = new Date(startDate);
-    var addDays = function(d){ var x = new Date(start); x.setDate(x.getDate() + d); return x.toISOString().slice(0,10); };
-    var template = {
-      short: [
-        { title: 'التخطيط والجدوى', start: addDays(0), end: addDays(15), status: 'in-progress', progress: 20 },
-        { title: 'التنفيذ السريع', start: addDays(15), end: addDays(60), status: 'not-started', progress: 0 },
-        { title: 'الإطلاق والتقييم', start: addDays(60), end: addDays(90), status: 'not-started', progress: 0 }
-      ],
-      medium: [
-        { title: 'التخطيط والجدوى', start: addDays(0), end: addDays(30), status: 'in-progress', progress: 15 },
-        { title: 'التصميم والتحضير', start: addDays(30), end: addDays(75), status: 'not-started', progress: 0 },
-        { title: 'التنفيذ والبناء', start: addDays(75), end: addDays(150), status: 'not-started', progress: 0 },
-        { title: 'الإطلاق والقياس', start: addDays(150), end: addDays(180), status: 'not-started', progress: 0 }
-      ],
-      long: [
-        { title: 'التخطيط والجدوى', start: addDays(0), end: addDays(45), status: 'in-progress', progress: 10 },
-        { title: 'التصميم التفصيلي', start: addDays(45), end: addDays(120), status: 'not-started', progress: 0 },
-        { title: 'البناء و MVP', start: addDays(120), end: addDays(240), status: 'not-started', progress: 0 },
-        { title: 'التشغيل التجريبي', start: addDays(240), end: addDays(330), status: 'not-started', progress: 0 },
-        { title: 'الإطلاق الكامل', start: addDays(330), end: addDays(365), status: 'not-started', progress: 0 },
-        { title: 'قياس الأثر', start: addDays(365), end: addDays(400), status: 'not-started', progress: 0 }
-      ]
-    };
-    return (template[timeline] || template.medium).map(function(m){ 
-      return Object.assign({ id: 'ms_' + uid() }, m); 
-    });
+  /* ============ مسودة ============ */
+  function saveDraft(){
+    if(!state) return;
+    try{ localStorage.setItem('bd_spw_draft', JSON.stringify(state)); }catch(e){}
   }
-
-  /* ============ مراحل PRiSM حسب النوع ============ */
-  function getInitialStage(type){
-    return type === 'corporate' || type === 'ngo' ? 'design' : 'pre-project';
+  function loadDraft(){
+    try{
+      var d = JSON.parse(localStorage.getItem('bd_spw_draft') || 'null');
+      if(d && d.data && d.savedAt && (Date.now() - d.savedAt < 7 * 24 * 3600 * 1000)){
+        return d;
+      }
+    }catch(e){}
+    return null;
+  }
+  function clearDraft(){
+    try{ localStorage.removeItem('bd_spw_draft'); }catch(e){}
   }
 
   /* ============ الحالة ============ */
-  var state = null;
-
-  function resetState(){
-    state = {
+  function newState(){
+    var sp = getSpace();
+    return {
       step: 0,
-      totalSteps: 7,
       data: {
         name: '',
         type: 'startup',
         sector: 'tech',
-        country: (getSpace().profile && getSpace().profile.country) || 'QA',
+        country: (sp.profile && sp.profile.country) || 'QA',
         description: '',
         problem: '',
         solution: '',
         sdg: [],
-        teamSize: 'small',
         budget: 'medium',
-        timeline: 'medium'
-      }
+        timeline: 'medium',
+        teamSize: 'small',
+        // Type-specific
+        stage: 'idea',
+        market: '',
+        beneficiaries: '',
+        impactGoal: '',
+        mission: '',
+        department: '',
+        owner: '',
+        location: ''
+      },
+      savedAt: Date.now()
     };
   }
 
-  /* ============ المودال الرئيسي ============ */
-  function showWizardModal(){
+  /* ============ الرسم الرئيسي ============ */
+  function showModal(){
     document.querySelectorAll('.modal-backdrop').forEach(function(m){ m.remove(); });
     var bd = document.createElement('div');
     bd.className = 'modal-backdrop show';
     bd.id = 'spwBackdrop';
-    bd.innerHTML = '<div class="modal" id="spwModal" style="max-width:560px;padding:0;overflow:hidden">' +
-      '<div style="padding:18px 24px;background:var(--grad-soft);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">' +
-        '<div style="font-size:1.6rem">🧙</div>' +
+    bd.innerHTML = '<div class="modal" id="spwModal" style="max-width:600px;padding:0;overflow:hidden">' +
+      '<div style="padding:16px 22px;background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(244,114,182,.15));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">' +
+        '<div style="font-size:1.8rem">🧙</div>' +
         '<div style="flex:1">' +
-          '<div style="font-weight:800;font-size:1rem" id="spwTitle">' + tr('spw_title') + '</div>' +
-          '<div style="font-size:.72rem;color:var(--muted)" id="spwSubtitle">' + tr('spw_sub') + '</div>' +
+          '<div style="font-weight:800;font-size:1rem">' + tr('spw_title') + '</div>' +
+          '<div style="font-size:.7rem;color:var(--muted)" id="spwSub">' + tr('spw_sub') + '</div>' +
         '</div>' +
-        '<button class="btn btn-sm btn-ghost" id="spwClose">×</button>' +
+        '<button class="btn btn-sm btn-ghost" id="spwClose" title="' + tr('close') + '">✕</button>' +
       '</div>' +
-      '<div style="padding:6px 24px 0">' +
-        '<div style="height:6px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-top:14px">' +
-          '<div id="spwProgress" style="height:100%;width:0%;background:var(--grad);transition:width .4s ease"></div>' +
+      '<div style="padding:14px 22px 0">' +
+        '<div style="display:flex;justify-content:space-between;font-size:.66rem;color:var(--muted2);margin-bottom:6px" id="spwStepDots"></div>' +
+        '<div style="height:5px;background:var(--bg2);border-radius:5px;overflow:hidden">' +
+          '<div id="spwProgress" style="height:100%;width:0%;background:var(--grad);transition:width .4s"></div>' +
         '</div>' +
-        '<div id="spwStepLabel" style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:8px"></div>' +
       '</div>' +
-      '<div id="spwBody" style="padding:16px 24px 24px"></div>' +
-      '<div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;background:var(--card2)">' +
+      '<div id="spwBody" style="padding:18px 22px 22px;min-height:260px"></div>' +
+      '<div style="padding:12px 22px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;background:var(--card2)">' +
         '<button class="btn btn-sm btn-ghost" id="spwBack">← ' + tr('spw_back') + '</button>' +
-        '<div style="display:flex;gap:8px">' +
+        '<div style="display:flex;gap:6px">' +
           '<button class="btn btn-sm btn-ghost" id="spwSkip">' + tr('spw_skip') + '</button>' +
           '<button class="btn btn-sm" id="spwNext">' + tr('spw_next') + ' →</button>' +
         '</div>' +
@@ -125,349 +104,403 @@
     bd.querySelector('#spwClose').onclick = closeWizard;
     bd.querySelector('#spwBack').onclick = goBack;
     bd.querySelector('#spwNext').onclick = goNext;
-    bd.querySelector('#spwSkip').onclick = skipStep;
+    bd.querySelector('#spwSkip').onclick = goSkip;
     bd.onclick = function(e){ if(e.target === bd) closeWizard(); };
 
     renderStep();
   }
 
   function closeWizard(){
+    if(state){
+      state.savedAt = Date.now();
+      saveDraft();
+    }
     var bd = document.getElementById('spwBackdrop');
     if(bd) bd.remove();
-    state = null;
   }
 
   function updateProgress(){
-    var pct = Math.round((state.step / state.totalSteps) * 100);
+    var pct = Math.round(((state.step) / (TOTAL_STEPS - 1)) * 100);
     var prog = document.getElementById('spwProgress');
-    var lbl = document.getElementById('spwStepLabel');
     if(prog) prog.style.width = pct + '%';
-    if(lbl) lbl.textContent = tr('spw_step_of', { current: state.step + 1, total: state.totalSteps });
+
+    var dots = document.getElementById('spwStepDots');
+    if(dots){
+      var html = '';
+      for(var i = 0; i < TOTAL_STEPS; i++){
+        var active = i === state.step;
+        var done = i < state.step;
+        html += '<span style="color:' + (active ? 'var(--cyan)' : done ? 'var(--green)' : 'var(--muted2)') + ';font-weight:' + (active ? '800' : '600') + '">' +
+          (done ? '✓' : (i + 1)) +
+        '</span>';
+      }
+      dots.innerHTML = html;
+    }
   }
 
-  /* ============ التنقل ============ */
   function goNext(){
-    if(!validateStep()) return;
-    if(state.step === state.totalSteps - 1){
-      finishWizard();
+    if(!validate()) return;
+    if(state.step === TOTAL_STEPS - 1){
+      finish();
       return;
     }
     state.step++;
+    state.savedAt = Date.now();
+    saveDraft();
     renderStep();
   }
-
   function goBack(){
     if(state.step === 0) return;
     state.step--;
     renderStep();
   }
-
-  function skipStep(){
-    if(state.step === state.totalSteps - 1){
-      finishWizard();
+  function goSkip(){
+    if(state.step === TOTAL_STEPS - 1){
+      finish();
       return;
     }
     state.step++;
     renderStep();
   }
-
-  function validateStep(){
+  function validate(){
+    var d = state.data;
     if(state.step === 0){
-      if(!state.data.name.trim()){
-        toast(tr('spw_err_name'), 'warn');
-        return false;
-      }
+      if(!d.name.trim()){ toast(tr('spw_err_name'), 'warn'); return false; }
+    }
+    if(state.step === 2){
+      if(!d.description.trim() && !d.problem.trim()){ toast(tr('spw_err_story'), 'warn'); return false; }
     }
     return true;
   }
 
-  /* ============ الرسم ============ */
+  /* ============ الرسم لكل خطوة ============ */
   function renderStep(){
     updateProgress();
     var body = document.getElementById('spwBody');
     if(!body) return;
-    var nextBtn = document.getElementById('spwNext');
-    var backBtn = document.getElementById('spwBack');
-    if(backBtn) backBtn.style.visibility = state.step === 0 ? 'hidden' : 'visible';
-    if(nextBtn) nextBtn.textContent = state.step === state.totalSteps - 1 ? '✓ ' + tr('spw_finish') : tr('spw_next') + ' →';
+    var back = document.getElementById('spwBack');
+    var next = document.getElementById('spwNext');
+    if(back) back.style.visibility = state.step === 0 ? 'hidden' : 'visible';
+    if(next) next.textContent = state.step === TOTAL_STEPS - 1 ? '✓ ' + tr('spw_finish') : tr('spw_next') + ' →';
 
-    switch(state.step){
-      case 0: body.innerHTML = stepBasics(); bindBasics(); break;
-      case 1: body.innerHTML = stepSector(); bindSector(); break;
-      case 2: body.innerHTML = stepStory(); break;
-      case 3: body.innerHTML = stepImpact(); bindImpact(); break;
-      case 4: body.innerHTML = stepResources(); break;
-      case 5: body.innerHTML = stepTeam(); break;
-      case 6: body.innerHTML = stepSummary(); break;
-    }
+    var steps = [step1, step2, step3, step4, step5, step6];
+    body.innerHTML = steps[state.step]();
+    var binders = [bind1, bind2, bind3, bind4, bind5, bind6];
+    if(binders[state.step]) binders[state.step]();
+    body.scrollTop = 0;
   }
 
-  /* ============ الخطوة 1: الأساسيات ============ */
-  function stepBasics(){
+  /* ============ خطوة 1: الأساسيات ============ */
+  function step1(){
     var typeOpts = Object.keys(window.IDEA_TYPES || {}).map(function(k){
       var t = window.IDEA_TYPES[k];
-      var selected = state.data.type === k;
-      return '<button type="button" data-spw-type="' + k + '" style="padding:14px;border-radius:12px;border:2px solid ' + (selected ? 'var(--cyan)' : 'var(--border)') + ';background:' + (selected ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (selected ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
-        '<div style="font-size:1.5rem">' + t.icon + '</div>' +
-        '<div style="font-size:.78rem;font-weight:700;margin-top:4px">' + pickLang(t, 'name') + '</div>' +
+      var sel = state.data.type === k;
+      return '<button type="button" data-spw-type="' + k + '" style="padding:12px 8px;border-radius:11px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
+        '<div style="font-size:1.4rem">' + t.icon + '</div>' +
+        '<div style="font-size:.72rem;font-weight:700;margin-top:3px">' + pick(t, 'name') + '</div>' +
       '</button>';
     }).join('');
 
+    var sectorOpts = Object.keys(window.SECTORS_DB || {}).map(function(k){
+      var s = window.SECTORS_DB[k];
+      var sel = state.data.sector === k;
+      return '<button type="button" data-spw-sector="' + k + '" style="padding:9px 6px;border-radius:10px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
+        '<div style="font-size:1.2rem">' + s.icon + '</div>' +
+        '<div style="font-size:.68rem;font-weight:700;margin-top:2px">' + pick(s, 'name') + '</div>' +
+      '</button>';
+    }).join('');
+
+    var countries = window.buildCountryOptions ? window.buildCountryOptions() : { featured: window.COUNTRIES_DB || {}, featuredCodes: [] };
+    var codes = countries.featuredCodes.length ? countries.featuredCodes.slice(0, 10) : Object.keys(countries.featured).slice(0, 10);
+    var countryBtns = codes.map(function(code){
+      var c = countries.featured[code]; if(!c) return '';
+      var sel = state.data.country === code;
+      return '<button type="button" data-spw-country="' + code + '" style="padding:6px 11px;border-radius:9px;border:1px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--card)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;font-size:.76rem;font-weight:600">' + (c.flag||'') + ' ' + esc(pick(c,'name')) + '</button>';
+    }).join('');
+
     return '<div>' +
-      '<div style="font-weight:800;font-size:1.1rem;margin-bottom:6px">' + tr('spw_q1_name') + '</div>' +
-      '<div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">' + tr('spw_q1_hint') + '</div>' +
+      '<h4 style="margin:0 0 4px;font-size:1rem">' + tr('spw_q1_name') + '</h4>' +
+      '<p style="margin:0 0 10px;font-size:.76rem;color:var(--muted)">' + tr('spw_q1_hint') + '</p>' +
       '<input id="spwName" type="text" value="' + esc(state.data.name) + '" placeholder="' + tr('spw_q1_ph') + '" ' +
-        'style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:14px;border-radius:12px;font-family:inherit;font-size:1rem;outline:none;margin-bottom:20px" autofocus>' +
-      '<div style="font-weight:800;font-size:1rem;margin-bottom:10px">' + tr('spw_q1_type') + '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">' + typeOpts + '</div>' +
+        'style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-family:inherit;font-size:.95rem;outline:none;margin-bottom:14px" autofocus>' +
+
+      '<h4 style="margin:0 0 8px;font-size:.9rem">' + tr('spw_q1_type') + '</h4>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:6px;margin-bottom:14px">' + typeOpts + '</div>' +
+
+      '<h4 style="margin:0 0 8px;font-size:.9rem">' + tr('spw_q2_sector') + '</h4>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px;margin-bottom:14px">' + sectorOpts + '</div>' +
+
+      '<h4 style="margin:0 0 8px;font-size:.9rem">' + tr('spw_q2_country') + '</h4>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:5px">' + countryBtns + '</div>' +
     '</div>';
   }
 
-  function bindBasics(){
+  function bind1(){
     var inp = document.getElementById('spwName');
     if(inp){
       inp.oninput = function(){ state.data.name = inp.value; };
-      setTimeout(function(){ inp.focus(); }, 100);
+      setTimeout(function(){ inp.focus(); }, 80);
       inp.onkeydown = function(e){ if(e.key === 'Enter') goNext(); };
     }
     document.querySelectorAll('[data-spw-type]').forEach(function(b){
-      b.onclick = function(){
-        state.data.type = b.dataset.spwType;
-        renderStep();
-      };
+      b.onclick = function(){ state.data.type = b.dataset.spwType; saveDraft(); renderStep(); };
     });
-  }
-
-  /* ============ الخطوة 2: القطاع والدولة ============ */
-  function stepSector(){
-    var sectorOpts = Object.keys(window.SECTORS_DB || {}).map(function(k){
-      var s = window.SECTORS_DB[k];
-      var selected = state.data.sector === k;
-      return '<button type="button" data-spw-sector="' + k + '" style="padding:12px;border-radius:11px;border:2px solid ' + (selected ? 'var(--cyan)' : 'var(--border)') + ';background:' + (selected ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (selected ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
-        '<div style="font-size:1.3rem">' + s.icon + '</div>' +
-        '<div style="font-size:.72rem;font-weight:700;margin-top:3px">' + pickLang(s, 'name') + '</div>' +
-      '</button>';
-    }).join('');
-
-    var countries = window.buildCountryOptions ? window.buildCountryOptions() : {featured: window.COUNTRIES_DB || {}, featuredCodes: []};
-    var countryOpts = '';
-    (countries.featuredCodes || Object.keys(countries.featured || {})).slice(0, 12).forEach(function(code){
-      var c = countries.featured[code];
-      if(!c) return;
-      var selected = state.data.country === code;
-      countryOpts += '<button type="button" data-spw-country="' + code + '" style="padding:8px 12px;border-radius:10px;border:1px solid ' + (selected ? 'var(--cyan)' : 'var(--border)') + ';background:' + (selected ? 'var(--grad-soft)' : 'var(--card)') + ';color:' + (selected ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;font-size:.8rem;font-weight:600;transition:.2s">' +
-        (c.flag || '🌍') + ' ' + esc(getLang()==='en'?(c.nameEn||c.name):c.name) +
-      '</button>';
-    });
-
-    return '<div>' +
-      '<div style="font-weight:800;font-size:1.1rem;margin-bottom:6px">' + tr('spw_q2_sector') + '</div>' +
-      '<div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">' + tr('spw_q2_sector_hint') + '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:20px">' + sectorOpts + '</div>' +
-      '<div style="font-weight:800;font-size:1rem;margin-bottom:10px">' + tr('spw_q2_country') + '</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:6px">' + countryOpts + '</div>' +
-    '</div>';
-  }
-
-  function bindSector(){
     document.querySelectorAll('[data-spw-sector]').forEach(function(b){
       b.onclick = function(){
         state.data.sector = b.dataset.spwSector;
-        var suggested = SECTOR_SDG_SUGGEST[state.data.sector] || [];
-        state.data.sdg = suggested.slice();
+        state.data.sdg = KB().suggestSDG ? KB().suggestSDG(state.data.sector) : [];
+        saveDraft();
         renderStep();
       };
     });
     document.querySelectorAll('[data-spw-country]').forEach(function(b){
-      b.onclick = function(){
-        state.data.country = b.dataset.spwCountry;
-        renderStep();
-      };
+      b.onclick = function(){ state.data.country = b.dataset.spwCountry; saveDraft(); renderStep(); };
     });
   }
 
-  /* ============ الخطوة 3: القصة ============ */
-  function stepStory(){
+  /* ============ خطوة 2: القصة ============ */
+  function step2(){
+    var sectorName = pick((window.SECTORS_DB||{})[state.data.sector] || {}, 'name');
     return '<div>' +
-      '<div style="font-weight:800;font-size:1.1rem;margin-bottom:6px">' + tr('spw_q3_story') + '</div>' +
-      '<div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">' + tr('spw_q3_story_hint') + '</div>' +
-      '<label style="display:block;font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:5px">' + tr('spw_q3_desc') + '</label>' +
-      '<textarea id="spwDesc" rows="3" placeholder="' + tr('spw_q3_desc_ph') + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-family:inherit;font-size:.88rem;outline:none;margin-bottom:14px;resize:vertical">' + esc(state.data.description) + '</textarea>' +
-      '<label style="display:block;font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:5px">' + tr('spw_q3_problem') + '</label>' +
-      '<textarea id="spwProblem" rows="3" placeholder="' + tr('spw_q3_problem_ph') + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-family:inherit;font-size:.88rem;outline:none;margin-bottom:14px;resize:vertical">' + esc(state.data.problem) + '</textarea>' +
-      '<label style="display:block;font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:5px">' + tr('spw_q3_solution') + '</label>' +
-      '<textarea id="spwSolution" rows="3" placeholder="' + tr('spw_q3_solution_ph') + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-family:inherit;font-size:.88rem;outline:none;resize:vertical">' + esc(state.data.solution) + '</textarea>' +
+      '<div style="padding:10px 12px;background:var(--grad-soft);border-radius:10px;font-size:.78rem;margin-bottom:14px">' +
+        '💡 ' + tr('spw_q3_hint_sector', { sector: sectorName }) +
+      '</div>' +
+      '<label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:5px">' + tr('spw_q3_desc') + '</label>' +
+      '<textarea id="spwDesc" rows="3" placeholder="' + tr('spw_q3_desc_ph') + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-family:inherit;font-size:.85rem;outline:none;margin-bottom:12px;resize:vertical">' + esc(state.data.description) + '</textarea>' +
+
+      '<label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:5px">' + tr('spw_q3_problem') + '</label>' +
+      '<textarea id="spwProblem" rows="3" placeholder="' + tr('spw_q3_problem_ph') + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-family:inherit;font-size:.85rem;outline:none;margin-bottom:12px;resize:vertical">' + esc(state.data.problem) + '</textarea>' +
+
+      '<label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:5px">' + tr('spw_q3_solution') + '</label>' +
+      '<textarea id="spwSolution" rows="3" placeholder="' + tr('spw_q3_solution_ph') + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-family:inherit;font-size:.85rem;outline:none;resize:vertical">' + esc(state.data.solution) + '</textarea>' +
     '</div>';
   }
+  function bind2(){
+    var bind = function(id, key){
+      var el = document.getElementById(id);
+      if(el) el.oninput = function(){ state.data[key] = el.value; };
+    };
+    bind('spwDesc', 'description');
+    bind('spwProblem', 'problem');
+    bind('spwSolution', 'solution');
+  }
 
-  /* نُحدّث القيم أثناء الكتابة */
-  document.addEventListener('input', function(e){
-    if(!state) return;
-    if(e.target.id === 'spwDesc') state.data.description = e.target.value;
-    if(e.target.id === 'spwProblem') state.data.problem = e.target.value;
-    if(e.target.id === 'spwSolution') state.data.solution = e.target.value;
-  });
+  /* ============ خطوة 3: SDG ============ */
+  function step3(){
+    var suggested = KB().suggestSDG ? KB().suggestSDG(state.data.sector) : [];
+    var sectorName = pick((window.SECTORS_DB||{})[state.data.sector] || {}, 'name');
 
-  /* ============ الخطوة 4: الأثر ============ */
-  function stepImpact(){
-    var sdgGrid = Object.keys(window.SDG_DB || {}).map(function(n){
+    var grid = Object.keys(window.SDG_DB || {}).map(function(n){
       var sdg = window.SDG_DB[n];
-      var selected = state.data.sdg.indexOf(parseInt(n)) > -1;
-      var suggested = (SECTOR_SDG_SUGGEST[state.data.sector] || []).indexOf(parseInt(n)) > -1;
-      return '<button type="button" data-spw-sdg="' + n + '" style="padding:8px;border-radius:10px;border:2px solid ' + (selected ? sdg.color : 'var(--border)') + ';background:' + (selected ? sdg.color + '20' : 'var(--bg2)') + ';color:' + (selected ? sdg.color : 'var(--muted)') + ';cursor:pointer;font-family:inherit;font-weight:700;font-size:.68rem;text-align:center;transition:.2s;position:relative">' +
+      var sel = state.data.sdg.indexOf(parseInt(n)) > -1;
+      var isSug = suggested.indexOf(parseInt(n)) > -1;
+      return '<button type="button" data-spw-sdg="' + n + '" style="padding:8px 4px;border-radius:10px;border:2px solid ' + (sel ? sdg.color : 'var(--border)') + ';background:' + (sel ? sdg.color + '25' : 'var(--bg2)') + ';color:' + (sel ? sdg.color : 'var(--muted)') + ';cursor:pointer;font-family:inherit;font-weight:700;font-size:.66rem;text-align:center;transition:.2s;position:relative">' +
+        (isSug && !sel ? '<span style="position:absolute;top:-4px;left:-4px;font-size:.7rem">⭐</span>' : '') +
         '<div style="font-size:1.1rem">' + sdg.icon + '</div>' +
         '<div>' + n + '</div>' +
-        (suggested && !selected ? '<div style="position:absolute;top:2px;right:4px;font-size:.55rem">💡</div>' : '') +
       '</button>';
     }).join('');
 
-    var count = state.data.sdg.length;
     return '<div>' +
-      '<div style="font-weight:800;font-size:1.1rem;margin-bottom:6px">' + tr('spw_q4_sdg') + '</div>' +
-      '<div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">' + tr('spw_q4_sdg_hint') + '</div>' +
-      '<div style="padding:10px;background:var(--grad-soft);border-radius:10px;font-size:.76rem;margin-bottom:14px">' +
-        '💡 ' + tr('spw_q4_sdg_suggest', { sector: pickLang((window.SECTORS_DB||{})[state.data.sector] || {}, 'name') }) +
+      '<h4 style="margin:0 0 4px;font-size:1rem">' + tr('spw_q4_sdg') + '</h4>' +
+      '<p style="margin:0 0 10px;font-size:.76rem;color:var(--muted)">' + tr('spw_q4_sdg_hint') + '</p>' +
+      '<div style="padding:9px 12px;background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(34,211,238,.12));border-radius:10px;font-size:.76rem;margin-bottom:12px">' +
+        '⭐ ' + tr('spw_q4_suggest', { sector: sectorName }) +
       '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:6px;margin-bottom:10px">' + sdgGrid + '</div>' +
-      '<div style="text-align:center;font-size:.82rem;color:var(--cyan);font-weight:700">' + tr('spw_q4_count', {n: count}) + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:5px;margin-bottom:10px">' + grid + '</div>' +
+      '<div style="text-align:center;font-size:.8rem;font-weight:700;color:var(--cyan)">' + tr('spw_q4_count', { n: state.data.sdg.length }) + '</div>' +
     '</div>';
   }
-
-  function bindImpact(){
+  function bind3(){
     document.querySelectorAll('[data-spw-sdg]').forEach(function(b){
       b.onclick = function(){
-        var num = parseInt(b.dataset.spwSdg);
-        var i = state.data.sdg.indexOf(num);
+        var n = parseInt(b.dataset.spwSdg);
+        var i = state.data.sdg.indexOf(n);
         if(i > -1) state.data.sdg.splice(i, 1);
-        else state.data.sdg.push(num);
+        else state.data.sdg.push(n);
+        saveDraft();
         renderStep();
       };
     });
   }
 
-  /* ============ الخطوة 5: الموارد ============ */
-  function stepResources(){
+  /* ============ خطوة 4: الموارد ============ */
+  function step4(){
     var budget = [
-      {v:'small', i:'💧', l: tr('spw_q5_budget_small')},
-      {v:'medium', i:'💰', l: tr('spw_q5_budget_medium')},
-      {v:'large', i:'💎', l: tr('spw_q5_budget_large')}
+      {v:'small', i:'💧', l: tr('spw_q5_budget_small'), sub:'~10K'},
+      {v:'medium', i:'💰', l: tr('spw_q5_budget_medium'), sub:'~75K'},
+      {v:'large', i:'💎', l: tr('spw_q5_budget_large'), sub:'500K+'}
     ];
-    var timeline = [
-      {v:'short', i:'⚡', l: tr('spw_q5_time_short')},
-      {v:'medium', i:'📅', l: tr('spw_q5_time_medium')},
-      {v:'long', i:'🏔️', l: tr('spw_q5_time_long')}
+    var time = [
+      {v:'short', i:'⚡', l: tr('spw_q5_time_short'), sub:'3 ' + tr('ms_days')},
+      {v:'medium', i:'📅', l: tr('spw_q5_time_medium'), sub:'6 ' + tr('ms_days')},
+      {v:'long', i:'🏔️', l: tr('spw_q5_time_long'), sub:'12 ' + tr('ms_days')}
     ];
-    var budgetHtml = budget.map(function(b){
-      var sel = state.data.budget === b.v;
-      return '<button type="button" data-spw-budget="' + b.v + '" style="padding:14px;border-radius:12px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
-        '<div style="font-size:1.4rem">' + b.i + '</div>' +
-        '<div style="font-size:.76rem;font-weight:700;margin-top:4px">' + b.l + '</div>' +
-      '</button>';
-    }).join('');
-    var timelineHtml = timeline.map(function(t){
-      var sel = state.data.timeline === t.v;
-      return '<button type="button" data-spw-timeline="' + t.v + '" style="padding:14px;border-radius:12px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
-        '<div style="font-size:1.4rem">' + t.i + '</div>' +
-        '<div style="font-size:.76rem;font-weight:700;margin-top:4px">' + t.l + '</div>' +
-      '</button>';
-    }).join('');
-
-    return '<div>' +
-      '<div style="font-weight:800;font-size:1.1rem;margin-bottom:6px">' + tr('spw_q5_resources') + '</div>' +
-      '<div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">' + tr('spw_q5_resources_hint') + '</div>' +
-      '<div style="font-weight:700;font-size:.9rem;margin-bottom:8px">💰 ' + tr('spw_q5_budget') + '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px">' + budgetHtml + '</div>' +
-      '<div style="font-weight:700;font-size:.9rem;margin-bottom:8px">📅 ' + tr('spw_q5_timeline') + '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">' + timelineHtml + '</div>' +
-    '</div>';
-  }
-
-  document.addEventListener('click', function(e){
-    if(!state) return;
-    var t = e.target.closest('[data-spw-budget]');
-    if(t){ state.data.budget = t.dataset.spwBudget; renderStep(); }
-    var tm = e.target.closest('[data-spw-timeline]');
-    if(tm){ state.data.timeline = tm.dataset.spwTimeline; renderStep(); }
-  });
-
-  /* ============ الخطوة 6: الفريق ============ */
-  function stepTeam(){
-    var sizes = [
+    var team = [
       {v:'solo', i:'👤', l: tr('spw_q6_team_solo')},
       {v:'small', i:'👥', l: tr('spw_q6_team_small')},
       {v:'medium', i:'👨‍👩‍👦', l: tr('spw_q6_team_medium')},
       {v:'large', i:'🏢', l: tr('spw_q6_team_large')}
     ];
-    var html = sizes.map(function(s){
-      var sel = state.data.teamSize === s.v;
-      return '<button type="button" data-spw-team="' + s.v + '" style="padding:16px;border-radius:12px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
-        '<div style="font-size:1.5rem">' + s.i + '</div>' +
-        '<div style="font-size:.76rem;font-weight:700;margin-top:4px">' + s.l + '</div>' +
-      '</button>';
-    }).join('');
+
+    var btn = function(arr, key, dataKey){
+      return arr.map(function(x){
+        var sel = state.data[dataKey] === x.v;
+        return '<button type="button" data-spw-' + key + '="' + x.v + '" style="padding:11px 6px;border-radius:11px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;text-align:center;transition:.2s">' +
+          '<div style="font-size:1.3rem">' + x.i + '</div>' +
+          '<div style="font-size:.72rem;font-weight:700;margin-top:3px">' + x.l + '</div>' +
+          (x.sub ? '<div style="font-size:.6rem;color:var(--muted2);margin-top:1px">' + x.sub + '</div>' : '') +
+        '</button>';
+      }).join('');
+    };
 
     return '<div>' +
-      '<div style="font-weight:800;font-size:1.1rem;margin-bottom:6px">' + tr('spw_q6_team') + '</div>' +
-      '<div style="font-size:.8rem;color:var(--muted);margin-bottom:14px">' + tr('spw_q6_team_hint') + '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">' + html + '</div>' +
+      '<h4 style="margin:0 0 4px;font-size:1rem">' + tr('spw_q5_resources') + '</h4>' +
+      '<p style="margin:0 0 12px;font-size:.76rem;color:var(--muted)">' + tr('spw_q5_resources_hint') + '</p>' +
+      '<div style="font-weight:700;font-size:.85rem;margin-bottom:6px">💰 ' + tr('spw_q5_budget') + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px">' + btn(budget, 'budget', 'budget') + '</div>' +
+      '<div style="font-weight:700;font-size:.85rem;margin-bottom:6px">📅 ' + tr('spw_q5_timeline') + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px">' + btn(time, 'timeline', 'timeline') + '</div>' +
+      '<div style="font-weight:700;font-size:.85rem;margin-bottom:6px">👥 ' + tr('spw_q6_team') + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">' + btn(team, 'team', 'teamSize') + '</div>' +
     '</div>';
   }
+  function bind4(){
+    document.querySelectorAll('[data-spw-budget]').forEach(function(b){
+      b.onclick = function(){ state.data.budget = b.dataset.spwBudget; saveDraft(); renderStep(); };
+    });
+    document.querySelectorAll('[data-spw-timeline]').forEach(function(b){
+      b.onclick = function(){ state.data.timeline = b.dataset.spwTimeline; saveDraft(); renderStep(); };
+    });
+    document.querySelectorAll('[data-spw-team]').forEach(function(b){
+      b.onclick = function(){ state.data.teamSize = b.dataset.spwTeam; saveDraft(); renderStep(); };
+    });
+  }
 
-  document.addEventListener('click', function(e){
-    if(!state) return;
-    var t = e.target.closest('[data-spw-team]');
-    if(t){ state.data.teamSize = t.dataset.spwTeam; renderStep(); }
-  });
+  /* ============ خطوة 5: أسئلة خاصة بالنوع ============ */
+  function step5(){
+    var typeKB = KB().getTypeKB ? KB().getTypeKB(state.data.type) : null;
+    if(!typeKB) return '<div><p style="color:var(--muted);text-align:center;padding:20px">' + tr('spw_q5_skip') + '</p></div>';
 
-  /* ============ الخطوة 7: الملخص ============ */
-  function stepSummary(){
+    var extra = typeKB.extraQuestions || [];
+    var html = '<div>' +
+      '<h4 style="margin:0 0 4px;font-size:1rem">' + tr('spw_q5_extra') + '</h4>' +
+      '<p style="margin:0 0 14px;font-size:.76rem;color:var(--muted)">' + tr('spw_q5_extra_hint') + '</p>';
+
+    extra.forEach(function(q){
+      html += '<label style="display:block;font-size:.82rem;font-weight:700;margin-bottom:5px">' + pick(q, 'ar') + '</label>';
+      if(q.options){
+        html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">';
+        q.options.forEach(function(o){
+          var sel = state.data[q.key] === o.v;
+          html += '<button type="button" data-spw-extra="' + q.key + ':' + o.v + '" style="padding:8px 14px;border-radius:10px;border:2px solid ' + (sel ? 'var(--cyan)' : 'var(--border)') + ';background:' + (sel ? 'var(--grad-soft)' : 'var(--bg2)') + ';color:' + (sel ? 'var(--cyan)' : 'var(--text)') + ';cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:600">' + pick(o, 'ar') + '</button>';
+        });
+        html += '</div>';
+      } else {
+        html += '<input type="text" data-spw-extra-input="' + q.key + '" value="' + esc(state.data[q.key] || '') + '" placeholder="' + pick(q, 'ar') + '" style="width:100%;background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-family:inherit;font-size:.85rem;outline:none;margin-bottom:14px">';
+      }
+    });
+
+    /* معلومات قانونية مفيدة */
+    if(typeKB.legalStructure){
+      html += '<div style="padding:10px 12px;background:var(--grad-soft);border-radius:10px;font-size:.76rem;margin-top:4px">' +
+        '⚖️ ' + tr('spw_q5_legal') + ': <b>' + pick(typeKB.legalStructure, 'ar') + '</b>' +
+      '</div>';
+    }
+    if(typeKB.fundingSources && typeKB.fundingSources.length){
+      html += '<div style="padding:10px 12px;background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(34,211,238,.12));border-radius:10px;font-size:.76rem;margin-top:8px">' +
+        '💵 ' + tr('spw_q5_funding') + ': ' + typeKB.fundingSources.map(function(s){ return pick(s, 'ar'); }).join(' · ') +
+      '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+  function bind5(){
+    document.querySelectorAll('[data-spw-extra]').forEach(function(b){
+      b.onclick = function(){
+        var parts = b.dataset.spwExtra.split(':');
+        state.data[parts[0]] = parts[1];
+        saveDraft();
+        renderStep();
+      };
+    });
+    document.querySelectorAll('[data-spw-extra-input]').forEach(function(inp){
+      inp.oninput = function(){
+        state.data[inp.dataset.spwExtraInput] = inp.value;
+        saveDraft();
+      };
+    });
+  }
+
+  /* ============ خطوة 6: الملخص ============ */
+  function step6(){
     var d = state.data;
-    var type = (window.IDEA_TYPES || {})[d.type] || {icon:'💡', name:'—'};
-    var sector = (window.SECTORS_DB || {})[d.sector] || {icon:'📦', name:'—'};
-    var countries = window.getAllCountries ? window.getAllCountries() : {};
-    var country = countries[d.country] || (window.COUNTRIES_DB || {})[d.country] || {flag:'🌍', name:'—'};
+    var type = (window.IDEA_TYPES||{})[d.type] || {icon:'💡'};
+    var sector = (window.SECTORS_DB||{})[d.sector] || {icon:'📦'};
+    var countries = window.getAllCountries ? window.getAllCountries() : (window.COUNTRIES_DB || {});
+    var country = countries[d.country] || {flag:'🌍'};
+
+    var msCount = d.timeline === 'short' ? 4 : d.timeline === 'long' ? 6 : 5;
+    var risksCount = KB().getSectorKB ? (KB().getSectorKB(d.sector).risks || []).length : 3;
+    var budgetCount = KB().getSectorKB ? Object.keys(KB().getSectorKB(d.sector).budget || {}).length : 5;
+
+    /* مشاريع مشابهة */
+    var similar = KB().findSimilar ? KB().findSimilar(d, getSpace().projects || []) : [];
+    var similarHtml = '';
+    if(similar.length){
+      similarHtml = '<div style="padding:10px 12px;background:rgba(251,191,36,.1);border:1px dashed rgba(251,191,36,.4);border-radius:10px;font-size:.76rem;margin-bottom:12px">' +
+        '💡 ' + tr('spw_q7_similar') + ':<br>' +
+        similar.map(function(s){ return '• ' + esc(s.project.name) + ' (' + pick((window.SECTORS_DB||{})[s.project.sector]||{}, 'name') + ')'; }).join('<br>') +
+      '</div>';
+    }
 
     var sdgTags = d.sdg.map(function(n){
       var s = window.SDG_DB[n]; if(!s) return '';
-      return '<span style="font-size:.68rem;padding:3px 8px;border-radius:6px;background:' + s.color + '20;color:' + s.color + ';font-weight:700">' + s.icon + ' SDG ' + n + '</span>';
+      return '<span style="font-size:.66rem;padding:3px 7px;border-radius:6px;background:' + s.color + '20;color:' + s.color + ';font-weight:700">' + s.icon + ' ' + n + '</span>';
     }).join('');
 
-    var auto = [];
-    auto.push('💡 ' + tr('spw_sum_idea'));
-    auto.push('💼 ' + tr('spw_sum_project'));
-    if(d.sdg.length) auto.push('🎯 ' + tr('spw_sum_sdg', {n: d.sdg.length}));
-    var budgetCats = TYPE_BUDGET[d.type] || [];
-    if(budgetCats.length) auto.push('💰 ' + tr('spw_sum_budget', {n: budgetCats.length}));
-    auto.push('🗺️ ' + tr('spw_sum_milestones', {n: (d.timeline === 'short' ? 3 : d.timeline === 'long' ? 6 : 4)}));
-    auto.push('📊 ' + tr('spw_sum_strategy'));
+    var auto = [
+      '💡 ' + tr('spw_sum_idea'),
+      '💼 ' + tr('spw_sum_project'),
+      d.sdg.length ? '🎯 ' + tr('spw_sum_sdg', { n: d.sdg.length }) : '',
+      '🗺️ ' + tr('spw_sum_milestones', { n: msCount }),
+      '⚠️ ' + tr('spw_sum_risks', { n: risksCount }),
+      '💰 ' + tr('spw_sum_budget', { n: budgetCount }),
+      '✅ ' + tr('spw_sum_okrs')
+    ].filter(Boolean);
 
     return '<div>' +
-      '<div style="font-weight:800;font-size:1.1rem;margin-bottom:6px">' + tr('spw_q7_summary') + '</div>' +
-      '<div style="font-size:.8rem;color:var(--muted);margin-bottom:14px">' + tr('spw_q7_summary_hint') + '</div>' +
-      '<div style="padding:14px;background:var(--bg2);border-radius:12px;margin-bottom:12px">' +
-        '<div style="font-weight:800;font-size:1rem">' + type.icon + ' ' + esc(d.name) + '</div>' +
-        '<div style="font-size:.76rem;color:var(--muted2);margin-top:4px">' + country.flag + ' ' + esc(country.name) + ' · ' + sector.icon + ' ' + esc(pickLang(sector, 'name')) + ' · ' + pickLang(type, 'name') + '</div>' +
-        (d.description ? '<div style="font-size:.8rem;color:var(--muted);margin-top:8px;line-height:1.6">' + esc(d.description.slice(0, 140)) + (d.description.length > 140 ? '...' : '') + '</div>' : '') +
-        (sdgTags ? '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">' + sdgTags + '</div>' : '') +
+      '<h4 style="margin:0 0 4px;font-size:1rem">' + tr('spw_q7_summary') + '</h4>' +
+      '<p style="margin:0 0 12px;font-size:.76rem;color:var(--muted)">' + tr('spw_q7_summary_hint') + '</p>' +
+
+      similarHtml +
+
+      '<div style="padding:12px;background:var(--bg2);border-radius:12px;margin-bottom:12px">' +
+        '<div style="font-weight:800;font-size:.95rem">' + type.icon + ' ' + esc(d.name) + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted2);margin-top:3px">' + (country.flag||'🌍') + ' ' + esc(pick(country,'name')) + ' · ' + sector.icon + ' ' + esc(pick(sector,'name')) + ' · ' + pick(type,'name') + '</div>' +
+        (d.description ? '<div style="font-size:.78rem;color:var(--muted);margin-top:6px;line-height:1.5">' + esc(d.description.slice(0, 120)) + (d.description.length > 120 ? '...' : '') + '</div>' : '') +
+        (sdgTags ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">' + sdgTags + '</div>' : '') +
       '</div>' +
-      '<div style="padding:14px;background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px dashed var(--glow);border-radius:12px">' +
-        '<div style="font-weight:800;font-size:.85rem;color:var(--cyan);margin-bottom:8px">✨ ' + tr('spw_q7_will_create') + '</div>' +
-        '<div style="display:flex;flex-direction:column;gap:6px">' +
-          auto.map(function(t){ return '<div style="font-size:.8rem">' + t + '</div>'; }).join('') +
-        '</div>' +
+
+      '<div style="padding:12px;background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px dashed var(--glow);border-radius:12px">' +
+        '<div style="font-weight:800;font-size:.82rem;color:var(--cyan);margin-bottom:6px">✨ ' + tr('spw_q7_will_create') + '</div>' +
+        auto.map(function(t){ return '<div style="font-size:.78rem;padding:2px 0">' + t + '</div>'; }).join('') +
       '</div>' +
     '</div>';
   }
+  function bind6(){ /* لا يحتاج binding */ }
 
   /* ============ الإنهاء ============ */
-  function finishWizard(){
+  function finish(){
     var d = state.data;
     var sp = getSpace();
-    if(!sp){ toast('⚠️', 'warn'); return; }
-    if(!Array.isArray(sp.ideas)) sp.ideas = [];
-    if(!Array.isArray(sp.projects)) sp.projects = [];
-    if(!Array.isArray(sp.budget)) sp.budget = [];
-    if(!Array.isArray(sp.tasks)) sp.tasks = [];
+    if(!sp) return;
+
+    /* ضمان المصفوفات */
+    ['ideas','projects','tasks','budget','stakeholders'].forEach(function(k){
+      if(!Array.isArray(sp[k])) sp[k] = [];
+    });
 
     var ideaId = uid();
     var projectId = uid();
@@ -487,9 +520,12 @@
       sdgTargets: d.sdg.slice()
     });
 
-    /* 2) المشروع الكامل */
-    var milestones = genMilestones(d.timeline, today);
-    var initialStage = getInitialStage(d.type);
+    /* 2) المشروع — مع KB */
+    var milestones = KB().suggestMilestones ? KB().suggestMilestones(d.sector, d.timeline, today) : [];
+    var risks = KB().suggestRisks ? KB().suggestRisks(d.sector) : [];
+    var okrs = KB().suggestOKRs ? KB().suggestOKRs(d.name) : [];
+    var initialStage = (d.type === 'corporate' || d.type === 'ngo') ? 'design' : 'pre-project';
+
     var project = {
       id: projectId,
       name: d.name,
@@ -507,119 +543,129 @@
           threats: []
         },
         pestel: {},
-        okrs: [{
-          objective: tr('spw_obj_launch') + ' ' + d.name,
-          keyResults: [
-            {name: tr('spw_kr_1'), progress: 0},
-            {name: tr('spw_kr_2'), progress: 0},
-            {name: tr('spw_kr_3'), progress: 0}
-          ]
-        }]
+        okrs: okrs
       },
       impact: {
         sdg: d.sdg.slice(),
         p5: {},
-        esg: {e: 50, s: 50, g: 50}
+        esg: { e: 50, s: 50, g: 50 }
       },
       milestones: milestones,
-      risks: [],
+      risks: risks,
       tasks: []
     };
     sp.projects.push(project);
 
-    /* 3) بنود الميزانية التمهيدية */
-    var budgetCats = TYPE_BUDGET[d.type] || ['setup'];
-    var budgetAmount = d.budget === 'small' ? 5000 : d.budget === 'large' ? 200000 : 50000;
-    budgetCats.forEach(function(cat, i){
-      sp.budget.push({
-        id: uid(),
-        type: 'expense',
-        category: cat,
-        amount: Math.round(budgetAmount / budgetCats.length),
-        date: today,
-        note: tr('spw_budget_note') + ' — ' + d.name
-      });
+    /* 3) بنود الميزانية */
+    var budgetItems = KB().suggestBudgetBreakdown ? KB().suggestBudgetBreakdown(d.sector, d.type, d.budget) : [];
+    budgetItems.forEach(function(b){
+      b.projectId = projectId;
+      b.note = d.name;
+      sp.budget.push(b);
     });
 
     /* 4) مهام أولية */
-    var starterTasks = [
-      tr('spw_task_1'),
-      tr('spw_task_2'),
-      tr('spw_task_3')
+    var tasks = [
+      { ar: 'تعريف الفريق والأدوار', en: 'Define team and roles' },
+      { ar: 'إعداد خطة العمل التفصيلية', en: 'Prepare detailed work plan' },
+      { ar: 'بدء التنفيذ', en: 'Start execution' }
     ];
-    starterTasks.forEach(function(t, i){
+    tasks.forEach(function(t, i){
       var due = new Date(); due.setDate(due.getDate() + 7 * (i+1));
       sp.tasks.push({
         id: uid(),
-        title: t,
+        title: pick(t, 'ar'),
         project: d.name,
+        projectId: projectId,
         due: due.toISOString().slice(0,10),
         done: false
       });
     });
 
-    /* حفظ */
+    /* 5) حفظ */
     if(window.saveSpace) window.saveSpace();
+    clearDraft();
 
-    /* إغلاق + ملخص */
-    closeWizard();
-    showSuccess(d, project);
+    /* إغلاق */
+    var bd = document.getElementById('spwBackdrop');
+    if(bd) bd.remove();
+    state = null;
+
+    /* ملخص النجاح */
+    showSuccess(d, project, { milestones: milestones.length, risks: risks.length, budget: budgetItems.length });
   }
 
-  function showSuccess(d, project){
+  function showSuccess(d, project, counts){
     var bd = document.createElement('div');
     bd.className = 'modal-backdrop show';
-    bd.innerHTML = '<div class="modal" style="max-width:520px;text-align:center">' +
+    bd.innerHTML = '<div class="modal" style="max-width:540px;text-align:center">' +
       '<div style="font-size:3.5rem;margin:8px 0">🎉</div>' +
-      '<h3 style="color:var(--cyan);margin:8px 0">' + tr('spw_success_title') + '</h3>' +
-      '<p style="color:var(--muted);font-size:.85rem;margin-bottom:20px">' + esc(d.name) + '</p>' +
-      '<div class="grid grid-3" style="gap:10px;margin-bottom:18px">' +
-        '<div class="stat"><div class="ic">🎯</div><div><div class="v">' + d.sdg.length + '</div><div class="l">' + tr('spw_success_sdg') + '</div></div></div>' +
-        '<div class="stat"><div class="ic">🎯</div><div><div class="v">' + (project.milestones||[]).length + '</div><div class="l">' + tr('spw_success_milestones') + '</div></div></div>' +
-        '<div class="stat"><div class="ic">📝</div><div><div class="v">3</div><div class="l">' + tr('spw_success_tasks') + '</div></div></div>' +
+      '<h3 style="color:var(--cyan);margin:6px 0">' + tr('spw_success_title') + '</h3>' +
+      '<p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">' + esc(d.name) + '</p>' +
+
+      '<div class="grid grid-4" style="gap:8px;margin-bottom:14px">' +
+        '<div class="stat"><div class="ic">🎯</div><div><div class="v">' + d.sdg.length + '</div><div class="l">SDG</div></div></div>' +
+        '<div class="stat"><div class="ic">🗺️</div><div><div class="v">' + counts.milestones + '</div><div class="l">' + tr('spw_success_milestones') + '</div></div></div>' +
+        '<div class="stat"><div class="ic">⚠️</div><div><div class="v">' + counts.risks + '</div><div class="l">' + tr('spw_success_risks') + '</div></div></div>' +
+        '<div class="stat"><div class="ic">💰</div><div><div class="v">' + counts.budget + '</div><div class="l">' + tr('spw_success_budget') + '</div></div></div>' +
       '</div>' +
-      '<div style="padding:12px;background:var(--grad-soft);border-radius:10px;font-size:.78rem;text-align:start;line-height:1.7;margin-bottom:18px">' +
+
+      '<div style="padding:11px 14px;background:var(--grad-soft);border-radius:10px;font-size:.78rem;text-align:start;line-height:1.6;margin-bottom:16px">' +
         '💡 ' + tr('spw_success_hint') +
       '</div>' +
+
       '<div class="modal-actions" style="justify-content:center">' +
         '<button class="btn btn-ghost" id="spwDoneDash">📊 ' + tr('nav_dashboard') + '</button>' +
-        '<button class="btn" id="spwDoneProject">🗺️ ' + tr('spw_open_project') + '</button>' +
+        '<button class="btn btn-ghost" id="spwDoneIdeas">💡 ' + tr('nav_ideas') + '</button>' +
+        '<button class="btn" id="spwDoneRoadmap">🗺️ ' + tr('spw_open_project') + '</button>' +
       '</div>' +
     '</div>';
     document.body.appendChild(bd);
 
     bd.querySelector('#spwDoneDash').onclick = function(){
-      bd.remove();
-      if(window.switchTab) window.switchTab('dashboard');
+      bd.remove(); if(window.switchTab) window.switchTab('dashboard');
     };
-    bd.querySelector('#spwDoneProject').onclick = function(){
-      bd.remove();
-      if(window.switchTab) window.switchTab('roadmap');
+    bd.querySelector('#spwDoneIdeas').onclick = function(){
+      bd.remove(); if(window.switchTab) window.switchTab('ideas');
+    };
+    bd.querySelector('#spwDoneRoadmap').onclick = function(){
+      bd.remove(); if(window.switchTab) window.switchTab('roadmap');
     };
   }
 
-  /* ============ الأزرار في الصفحة ============ */
-  function injectButtons(){
-    /* زر في قسم الأفكار */
-    var ideasCtrl = document.getElementById('ideas');
-    if(ideasCtrl && !ideasCtrl.querySelector('#spwOpenBtn')){
-      var controls = ideasCtrl.querySelector('.controls');
-      if(controls){
-        var btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.id = 'spwOpenBtn';
-        btn.style.background = 'linear-gradient(135deg,#a78bfa,#f472b6)';
-        btn.innerHTML = '🧙 ' + tr('spw_open_wizard');
-        btn.onclick = startWizard;
-        controls.appendChild(btn);
-      }
+  /* ============ البدء ============ */
+  function startWizard(){
+    var draft = loadDraft();
+    if(draft && draft.data && draft.data.name){
+      window.customConfirm(tr('spw_resume_draft') + '\n\n"' + draft.data.name + '"', function(){
+        state = draft;
+        state.savedAt = Date.now();
+        showModal();
+      });
+      return;
     }
+    state = newState();
+    showModal();
+  }
 
-    /* زر في الداشبورد */
+  /* ============ أزرار التثبيت ============ */
+  function injectButtons(){
+    /* زر في أفكاري */
+    var ideasCtrl = document.querySelector('#ideas .controls');
+    if(ideasCtrl && !document.getElementById('spwOpenBtn')){
+      var btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.id = 'spwOpenBtn';
+      btn.style.background = 'linear-gradient(135deg,#a78bfa,#f472b6)';
+      btn.innerHTML = '🧙 ' + tr('spw_open_wizard');
+      btn.onclick = startWizard;
+      ideasCtrl.appendChild(btn);
+    }
+    /* بطاقة في الداشبورد */
     var dash = document.getElementById('dashboard');
-    if(dash && !dash.querySelector('#spwDashCard')){
+    if(dash && !document.getElementById('spwDashCard')){
       var head = dash.querySelector('.page-head');
-      if(head && !dash.querySelector('#demoProjectCard')){
+      if(head){
         var card = document.createElement('div');
         card.id = 'spwDashCard';
         card.style.cssText = 'background:linear-gradient(135deg,rgba(167,139,250,.12),rgba(244,114,182,.12));border:1px dashed rgba(167,139,250,.5);border-radius:14px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap';
@@ -633,8 +679,7 @@
         card.querySelector('#spwStartBtn').onclick = startWizard;
       }
     }
-
-    /* FAB Action */
+    /* FAB */
     var fabMenu = document.getElementById('fabMenu');
     if(fabMenu && !fabMenu.querySelector('[data-fab="wizard"]')){
       var fabBtn = document.createElement('button');
@@ -647,11 +692,6 @@
       };
       fabMenu.insertBefore(fabBtn, fabMenu.firstChild);
     }
-  }
-
-  function startWizard(){
-    resetState();
-    showWizardModal();
   }
 
   function install(){
@@ -667,14 +707,12 @@
     setTimeout(injectButtons, 900);
   }
 
-  document.addEventListener('languagechange', function(){
-    setTimeout(injectButtons, 200);
-  });
+  document.addEventListener('languagechange', function(){ setTimeout(injectButtons, 200); });
 
   window.startSmartProjectWizard = startWizard;
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
 
-  console.log('🧙 Smart Project Wizard loaded');
+  console.log('🧙 Smart Wizard v2 loaded');
 })();

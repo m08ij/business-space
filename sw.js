@@ -39,6 +39,9 @@ var URLS_TO_CACHE = [
   './pwa.js'
   './translation-interceptor.js',
   './smart-project-wizard.js',
+  './kb-i18n-patch.js',
+  './project-knowledge-base.js',
+  './project-classifier.js',
 ];
 
 self.addEventListener('install', function(e){
