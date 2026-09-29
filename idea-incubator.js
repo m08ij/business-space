@@ -16,7 +16,8 @@
     var ideas = sp.ideas || [];
 
     if(!ideas.length){
-      grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ic">💡</div><p>لا توجد أفكار بعد</p><p class="sub">اضغط "+ فكرة جديدة" للبدء</p></div>';
+var tr = window.t || function(k){ return k; };
+grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ic">💡</div><p>' + tr('ideas_empty') + '</p><p class="sub">' + tr('ideas_empty_sub') + '</p></div>';
       return;
     }
 
@@ -203,5 +204,6 @@
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
+   document.addEventListener('languagechange', function(){ renderIdeas(); });
   console.log('💡 Idea Incubator loaded');
 })();

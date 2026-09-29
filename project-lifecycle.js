@@ -17,7 +17,8 @@
     var projects = sp.projects || [];
 
     if(!projects.length){
-      el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>لا توجد مشاريع</p><p class="sub">أضف مشروعاً من "أفكاري"</p></div>';
+	var tr = window.t || function(k){ return k; };
+el.innerHTML = '<div class="empty"><div class="ic">🗺️</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
       return;
     }
     if(!currentProject) currentProject = projects[0].id;
@@ -129,5 +130,6 @@
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
+  document.addEventListener('languagechange', function(){ renderRoadmap(); });
   console.log('🗺️ Project Lifecycle loaded');
 })();

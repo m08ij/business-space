@@ -26,7 +26,8 @@
     var sp = getSpace();
     var projects = sp.projects || [];
     if(!projects.length){
-      el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>لا توجد مشاريع</p><p class="sub">أضف مشروعاً من قسم "أفكاري" أولاً</p></div>';
+    var tr = window.t || function(k){ return k; };
+el.innerHTML = '<div class="empty"><div class="ic">💼</div><p>' + tr('roadmap_no_projects') + '</p><p class="sub">' + tr('roadmap_no_projects_sub') + '</p></div>';
       return;
     }
     var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">';
@@ -279,5 +280,6 @@
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
+  document.addEventListener('languagechange', function(){ renderStrategySelector(); });
   console.log('🎯 Strategy Builder loaded');
 })();

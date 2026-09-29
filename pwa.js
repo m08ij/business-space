@@ -4,6 +4,8 @@
 (function(){
   'use strict';
 
+  function tr(k, d){ return window.t ? window.t(k) : (d || k); }
+
   function registerSW(){
     if(!('serviceWorker' in navigator)) return;
     if(location.protocol !== 'https:' && location.hostname !== 'localhost'){
@@ -25,7 +27,7 @@
 
   window.addEventListener('appinstalled', function(){
     hideInstallBtn();
-      if(window.toast) window.toast(window.t ? window.t('toast_app_installed') : '🎉 App installed', 'success', 2500);
+    if(window.toast) window.toast(tr('toast_app_installed', '🎉 App installed'), 'success', 2500);
   });
 
   function showInstallBtn(){
@@ -45,7 +47,7 @@
       var menu = document.getElementById('settingsMenu');
       if(menu) menu.classList.remove('show');
       if(!deferredPrompt){
-        if(window.toast) window.toast(window.t ? window.t('toast_app_installed_already') : 'Already installed', 'info', 2200);
+        if(window.toast) window.toast(tr('toast_app_installed_already', 'Already installed or not supported'), 'info', 2200);
         return;
       }
       deferredPrompt.prompt();
@@ -63,7 +65,7 @@
       var menu = document.getElementById('settingsMenu');
       if(menu) menu.classList.remove('show');
       if(window.SB && window.SB.showSyncPanel) window.SB.showSyncPanel();
-      else if(window.toast) window.toast('خدمة المزامنة غير متوفرة', 'warn', 2200);
+      else if(window.toast) window.toast(tr('toast_server_off', 'Sync unavailable'), 'warn', 2200);
     });
   }
 
@@ -76,5 +78,5 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 
-  console.log('📱 PWA module loaded');
+  console.log('📱 PWA module loaded (bilingual)');
 })();

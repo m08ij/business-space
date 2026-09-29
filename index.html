@@ -365,6 +365,8 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
   <div class="nav-section" data-i18n="nav_ideas_projects">الأفكار والمشاريع</div>
   <div class="nav-item" data-tab="ideas"><span class="ic">💡</span><span class="label" data-i18n="nav_ideas">أفكاري</span></div>
   <div class="nav-item" data-tab="roadmap"><span class="ic">🗺️</span><span class="label" data-i18n="nav_roadmap">خريطة الطريق</span></div>
+  <div class="nav-item" data-tab="milestones"><span class="ic">🎯</span><span class="label" data-i18n="nav_milestones">المعالم الزمنية</span></div>
+  <div class="nav-item" data-tab="risks"><span class="ic">⚠️</span><span class="label" data-i18n="nav_risks">سجل المخاطر</span></div>
   <div class="nav-section" data-i18n="nav_strategy_section">الاستراتيجية</div>
   <div class="nav-item" data-tab="strategy"><span class="ic">🎯</span><span class="label" data-i18n="nav_strategy">الاستراتيجية</span></div>
   <div class="nav-item" data-tab="impact"><span class="ic">📈</span><span class="label" data-i18n="nav_impact">قياس الأثر</span></div>
@@ -377,6 +379,7 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
   <div class="nav-item" data-tab="budget"><span class="ic">💰</span><span class="label" data-i18n="nav_budget">الميزانية</span></div>
   <div class="nav-item" data-tab="files"><span class="ic">📁</span><span class="label" data-i18n="nav_files">الملفات</span></div>
   <div class="nav-item" data-tab="notes"><span class="ic">📔</span><span class="label" data-i18n="nav_notes">ملاحظاتي</span></div>
+  <div class="nav-item" data-tab="digest"><span class="ic">📧</span><span class="label" data-i18n="nav_digest">البريد الدوري</span></div>
   <div class="nav-section" data-i18n="nav_refs_section">المراجع</div>
   <div class="nav-item" data-tab="countries"><span class="ic">🌍</span><span class="label" data-i18n="nav_countries">الدول والأطر</span></div>
   <div class="nav-item" data-tab="reports"><span class="ic">📊</span><span class="label" data-i18n="nav_reports">التقارير</span></div>
@@ -423,6 +426,22 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
     <div class="page-head"><h2 class="page-title" data-i18n="roadmap_title">🗺️ خريطة الطريق</h2>
       <p class="page-sub" data-i18n="roadmap_sub">مراحل PRiSM للمشاريع</p></div>
     <div id="roadmapBody"></div>
+  </section>
+
+  <section id="milestones" class="section">
+    <div class="page-head">
+      <h2 class="page-title" data-i18n="ms_title">🎯 المعالم الزمنية</h2>
+      <p class="page-sub" data-i18n="ms_sub">خط زمني مرئي للمشاريع</p>
+    </div>
+    <div id="milestonesBody"></div>
+  </section>
+
+  <section id="risks" class="section">
+    <div class="page-head">
+      <h2 class="page-title" data-i18n="risk_title">⚠️ سجل المخاطر</h2>
+      <p class="page-sub" data-i18n="risk_sub">تحليل الاحتمالية × التأثير</p>
+    </div>
+    <div id="risksBody"></div>
   </section>
 
   <section id="strategy" class="section">
@@ -502,6 +521,14 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
     <div id="notesList"></div>
   </section>
 
+  <section id="digest" class="section">
+    <div class="page-head">
+      <h2 class="page-title" data-i18n="digest_title">📧 البريد الدوري</h2>
+      <p class="page-sub" data-i18n="digest_sub">جدولة تقارير أسبوعية/شهرية</p>
+    </div>
+    <div id="digestBody"></div>
+  </section>
+
   <section id="countries" class="section">
     <div class="page-head"><h2 class="page-title" data-i18n="countries_title">🌍 الدول والأطر</h2>
       <p class="page-sub" data-i18n="countries_sub">مؤشرات دولية + مكتبة الأطر</p></div>
@@ -569,6 +596,9 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
 <script src="leadership-coach.js"></script>
 <script src="sales-toolkit.js"></script>
 <script src="project-lifecycle.js"></script>
+<script src="milestones.js"></script>
+<script src="risk-register.js"></script>
+<script src="email-digest.js"></script>
 <script src="file-sync-plus.js"></script>
 <script src="insights.js"></script>
 <script src="calendar-sync.js"></script>
@@ -845,7 +875,10 @@ function switchTab(tab, pushHistory){
     budget: renderBudget,
     tasks: renderTasks,
     notes: renderNotes,
-    stakeholders: renderStakeholders
+    stakeholders: renderStakeholders,
+    milestones: window.renderMilestones,
+    risks: window.renderRisks,
+    digest: window.renderDigest
   };
   if(fns[tab]){ try{ fns[tab](); }catch(e){ console.error('Render error:', tab, e); } }
   requestAnimationFrame(function(){
@@ -929,12 +962,12 @@ function refreshThemeLabels(){
 function renderDailyQuote(){
   var d = new Date();
   var lang = window.i18n ? window.i18n.getLang() : 'ar';
-  // استخدم اقتباسات حسب اللغة
   var quotes = window.QUOTES || [];
   if(!quotes.length) return;
   var idx = (d.getFullYear()*365 + d.getMonth()*31 + d.getDate()) % quotes.length;
   var q = quotes[idx];
-  var el1 = document.getElementById('dailyQuoteText'); if(el1) el1.textContent = q.t;
+  var text = (lang === 'en' && q.tEn) ? q.tEn : q.t;
+  var el1 = document.getElementById('dailyQuoteText'); if(el1) el1.textContent = text;
   var el2 = document.getElementById('dailyQuoteAuthor'); if(el2) el2.textContent = '— ' + q.a;
 }
 
@@ -992,14 +1025,16 @@ function renderDashboard(){
     if(!pipeline.length){
       ds.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">' + tr('dash_no_deals') + '</div>';
     } else {
+      var lang = window.i18n ? window.i18n.getLang() : 'ar';
       var h2 = '';
       stagesOrder.forEach(function(k){
         var s = stages[k];
         if(!s) return;
         var cnt = pipeline.filter(function(d){ return d.stage === k; }).length;
         if(!cnt) return;
+        var sName = (lang === 'en' && s.nameEn) ? s.nameEn : s.name;
         h2 += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.82rem">' +
-          '<span>' + s.icon + ' ' + s.name + '</span><span style="font-weight:700;color:' + s.color + '">' + cnt + '</span></div>';
+          '<span>' + s.icon + ' ' + sName + '</span><span style="font-weight:700;color:' + s.color + '">' + cnt + '</span></div>';
       });
       ds.innerHTML = h2;
     }
@@ -1115,14 +1150,16 @@ function renderBudget(){
     list.innerHTML = '<div class="empty"><div class="ic">💰</div><p>' + tr('budget_empty') + '</p></div>';
     return;
   }
+  var lang = window.i18n ? window.i18n.getLang() : 'ar';
   var html = '';
   items.forEach(function(b){
-    var cat = (window.BUDGET_CATS || []).find(function(x){ return x.v === b.category; }) || {i:'💸', l: b.category};
+    var cat = (window.BUDGET_CATS || []).find(function(x){ return x.v === b.category; }) || {i:'💸', l: b.category, lEn: b.category};
+    var catLabel = (lang === 'en' && cat.lEn) ? cat.lEn : cat.l;
     var sign = b.type === 'income' ? '+' : '-';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;gap:10px">' +
       '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">' +
         '<div style="width:40px;height:40px;border-radius:11px;background:var(--grad-soft);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">' + cat.i + '</div>' +
-        '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.88rem">' + esc(cat.l) + '</div>' +
+        '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.88rem">' + esc(catLabel) + '</div>' +
         (b.note ? '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">' + esc(b.note) + '</div>' : '') + '</div>' +
       '</div>' +
       '<div style="font-weight:800;font-size:.95rem;text-align:center;color:' + (b.type === 'income' ? 'var(--green)' : 'var(--red)') + '">' + sign + b.amount + '<div style="font-size:.65rem;color:var(--muted);font-weight:400">' + (b.date || '') + '</div></div>' +
@@ -1140,12 +1177,14 @@ function renderBudget(){
   });
 }
 function addBudgetItem(type){
+  var lang = window.i18n ? window.i18n.getLang() : 'ar';
   var catOpts = [];
   (window.BUDGET_CATS || []).forEach(function(c){
     var isIncome = ['investment','grant','loan','revenue','other-in'].indexOf(c.v) > -1;
     if(type === 'income' && !isIncome) return;
     if(type === 'expense' && isIncome) return;
-    catOpts.push({v:c.v, l:c.i + ' ' + c.l});
+    var label = (lang === 'en' && c.lEn) ? c.lEn : c.l;
+    catOpts.push({v:c.v, l:c.i + ' ' + label});
   });
   window.showModal(type === 'income' ? tr('budget_add_income') : tr('budget_add_expense'), [
     {key:'category', label: tr('budget_category'), type:'select', options: catOpts},
@@ -1400,11 +1439,8 @@ function bindAllEvents(){
 
 /* ==================== LANGUAGE CHANGE HOOKS ==================== */
 document.addEventListener('languagechange', function(e){
-  // تحديث الـ server status
   setServerStatus(serverOnline ? 'ok' : 'off');
-  // تحديث اقتباس اليوم
   try{ renderDailyQuote(); }catch(err){}
-  // تحديث أسماء الثيمات
   try{ refreshThemeLabels(); }catch(err){}
 });
 
@@ -1440,7 +1476,6 @@ async function boot(){
   safeRun('Notes', renderNotes);
   safeRun('Stakeholders', renderStakeholders);
 
-  // Apply translations again after boot
   if(window.i18n){
     safeRun('Apply i18n', function(){ window.i18n.applyTranslations(); });
   }

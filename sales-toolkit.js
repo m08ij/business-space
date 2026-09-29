@@ -12,75 +12,75 @@
 
   var currentFilter = 'all';
 
-  function renderSales(){
-    var el = document.getElementById('salesBody');
-    if(!el) return;
-    var sp = getSpace();
-    if(!sp.salesPipeline) sp.salesPipeline = [];
+ function renderSales(){
+  var el = document.getElementById('salesBody');
+  if(!el) return;
+  var tr = window.t || function(k){ return k; };
+  var sp = getSpace();
+  if(!sp.salesPipeline) sp.salesPipeline = [];
 
-    // إحصائيات
-    var stats = {total:0, value:0, won:0, wonValue:0};
-    sp.salesPipeline.forEach(function(d){
-      stats.total++;
-      stats.value += parseFloat(d.value) || 0;
-      if(d.stage === 'won'){ stats.won++; stats.wonValue += parseFloat(d.value) || 0; }
-    });
+  var stats = {total:0, value:0, won:0, wonValue:0};
+  sp.salesPipeline.forEach(function(d){
+    stats.total++;
+    stats.value += parseFloat(d.value) || 0;
+    if(d.stage === 'won'){ stats.won++; stats.wonValue += parseFloat(d.value) || 0; }
+  });
 
-    var html = '<div class="grid grid-4" style="margin-bottom:16px">' +
-      '<div class="stat"><div class="ic">📊</div><div><div class="v">' + stats.total + '</div><div class="l">فرصة</div></div></div>' +
-      '<div class="stat"><div class="ic">💰</div><div><div class="v">' + stats.value.toFixed(0) + '</div><div class="l">قيمة إجمالية</div></div></div>' +
-      '<div class="stat"><div class="ic">🎉</div><div><div class="v">' + stats.won + '</div><div class="l">صفقة رابحة</div></div></div>' +
-      '<div class="stat"><div class="ic">📈</div><div><div class="v">' + stats.wonValue.toFixed(0) + '</div><div class="l">إيراد محقق</div></div></div>' +
-    '</div>';
+  var html = '<div class="grid grid-4" style="margin-bottom:16px">' +
+    '<div class="stat"><div class="ic">📊</div><div><div class="v">' + stats.total + '</div><div class="l">' + tr('sales_stats_deals') + '</div></div></div>' +
+    '<div class="stat"><div class="ic">💰</div><div><div class="v">' + stats.value.toFixed(0) + '</div><div class="l">' + tr('sales_stats_value') + '</div></div></div>' +
+    '<div class="stat"><div class="ic">🎉</div><div><div class="v">' + stats.won + '</div><div class="l">' + tr('sales_stats_won') + '</div></div></div>' +
+    '<div class="stat"><div class="ic">📈</div><div><div class="v">' + stats.wonValue.toFixed(0) + '</div><div class="l">' + tr('sales_stats_revenue') + '</div></div></div>' +
+  '</div>';
 
-    // فلاتر
-    html += '<div class="controls">';
-    var stages = window.PIPELINE_STAGES || {};
-    html += '<button class="chip' + (currentFilter === 'all' ? ' active' : '') + '" data-sp-filter="all">الكل</button>';
-    Object.keys(stages).forEach(function(k){
-      var s = stages[k];
-      var count = sp.salesPipeline.filter(function(d){ return d.stage === k; }).length;
-      html += '<button class="chip' + (currentFilter === k ? ' active' : '') + '" data-sp-filter="' + k + '">' + s.icon + ' ' + s.name + ' (' + count + ')</button>';
-    });
-    html += '</div>';
+  html += '<div class="controls">';
+  var stages = window.PIPELINE_STAGES || {};
+  html += '<button class="chip' + (currentFilter === 'all' ? ' active' : '') + '" data-sp-filter="all">' + tr('sales_filter_all') + '</button>';
+  Object.keys(stages).forEach(function(k){
+    var s = stages[k];
+    var count = sp.salesPipeline.filter(function(d){ return d.stage === k; }).length;
+    var label = window.i18n && window.i18n.getLang() === 'en' ? (s.nameEn || s.name) : s.name;
+    html += '<button class="chip' + (currentFilter === k ? ' active' : '') + '" data-sp-filter="' + k + '">' + s.icon + ' ' + label + ' (' + count + ')</button>';
+  });
+  html += '</div>';
 
-    // القائمة
-    var filtered = currentFilter === 'all' ? sp.salesPipeline : sp.salesPipeline.filter(function(d){ return d.stage === currentFilter; });
-    if(!filtered.length){
-      html += '<div class="empty"><div class="ic">💼</div><p>لا توجد فرص</p><p class="sub">اضغط "+ فرصة جديدة"</p></div>';
-    } else {
-      filtered.forEach(function(d){
-        var stage = stages[d.stage] || {name:'—', icon:'❓', color:'var(--muted)'};
-        html += '<div class="card" style="margin-bottom:10px">' +
-          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">' +
-            '<div style="flex:1;min-width:0">' +
-              '<div style="font-weight:800;font-size:.95rem">' + esc(d.client) + '</div>' +
-              '<div style="font-size:.72rem;color:var(--muted2)">' + esc(d.project || '') + '</div>' +
-            '</div>' +
-            '<span style="font-size:.68rem;padding:3px 10px;border-radius:8px;background:' + stage.color + '20;color:' + stage.color + ';font-weight:700;white-space:nowrap">' + stage.icon + ' ' + stage.name + '</span>' +
+  var filtered = currentFilter === 'all' ? sp.salesPipeline : sp.salesPipeline.filter(function(d){ return d.stage === currentFilter; });
+  if(!filtered.length){
+    html += '<div class="empty"><div class="ic">💼</div><p>' + tr('sales_no_deals') + '</p><p class="sub">' + tr('sales_no_deals_sub') + '</p></div>';
+  } else {
+    filtered.forEach(function(d){
+      var stage = stages[d.stage] || {name:'—', icon:'❓', color:'var(--muted)'};
+      var stageName = window.i18n && window.i18n.getLang() === 'en' ? (stage.nameEn || stage.name) : stage.name;
+      html += '<div class="card" style="margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-weight:800;font-size:.95rem">' + esc(d.client) + '</div>' +
+            '<div style="font-size:.72rem;color:var(--muted2)">' + esc(d.project || '') + '</div>' +
           '</div>' +
-          '<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:8px">' +
-            '<span>💰 <b>' + (parseFloat(d.value) || 0).toFixed(0) + '</b> ' + (d.currency || '') + '</span>' +
-            '<span style="color:var(--muted)">🎯 MEDDIC: ' + (d.meddic ? countMeddic(d.meddic) + '/6' : '—') + '</span>' +
-          '</div>' +
-          '<div style="display:flex;gap:6px">' +
-            '<button class="btn btn-sm" data-sp-view="' + d.id + '">👁️</button>' +
-            '<button class="btn btn-sm btn-ghost" data-sp-edit="' + d.id + '">✏️</button>' +
-            '<button class="btn btn-sm btn-danger" data-sp-del="' + d.id + '">🗑</button>' +
-          '</div>' +
-        '</div>';
-      });
-    }
-
-    el.innerHTML = html;
-
-    el.querySelectorAll('[data-sp-filter]').forEach(function(b){
-      b.addEventListener('click', function(){ currentFilter = b.dataset.spFilter; renderSales(); });
+          '<span style="font-size:.68rem;padding:3px 10px;border-radius:8px;background:' + stage.color + '20;color:' + stage.color + ';font-weight:700;white-space:nowrap">' + stage.icon + ' ' + stageName + '</span>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:8px">' +
+          '<span>💰 <b>' + (parseFloat(d.value) || 0).toFixed(0) + '</b> ' + (d.currency || '') + '</span>' +
+          '<span style="color:var(--muted)">🎯 MEDDIC: ' + (d.meddic ? countMeddic(d.meddic) + '/6' : '—') + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button class="btn btn-sm" data-sp-view="' + d.id + '">👁️</button>' +
+          '<button class="btn btn-sm btn-ghost" data-sp-edit="' + d.id + '">✏️</button>' +
+          '<button class="btn btn-sm btn-danger" data-sp-del="' + d.id + '">🗑</button>' +
+        '</div>' +
+      '</div>';
     });
-    el.querySelectorAll('[data-sp-view]').forEach(function(b){ b.addEventListener('click', function(){ viewDeal(b.dataset.spView); }); });
-    el.querySelectorAll('[data-sp-edit]').forEach(function(b){ b.addEventListener('click', function(){ editDeal(b.dataset.spEdit); }); });
-    el.querySelectorAll('[data-sp-del]').forEach(function(b){ b.addEventListener('click', function(){ deleteDeal(b.dataset.spDel); }); });
   }
+
+  el.innerHTML = html;
+
+  el.querySelectorAll('[data-sp-filter]').forEach(function(b){
+    b.addEventListener('click', function(){ currentFilter = b.dataset.spFilter; renderSales(); });
+  });
+  el.querySelectorAll('[data-sp-view]').forEach(function(b){ b.addEventListener('click', function(){ viewDeal(b.dataset.spView); }); });
+  el.querySelectorAll('[data-sp-edit]').forEach(function(b){ b.addEventListener('click', function(){ editDeal(b.dataset.spEdit); }); });
+  el.querySelectorAll('[data-sp-del]').forEach(function(b){ b.addEventListener('click', function(){ deleteDeal(b.dataset.spDel); }); });
+}
 
   function countMeddic(m){
     if(!m) return 0;
@@ -249,5 +249,6 @@
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
+  document.addEventListener('languagechange', function(){ renderSales(); });
   console.log('💼 Sales Toolkit loaded');
 })();

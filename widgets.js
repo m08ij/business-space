@@ -1,23 +1,31 @@
 /* ============================================================
-   🎯 widgets.js — Widgets جانبية قابلة للتخصيص
+   🎯 widgets.js — Widgets جانبية قابلة للتخصيص (AR/EN)
    ============================================================ */
 (function(){
   'use strict';
 
+  function tr(k){ return window.t ? window.t(k) : k; }
   function getSpace(){ return window.space || {profile:{},projects:[],tasks:[]}; }
   function toast(m,t){ if(typeof window.toast === 'function') window.toast(m, t || 'info', 2200); }
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function getS(){ return window.S || {get:function(k,d){return d;}}; }
+  function pick(obj, key){
+    var lang = window.i18n ? window.i18n.getLang() : 'ar';
+    if(lang === 'en' && obj[key + 'En']) return obj[key + 'En'];
+    return obj[key] || '';
+  }
 
   function injectCSS(){
     if(document.getElementById('lw-style')) return;
     var css = `
     .lw-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:401;opacity:0;pointer-events:none;transition:opacity .3s}
     .lw-backdrop.show{opacity:1;pointer-events:auto}
-    .lw-expand-btn{position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:403;width:42px;height:54px;border-radius:0 14px 14px 0;background:var(--card);border:1px solid var(--border);border-left:none;color:var(--cyan);cursor:pointer;font-family:inherit;font-size:1.25rem;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:3px 0 14px rgba(0,0,0,.25);transition:.3s}
-    .lw-expand-btn:hover{background:var(--card2);box-shadow:3px 0 20px var(--glow)}
-    .lw-expand-btn.hidden{opacity:0;pointer-events:none;transform:translateY(-50%) translateX(-70px)}
-    .lw-sidebar{position:fixed;top:74px;left:0;width:320px;max-width:calc(100vw - 60px);max-height:calc(100vh - 100px);padding:14px;background:var(--bg2);border:1px solid var(--border);border-left:none;border-radius:0 20px 20px 0;overflow-y:auto;z-index:402;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-lg);transform:translateX(-100%);opacity:0;pointer-events:none;transition:.35s}
+    .lw-expand-btn{position:fixed;top:50%;inset-inline-end:0;transform:translateY(-50%);z-index:403;width:42px;height:54px;border-radius:14px 0 0 14px;background:var(--card);border:1px solid var(--border);border-inline-end:none;color:var(--cyan);cursor:pointer;font-family:inherit;font-size:1.25rem;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:-3px 0 14px rgba(0,0,0,.25);transition:.3s}
+    html[dir="rtl"] .lw-expand-btn{border-radius:0 14px 14px 0;box-shadow:3px 0 14px rgba(0,0,0,.25)}
+    .lw-expand-btn:hover{background:var(--card2);box-shadow:0 0 20px var(--glow)}
+    .lw-expand-btn.hidden{opacity:0;pointer-events:none;transform:translateY(-50%) translateX(70px)}
+    html[dir="rtl"] .lw-expand-btn.hidden{transform:translateY(-50%) translateX(-70px)}
+    .lw-sidebar{position:fixed;top:74px;inset-inline-end:0;width:320px;max-width:calc(100vw - 60px);max-height:calc(100vh - 100px);padding:14px;background:var(--bg2);border:1px solid var(--border);border-inline-end:none;border-radius:20px 0 0 20px;overflow-y:auto;z-index:402;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-lg);transform:translateX(100%);opacity:0;pointer-events:none;transition:.35s}
+    html[dir="rtl"] .lw-sidebar{border-radius:0 20px 20px 0;transform:translateX(-100%)}
     .lw-sidebar.open{transform:translateX(0);opacity:1;pointer-events:auto}
     .lw-close-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;padding:0 2px}
     .lw-close-title{font-size:.72rem;font-weight:800;color:var(--muted);letter-spacing:.5px}
@@ -28,7 +36,7 @@
     .lw-card:hover{border-color:var(--border2)}
     .lw-title{font-size:.74rem;font-weight:700;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
     .lw-title .lw-ic{font-size:1rem}
-    .lw-title .lw-refresh{margin-right:auto;cursor:pointer;opacity:.5;font-size:.78rem;padding:2px 6px;border-radius:6px;background:transparent;border:none;color:inherit;font-family:inherit;transition:.2s}
+    .lw-title .lw-refresh{margin-inline-start:auto;cursor:pointer;opacity:.5;font-size:.78rem;padding:2px 6px;border-radius:6px;background:transparent;border:none;color:inherit;font-family:inherit;transition:.2s}
     .lw-title .lw-refresh:hover{opacity:1;color:var(--cyan);background:var(--card2);transform:rotate(90deg)}
     .lw-quote{background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(244,114,182,.08));border-color:rgba(167,139,250,.22);text-align:center}
     .lw-quote-text{font-size:.82rem;font-style:italic;line-height:1.7;color:var(--text);margin:4px 2px 8px;min-height:56px;display:flex;align-items:center;justify-content:center}
@@ -74,15 +82,15 @@
 
   var WIDGETS = {
     focus: {
-      title:'وضع التركيز', icon:'🎯', default:true,
+      titleKey:'widgets_focus_title', icon:'🎯', default:true,
       html: function(){
         return '<div class="lw-card" style="background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border-color:var(--glow)">' +
           '<div style="display:flex;align-items:center;gap:12px">' +
             '<div style="font-size:1.6rem">🎯</div>' +
-            '<div style="flex:1"><div style="font-weight:800;font-size:.86rem">وضع التركيز</div>' +
-            '<div style="font-size:.66rem;color:var(--muted);margin-top:2px">شاشة كاملة + مؤقت + مهام</div></div>' +
+            '<div style="flex:1"><div style="font-weight:800;font-size:.86rem">' + tr('widgets_focus_title') + '</div>' +
+            '<div style="font-size:.66rem;color:var(--muted);margin-top:2px">' + tr('widgets_focus_sub') + '</div></div>' +
           '</div>' +
-          '<button class="btn btn-sm" style="width:100%;margin-top:10px" id="lwFocusStart">▶ ابدأ التركيز</button>' +
+          '<button class="btn btn-sm" style="width:100%;margin-top:10px" id="lwFocusStart">' + tr('widgets_focus_start') + '</button>' +
         '</div>';
       },
       attach: function(card){
@@ -91,13 +99,13 @@
       }
     },
     quote: {
-      title:'اقتباس اليوم', icon:'✨', default:true,
+      titleKey:'widgets_quote_title', icon:'✨', default:true,
       html: function(){
         return '<div class="lw-card lw-quote" data-widget="quote">' +
-          '<div class="lw-title" style="justify-content:center"><span class="lw-ic">✨</span> اقتباس اليوم</div>' +
+          '<div class="lw-title" style="justify-content:center"><span class="lw-ic">✨</span> ' + tr('widgets_quote_title') + '</div>' +
           '<div class="lw-quote-text" id="lwQuoteText">—</div>' +
           '<div class="lw-quote-author" id="lwQuoteAuthor">—</div>' +
-          '<button class="btn btn-sm btn-ghost" id="lwQuoteNext" style="width:100%">🔀 اقتباس جديد</button>' +
+          '<button class="btn btn-sm btn-ghost" id="lwQuoteNext" style="width:100%">' + tr('widgets_quote_next') + '</button>' +
         '</div>';
       },
       attach: function(card){
@@ -107,50 +115,50 @@
       }
     },
     stats: {
-      title:'ملخص سريع', icon:'📊', default:true,
+      titleKey:'widgets_stats_title', icon:'📊', default:true,
       html: function(){
         return '<div class="lw-card">' +
-          '<div class="lw-title"><span class="lw-ic">📊</span> ملخص سريع</div>' +
+          '<div class="lw-title"><span class="lw-ic">📊</span> ' + tr('widgets_stats_title') + '</div>' +
           '<div id="lwStatsBody"></div>' +
         '</div>';
       },
       attach: function(card){ renderStatsBody(); }
     },
     upcoming: {
-      title:'القادم', icon:'📅', default:true,
+      titleKey:'widgets_upcoming_title', icon:'📅', default:true,
       html: function(){
         return '<div class="lw-card">' +
-          '<div class="lw-title"><span class="lw-ic">📅</span> الأحداث القادمة</div>' +
+          '<div class="lw-title"><span class="lw-ic">📅</span> ' + tr('widgets_upcoming_title') + '</div>' +
           '<div id="lwUpcomingBody"></div>' +
         '</div>';
       },
       attach: function(card){ renderUpcomingBody(); }
     },
     sales: {
-      title:'المبيعات', icon:'💼', default:false,
+      titleKey:'widgets_sales_title', icon:'💼', default:false,
       html: function(){
         return '<div class="lw-card">' +
-          '<div class="lw-title"><span class="lw-ic">💼</span> القمع البيعي</div>' +
+          '<div class="lw-title"><span class="lw-ic">💼</span> ' + tr('widgets_sales_title') + '</div>' +
           '<div id="lwSalesBody"></div>' +
         '</div>';
       },
       attach: function(card){ renderSalesBody(); }
     },
     impact: {
-      title:'الأثر', icon:'🌱', default:false,
+      titleKey:'widgets_impact_title', icon:'🌱', default:false,
       html: function(){
         return '<div class="lw-card">' +
-          '<div class="lw-title"><span class="lw-ic">🌱</span> أثر SDG</div>' +
+          '<div class="lw-title"><span class="lw-ic">🌱</span> ' + tr('widgets_impact_title') + '</div>' +
           '<div id="lwImpactBody"></div>' +
         '</div>';
       },
       attach: function(card){ renderImpactBody(); }
     },
     budget: {
-      title:'الميزانية', icon:'💰', default:false,
+      titleKey:'widgets_budget_title', icon:'💰', default:false,
       html: function(){
         return '<div class="lw-card">' +
-          '<div class="lw-title"><span class="lw-ic">💰</span> الميزانية</div>' +
+          '<div class="lw-title"><span class="lw-ic">💰</span> ' + tr('widgets_budget_title') + '</div>' +
           '<div id="lwBudgetBody"></div>' +
         '</div>';
       },
@@ -172,7 +180,7 @@
     document.body.appendChild(backdrop);
     var expandBtn = document.createElement('button');
     expandBtn.className = 'lw-expand-btn'; expandBtn.id = 'lwExpandBtn';
-    expandBtn.title = 'فتح الأدوات الجانبية'; expandBtn.innerHTML = '🎯';
+    expandBtn.title = tr('widgets_quick_tools'); expandBtn.innerHTML = '🎯';
     document.body.appendChild(expandBtn);
     var aside = document.createElement('aside');
     aside.className = 'lw-sidebar'; aside.id = 'lwSidebar';
@@ -181,9 +189,9 @@
 
   function renderSidebar(){
     var sidebar = document.getElementById('lwSidebar'); if(!sidebar) return;
-    var html = '<div class="lw-close-row"><span class="lw-close-title">الأدوات السريعة</span><div class="lw-close-actions"><button class="lw-close-btn" id="lwCustomizeBtn" title="تخصيص">⚙</button><button class="lw-close-btn" id="lwCloseBtn" title="إغلاق">×</button></div></div>';
+    var html = '<div class="lw-close-row"><span class="lw-close-title">' + tr('widgets_quick_tools') + '</span><div class="lw-close-actions"><button class="lw-close-btn" id="lwCustomizeBtn" title="⚙">⚙</button><button class="lw-close-btn" id="lwCloseBtn" title="×">×</button></div></div>';
     if(!enabledWidgets.length){
-      html += '<div class="lw-empty-mini" style="padding:40px 16px"><div class="lw-em-ic">🎨</div><div>ما اخترت أي widget</div></div>';
+      html += '<div class="lw-empty-mini" style="padding:40px 16px"><div class="lw-em-ic">🎨</div><div>' + tr('widgets_no_widgets') + '</div></div>';
     } else {
       enabledWidgets.forEach(function(id){ var w = WIDGETS[id]; if(w) html += w.html(); });
     }
@@ -194,7 +202,7 @@
     if(custBtn) custBtn.onclick = openCustomizePanel;
     enabledWidgets.forEach(function(id){
       var w = WIDGETS[id]; if(!w) return;
-      var card = sidebar.querySelector('[data-widget="' + id + '"]') || sidebar.querySelector('.lw-card');
+      var card = sidebar.querySelector('[data-widget="' + id + '"]') || sidebar.querySelectorAll('.lw-card')[enabledWidgets.indexOf(id)];
       if(card && w.attach) w.attach(card);
     });
   }
@@ -207,13 +215,13 @@
     document.body.appendChild(backdrop);
     var panel = document.createElement('div');
     panel.id = 'lwCustomizePanel'; panel.className = 'lw-customize-panel';
-    var html = '<div class="lw-cust-header"><span>🎨 تخصيص الأدوات</span><button class="lw-close-btn" id="lwCustClose">×</button></div><div class="lw-cust-list">';
+    var html = '<div class="lw-cust-header"><span>🎨 ' + tr('widgets_customize_title') + '</span><button class="lw-close-btn" id="lwCustClose">×</button></div><div class="lw-cust-list">';
     Object.keys(WIDGETS).forEach(function(id){
       var w = WIDGETS[id];
       var checked = enabledWidgets.indexOf(id) > -1;
-      html += '<label class="lw-cust-item ' + (checked ? 'checked' : '') + '" data-cid="' + id + '"><input type="checkbox" data-wid="' + id + '" ' + (checked ? 'checked' : '') + '><span class="lw-cust-ic">' + w.icon + '</span><span class="lw-cust-title">' + w.title + '</span></label>';
+      html += '<label class="lw-cust-item ' + (checked ? 'checked' : '') + '" data-cid="' + id + '"><input type="checkbox" data-wid="' + id + '" ' + (checked ? 'checked' : '') + '><span class="lw-cust-ic">' + w.icon + '</span><span class="lw-cust-title">' + tr(w.titleKey) + '</span></label>';
     });
-    html += '</div><div class="lw-cust-footer"><span style="font-size:.72rem;color:var(--muted2)">' + enabledWidgets.length + ' / ' + Object.keys(WIDGETS).length + '</span><button class="lw-cust-btn" id="lwCustReset">↺ الافتراضي</button></div>';
+    html += '</div><div class="lw-cust-footer"><span style="font-size:.72rem;color:var(--muted2)">' + enabledWidgets.length + ' / ' + Object.keys(WIDGETS).length + '</span><button class="lw-cust-btn" id="lwCustReset">' + tr('widgets_customize_default') + '</button></div>';
     panel.innerHTML = html;
     document.body.appendChild(panel);
     function close(){ panel.remove(); backdrop.remove(); }
@@ -232,7 +240,7 @@
     });
     panel.querySelector('#lwCustReset').onclick = function(){
       enabledWidgets = Object.keys(WIDGETS).filter(function(k){ return WIDGETS[k].default; });
-      saveEnabled(); close(); renderSidebar(); toast('↺ تم الاسترجاع', 'success');
+      saveEnabled(); close(); renderSidebar(); toast('↺ ' + tr('done'), 'success');
     };
   }
 
@@ -259,8 +267,8 @@
   }
 
   /* ============ Quote ============ */
-  var QUOTE_INDEX_KEY = 'lw_quote_index_v1';
-  function getQuotes(){ return (window.QUOTES || [{t:'لا تنتظر الفرصة، اصنعها.', a:'—'}]); }
+  var QUOTE_INDEX_KEY = 'lw_quote_index_v2';
+  function getQuotes(){ return (window.QUOTES || [{t:'لا تنتظر الفرصة، اصنعها.', tEn:'Don\'t wait for opportunity, create it.', a:'—'}]); }
   function rotateQuote(advance){
     var quotes = getQuotes();
     var idx = 0;
@@ -273,7 +281,7 @@
   function renderQuote(){
     var t = document.getElementById('lwQuoteText'); if(!t) return;
     var q = window._lwCurrentQuote || getQuotes()[0];
-    t.textContent = q.t;
+    t.textContent = pick(q, 't');
     var a = document.getElementById('lwQuoteAuthor'); if(a) a.textContent = '— ' + (q.a || '—');
   }
 
@@ -285,9 +293,9 @@
     var tasks = (sp.tasks || []).filter(function(t){ return !t.done; }).length;
     var deals = (sp.salesPipeline || []).length;
     el.innerHTML = '<div class="lw-stats">' +
-      '<div class="lw-stat"><div class="lw-stat-val">' + projects + '</div><div class="lw-stat-lbl">مشروع</div></div>' +
-      '<div class="lw-stat"><div class="lw-stat-val amber">' + tasks + '</div><div class="lw-stat-lbl">مهمة</div></div>' +
-      '<div class="lw-stat"><div class="lw-stat-val green">' + deals + '</div><div class="lw-stat-lbl">فرصة</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val">' + projects + '</div><div class="lw-stat-lbl">' + tr('widgets_stats_projects') + '</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val amber">' + tasks + '</div><div class="lw-stat-lbl">' + tr('widgets_stats_tasks') + '</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val green">' + deals + '</div><div class="lw-stat-lbl">' + tr('widgets_stats_deals') + '</div></div>' +
     '</div>';
   }
 
@@ -304,13 +312,13 @@
     items.sort(function(a,b){ return a.date.localeCompare(b.date); });
     items = items.slice(0, 5);
     if(!items.length){
-      el.innerHTML = '<div class="lw-empty-mini"><div class="lw-em-ic">🌴</div>لا أحداث قادمة</div>';
+      el.innerHTML = '<div class="lw-empty-mini"><div class="lw-em-ic">🌴</div>' + tr('widgets_upcoming_empty') + '</div>';
       return;
     }
     var html = '';
     items.forEach(function(it){
       var days = Math.ceil((new Date(it.date) - new Date(today)) / 86400000);
-      var when = days === 0 ? 'اليوم' : days === 1 ? 'غدًا' : 'بعد ' + days + ' يوم';
+      var when = days === 0 ? tr('dash_today') : days === 1 ? tr('dash_tomorrow') : tr('dash_in_days', {n: days});
       var cls = days <= 2 ? 'urgent' : '';
       html += '<div class="lw-item"><div class="lw-item-ic">' + it.icon + '</div>' +
         '<div class="lw-item-body"><div class="lw-item-title">' + esc(it.title) + '</div>' +
@@ -329,9 +337,9 @@
     var total = pipeline.length;
     var totalValue = pipeline.reduce(function(a,b){ return a + (parseFloat(b.value) || 0); }, 0);
     el.innerHTML = '<div class="lw-stats">' +
-      '<div class="lw-stat"><div class="lw-stat-val">' + total + '</div><div class="lw-stat-lbl">فرصة</div></div>' +
-      '<div class="lw-stat"><div class="lw-stat-val green">' + won + '</div><div class="lw-stat-lbl">رابحة</div></div>' +
-      '<div class="lw-stat"><div class="lw-stat-val amber">' + totalValue.toFixed(0) + '</div><div class="lw-stat-lbl">القيمة</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val">' + total + '</div><div class="lw-stat-lbl">' + tr('widgets_sales_deals') + '</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val green">' + won + '</div><div class="lw-stat-lbl">' + tr('widgets_sales_won') + '</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val amber">' + totalValue.toFixed(0) + '</div><div class="lw-stat-lbl">' + tr('widgets_sales_value') + '</div></div>' +
     '</div>';
   }
 
@@ -345,7 +353,7 @@
     });
     var list = Object.keys(sdgSet);
     if(!list.length){
-      el.innerHTML = '<div class="lw-empty-mini"><div class="lw-em-ic">🌱</div>لا SDG مختارة</div>';
+      el.innerHTML = '<div class="lw-empty-mini"><div class="lw-em-ic">🌱</div>' + tr('widgets_impact_empty') + '</div>';
       return;
     }
     var html = '<div style="display:flex;flex-wrap:wrap;gap:6px">';
@@ -366,15 +374,14 @@
     var exp = (sp.budget || []).filter(function(b){ return b.type === 'expense'; }).reduce(function(a,b){ return a + (parseFloat(b.amount) || 0); }, 0);
     var bal = inc - exp;
     el.innerHTML = '<div class="lw-stats">' +
-      '<div class="lw-stat"><div class="lw-stat-val green">' + inc.toFixed(0) + '</div><div class="lw-stat-lbl">دخل</div></div>' +
-      '<div class="lw-stat"><div class="lw-stat-val red">' + exp.toFixed(0) + '</div><div class="lw-stat-lbl">مصروف</div></div>' +
-      '<div class="lw-stat"><div class="lw-stat-val ' + (bal >= 0 ? 'green' : 'red') + '">' + bal.toFixed(0) + '</div><div class="lw-stat-lbl">رصيد</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val green">' + inc.toFixed(0) + '</div><div class="lw-stat-lbl">' + tr('widgets_budget_income') + '</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val red">' + exp.toFixed(0) + '</div><div class="lw-stat-lbl">' + tr('widgets_budget_expense') + '</div></div>' +
+      '<div class="lw-stat"><div class="lw-stat-val ' + (bal >= 0 ? 'green' : 'red') + '">' + bal.toFixed(0) + '</div><div class="lw-stat-lbl">' + tr('widgets_budget_balance') + '</div></div>' +
     '</div>';
   }
 
-  /* ============ Focus Screen ============ */
   function openFocusScreen(){
-    toast('🎯 وضع التركيز — قيد التطوير', 'info', 2500);
+    toast('🎯 ' + tr('widgets_focus_title'), 'info', 2500);
   }
 
   function init(){
@@ -391,7 +398,14 @@
     }, 60 * 1000);
   }
 
+  /* إعادة الرندر عند تغيير اللغة */
+  document.addEventListener('languagechange', function(){
+    var expandBtn = document.getElementById('lwExpandBtn');
+    if(expandBtn) expandBtn.title = tr('widgets_quick_tools');
+    renderSidebar();
+  });
+
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
-  console.log('🎯 Widgets loaded');
+  console.log('🎯 Widgets loaded (AR/EN)');
 })();
