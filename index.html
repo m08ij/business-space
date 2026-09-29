@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
+<meta name="color-scheme" content="dark light">
+<title>تطوير أعمالي 💼</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%BC%3C/text%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="تطوير أعمالي">
+<style>
+:root,[data-theme="dark"]{--bg:#0b0f1a;--bg2:#0f1522;--card:#141c2e;--card2:#1a2338;--border:#243049;--border2:#2f3d5c;--text:#e8eefb;--muted:#8a96b8;--muted2:#5b6885;--cyan:#22d3ee;--purple:#a78bfa;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--grad:linear-gradient(135deg,#22d3ee,#a78bfa);--grad-soft:linear-gradient(135deg,rgba(34,211,238,.12),rgba(167,139,250,.12));--shadow:0 8px 32px rgba(0,0,0,.35);--shadow-lg:0 20px 60px rgba(0,0,0,.5);--glow:rgba(34,211,238,.35);--topbar-bg:rgba(15,21,34,.88);--radius:14px;--radius-lg:20px}
+[data-theme="aurora"]{--bg:#04101a;--bg2:#071a28;--card:#0b2434;--card2:#0f2d41;--border:#1a4560;--border2:#256b8f;--text:#d9f5ff;--muted:#7ab9d4;--muted2:#4d8298;--cyan:#14e0c8;--purple:#a78bfa;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--grad:linear-gradient(135deg,#14e0c8,#a78bfa);--grad-soft:linear-gradient(135deg,rgba(20,224,200,.16),rgba(167,139,250,.16));--shadow:0 8px 32px rgba(0,0,0,.5);--shadow-lg:0 20px 60px rgba(0,0,0,.7);--glow:rgba(20,224,200,.5);--topbar-bg:rgba(7,26,40,.88)}
+[data-theme="ocean"]{--bg:#071a2e;--bg2:#0a2540;--card:#0e3254;--card2:#143e66;--border:#1b4d7a;--border2:#2860a0;--text:#e0f2fe;--muted:#7eb6dd;--muted2:#4d84b3;--cyan:#38bdf8;--purple:#60a5fa;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--grad:linear-gradient(135deg,#38bdf8,#3b82f6);--grad-soft:linear-gradient(135deg,rgba(56,189,248,.15),rgba(59,130,246,.15));--shadow:0 8px 32px rgba(0,0,0,.4);--shadow-lg:0 20px 60px rgba(0,0,0,.55);--glow:rgba(56,189,248,.4);--topbar-bg:rgba(10,37,64,.88)}
+[data-theme="royal"]{--bg:#0f0524;--bg2:#160834;--card:#1f0d4a;--card2:#2a1260;--border:#3a1a7a;--border2:#5b2ba8;--text:#f3e8ff;--muted:#a78bfa;--muted2:#7c5dc4;--cyan:#c4b5fd;--purple:#fbbf24;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--grad:linear-gradient(135deg,#a78bfa,#fbbf24);--grad-soft:linear-gradient(135deg,rgba(167,139,250,.15),rgba(251,191,36,.15));--shadow:0 8px 32px rgba(0,0,0,.5);--shadow-lg:0 20px 60px rgba(0,0,0,.65);--glow:rgba(167,139,250,.4);--topbar-bg:rgba(22,8,52,.88)}
+[data-theme="cyberpunk"]{--bg:#0a0014;--bg2:#0f001f;--card:#170030;--card2:#1f0042;--border:#3a0066;--border2:#5c00a3;--text:#f0abfc;--muted:#c084fc;--muted2:#a855f7;--cyan:#22d3ee;--purple:#ec4899;--green:#22c55e;--amber:#eab308;--red:#ef4444;--pink:#ec4899;--grad:linear-gradient(135deg,#22d3ee,#ec4899);--grad-soft:linear-gradient(135deg,rgba(34,211,238,.15),rgba(236,72,153,.15));--shadow:0 8px 32px rgba(236,72,153,.2);--shadow-lg:0 20px 60px rgba(236,72,153,.3);--glow:rgba(236,72,153,.5);--topbar-bg:rgba(15,0,31,.88)}
+[data-theme="midnight"]{--bg:#050914;--bg2:#0a101f;--card:#0f172b;--card2:#16213e;--border:#1e2a45;--border2:#2d3d5e;--text:#cbd5e1;--muted:#64748b;--muted2:#475569;--cyan:#0ea5e9;--purple:#8b5cf6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--pink:#ec4899;--grad:linear-gradient(135deg,#0ea5e9,#8b5cf6);--grad-soft:linear-gradient(135deg,rgba(14,165,233,.1),rgba(139,92,246,.1));--shadow:0 8px 32px rgba(0,0,0,.6);--shadow-lg:0 20px 60px rgba(0,0,0,.75);--glow:rgba(14,165,233,.4);--topbar-bg:rgba(10,16,31,.88)}
+[data-theme="nord"]{--bg:#2e3440;--bg2:#3b4252;--card:#434c5e;--card2:#4c566a;--border:#5e6779;--border2:#7b88a1;--text:#eceff4;--muted:#a4b1c4;--muted2:#7b88a1;--cyan:#88c0d0;--purple:#b48ead;--green:#a3be8c;--amber:#ebcb8b;--red:#bf616a;--pink:#d08770;--grad:linear-gradient(135deg,#88c0d0,#b48ead);--grad-soft:linear-gradient(135deg,rgba(136,192,208,.18),rgba(180,142,173,.18));--shadow:0 8px 32px rgba(0,0,0,.35);--shadow-lg:0 20px 60px rgba(0,0,0,.5);--glow:rgba(136,192,208,.4);--topbar-bg:rgba(59,66,82,.9)}
+[data-theme="sakura"]{--bg:#1a0e14;--bg2:#24131c;--card:#2e1824;--card2:#3a1f2d;--border:#4d2a3c;--border2:#6b3a52;--text:#ffe4f0;--muted:#e0a5c0;--muted2:#b88099;--cyan:#ff8fb8;--purple:#c084fc;--green:#86efac;--amber:#fcd34d;--red:#f87171;--pink:#ff69b4;--grad:linear-gradient(135deg,#ff8fb8,#c084fc);--grad-soft:linear-gradient(135deg,rgba(255,143,184,.15),rgba(192,132,252,.15));--shadow:0 8px 32px rgba(255,143,184,.15);--shadow-lg:0 20px 60px rgba(255,143,184,.25);--glow:rgba(255,143,184,.4);--topbar-bg:rgba(36,19,28,.9)}
+[data-theme="dracula"]{--bg:#191a21;--bg2:#21222c;--card:#282a36;--card2:#343746;--border:#44475a;--border2:#6272a4;--text:#f8f8f2;--muted:#a5a9c0;--muted2:#6272a4;--cyan:#8be9fd;--purple:#bd93f9;--green:#50fa7b;--amber:#f1fa8c;--red:#ff5555;--pink:#ff79c6;--grad:linear-gradient(135deg,#bd93f9,#ff79c6);--grad-soft:linear-gradient(135deg,rgba(189,147,249,.15),rgba(255,121,198,.15));--shadow:0 8px 32px rgba(0,0,0,.5);--shadow-lg:0 20px 60px rgba(189,147,249,.2);--glow:rgba(189,147,249,.45);--topbar-bg:rgba(33,34,44,.9)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Tahoma',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden;min-height:100vh;position:relative}
+body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(120px);opacity:.35}
+body::before{width:500px;height:500px;top:-200px;right:-100px;background:radial-gradient(circle,var(--cyan),transparent 70%);animation:float1 20s ease-in-out infinite}
+body::after{width:600px;height:600px;bottom:-250px;left:-150px;background:radial-gradient(circle,var(--purple),transparent 70%);animation:float2 25s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(-80px,60px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,-60px)}}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--cyan),var(--purple));border-radius:10px;border:2px solid var(--bg2)}
+::selection{background:var(--glow)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+.welcome-overlay{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;background:var(--bg);backdrop-filter:blur(15px);transition:opacity .5s}
+.welcome-overlay.show{display:flex}
+.welcome-overlay.hide{opacity:0;pointer-events:none}
+.welcome-card{background:var(--card);border:1px solid var(--border);border-radius:28px;padding:52px 40px;max-width:480px;width:100%;text-align:center;box-shadow:var(--shadow-lg),0 0 60px var(--glow);position:relative;overflow:hidden;animation:welcomeIn .7s}
+.welcome-card::after{content:'';position:absolute;top:0;right:0;left:0;height:4px;background:var(--grad);border-radius:28px 28px 0 0}
+@keyframes welcomeIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.welcome-card > *{position:relative;z-index:1}
+.welcome-icon{font-size:4.5rem;margin-bottom:16px;display:inline-block;filter:drop-shadow(0 0 20px var(--glow))}
+.welcome-card h1{font-size:1.9rem;margin-bottom:12px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.welcome-card p{color:var(--muted);font-size:.95rem;margin-bottom:28px}
+.welcome-card input,.welcome-card select{width:100%;padding:15px 20px;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:14px;font-family:inherit;font-size:1rem;outline:none;text-align:center;transition:.3s;margin-bottom:12px}
+.welcome-card input:focus,.welcome-card select:focus{border-color:var(--cyan);box-shadow:0 0 0 5px var(--glow)}
+.welcome-card button{width:100%;padding:15px;background:var(--grad);border:none;color:#0b0f1a;font-family:inherit;font-size:1rem;font-weight:800;border-radius:14px;cursor:pointer;transition:.3s}
+.welcome-card button:hover{transform:translateY(-3px);box-shadow:0 15px 35px var(--glow)}
+
+.topbar{position:fixed;top:10px;right:14px;left:14px;height:60px;z-index:90;background:var(--topbar-bg);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--border);border-radius:999px;display:flex;align-items:center;gap:14px;padding:0 16px;box-shadow:0 10px 40px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.brand-icon{width:36px;height:36px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 4px 14px var(--glow)}
+.brand-name{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:.95rem}
+.search-wrap{flex:1;max-width:460px;position:relative}
+.search-wrap input{width:100%;height:42px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:0 44px 0 16px;font-family:inherit;font-size:.9rem;outline:none;transition:.2s}
+.search-wrap input:focus{border-color:var(--cyan);box-shadow:0 0 0 4px var(--glow)}
+.search-wrap::before{content:'🔍';position:absolute;right:14px;top:50%;transform:translateY(-50%);opacity:.5;pointer-events:none}
+.topbar-actions{display:flex;gap:8px;margin-right:auto;position:relative}
+.icon-btn{width:40px;height:40px;border-radius:11px;background:var(--card);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:.22s;position:relative}
+.icon-btn:hover{background:var(--card2);border-color:var(--cyan);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.settings-wrap{position:relative}
+.settings-menu{position:absolute;top:48px;left:0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;min-width:240px;box-shadow:var(--shadow-lg);display:none;z-index:110}
+.settings-menu.show{display:block;animation:menuIn .2s ease}
+@keyframes menuIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.settings-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:inherit;font-size:.85rem;cursor:pointer;border-radius:8px;text-align:right;transition:.15s;font-weight:500}
+.settings-item:hover{background:var(--grad-soft);color:var(--cyan)}
+.settings-item span{font-size:1.1rem;line-height:1}
+.settings-divider{height:1px;background:var(--border);margin:4px 6px}
+
+.theme-panel{position:fixed;top:78px;left:20px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);padding:16px;width:280px;transform:scale(.95) translateY(-8px);opacity:0;pointer-events:none;transition:.25s}
+.theme-panel.show{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
+.theme-panel h4{font-size:.82rem;color:var(--muted);margin-bottom:12px;font-weight:700}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.theme-swatch{aspect-ratio:1.4;border-radius:10px;cursor:pointer;border:2px solid var(--border);transition:.2s;position:relative;overflow:hidden}
+.theme-swatch:hover{transform:scale(1.06);border-color:var(--cyan)}
+.theme-swatch.active{border-color:var(--cyan);box-shadow:0 0 0 3px var(--glow)}
+.theme-swatch .sw-label{position:absolute;bottom:0;right:0;left:0;background:rgba(0,0,0,.7);color:#fff;font-size:.62rem;text-align:center;padding:2px 0;font-weight:700}
+.theme-swatch .sw-check{position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;background:var(--cyan);color:#0b0f1a;display:none;align-items:center;justify-content:center;font-size:.7rem;font-weight:900}
+.theme-swatch.active .sw-check{display:flex}
+
+.sidebar{position:fixed;top:80px;right:0;bottom:0;width:260px;background:var(--bg2);border-left:1px solid var(--border);padding:14px 10px;overflow-y:auto;z-index:80;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.sidebar::-webkit-scrollbar{width:5px}
+.nav-section{font-size:.68rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;padding:14px 12px 6px 18px;font-weight:700;position:relative}
+.nav-section::before{content:'';position:absolute;right:8px;top:50%;transform:translateY(-50%);width:4px;height:4px;border-radius:50%;background:var(--cyan);opacity:.6}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;color:var(--muted);font-size:.9rem;font-weight:500;border-radius:11px;margin-bottom:2px;transition:.2s;user-select:none;position:relative;overflow:hidden}
+.nav-item:hover{background:var(--card);color:var(--text);transform:translateX(-3px)}
+.nav-item.active{background:var(--grad-soft);color:var(--cyan);box-shadow:inset 0 0 0 1px var(--glow)}
+.nav-item.active::before{content:'';position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--grad);border-radius:4px 0 0 4px;box-shadow:0 0 14px var(--glow)}
+.nav-item .ic{font-size:1.1rem;width:22px;text-align:center}
+.nav-item .label{flex:1}
+.sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:75;opacity:0;pointer-events:none;transition:.3s}
+.sidebar-backdrop.show{opacity:1;pointer-events:auto}
+@media(min-width:901px){.menu-toggle{display:none!important}.sidebar-backdrop{display:none!important}}
+@media(max-width:900px){.sidebar{transform:translateX(100%)}.sidebar.open{transform:translateX(0)}}
+
+main{margin-right:260px;margin-top:82px;padding:24px 28px 120px;max-width:1300px;transition:.3s;position:relative;z-index:1}
+@media(max-width:900px){main{margin-right:0;padding:16px 14px 140px}}
+.section{display:none}
+.section.active{display:block}
+.section.tab-play > *{animation:childIn .22s cubic-bezier(.2,0,0,1) backwards}
+@keyframes childIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.page-head{margin-bottom:22px;position:relative;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.page-title{font-size:1.7rem;font-weight:800;margin-bottom:4px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;display:inline-block}
+.page-title::after{content:'';position:absolute;bottom:-6px;right:0;width:56px;height:3px;background:var(--grad);border-radius:3px;opacity:.75}
+.page-sub{color:var(--muted);font-size:.88rem;margin-top:8px}
+
+.grid{display:grid;gap:16px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+@media(max-width:500px){.grid-4{grid-template-columns:repeat(2,1fr);gap:10px}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:.25s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;right:0;left:0;height:2px;background:var(--grad);opacity:0;transition:.35s}
+.card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.28)}
+.card:hover::before{opacity:1}
+.card h3{font-size:.98rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:4px;height:16px;background:var(--grad);border-radius:2px;flex-shrink:0}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.card-head h3{margin-bottom:0}
+.card-action{font-size:.78rem;color:var(--cyan);cursor:pointer;font-weight:600;padding:3px 10px;border-radius:8px;transition:.2s}
+.card-action:hover{background:var(--grad-soft)}
+
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;transition:.25s;position:relative;overflow:hidden}
+.stat:hover{transform:translateY(-3px);border-color:var(--cyan);box-shadow:0 16px 40px rgba(0,0,0,.22)}
+.stat .ic{width:46px;height:46px;border-radius:13px;background:var(--grad-soft);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.stat .v{font-size:1.5rem;font-weight:800;color:var(--cyan);line-height:1.1}
+.stat .l{font-size:.74rem;color:var(--muted)}
+
+.btn{background:var(--grad);color:#0b0f1a;border:none;padding:10px 18px;border-radius:11px;cursor:pointer;font-weight:700;font-size:.86rem;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px var(--glow)}
+.btn:active{transform:translateY(0) scale(.97)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);box-shadow:none}
+.btn-ghost:hover{background:var(--card2);border-color:var(--cyan)}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#f87171);color:white}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.chip{padding:7px 14px;background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:20px;font-size:.8rem;cursor:pointer;transition:.2s;font-family:inherit;font-weight:500}
+.chip:hover{border-color:var(--cyan);color:var(--text)}
+.chip.active{background:var(--grad-soft);border-color:var(--cyan);color:var(--cyan);font-weight:600}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.show{display:flex;animation:backdropIn .2s}
+@keyframes backdropIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;max-width:520px;width:100%;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto;position:relative;animation:modalIn .28s}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;background:var(--grad);border-radius:20px 20px 0 0}
+.modal h3{font-size:1.15rem;margin-bottom:14px;color:var(--cyan)}
+.form-group{margin-bottom:13px}
+.form-group label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:5px;font-weight:600}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:10px;font-family:inherit;font-size:.86rem;outline:none;transition:.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px var(--glow)}
+.form-group textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+
+.toast-container{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:5000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;box-shadow:var(--shadow-lg);font-size:.85rem;font-weight:500;pointer-events:auto;max-width:90vw;animation:toastIn .3s;border-left:3px solid var(--cyan)}
+.toast.out{animation:toastOut .3s forwards}
+.toast.success{border-color:rgba(52,211,153,.5);border-left-color:var(--green)}
+.toast.success::before{content:'✓ ';color:var(--green);font-weight:900}
+.toast.info::before{content:'ℹ ';color:var(--cyan);font-weight:900}
+.toast.warn::before{content:'⚠ ';color:var(--amber);font-weight:900}
+.toast.warn{border-left-color:var(--amber)}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-15px)}}
+
+.empty{text-align:center;padding:44px 20px;color:var(--muted);background:var(--card);border:1px dashed var(--border);border-radius:14px}
+.empty .ic{font-size:3rem;opacity:.35;margin-bottom:10px}
+.empty p{font-size:.88rem;font-weight:600}
+.empty .sub{font-size:.78rem;margin-top:5px;color:var(--muted2)}
+
+.fab-main{position:fixed;bottom:24px;left:24px;z-index:400;width:56px;height:56px;border-radius:50%;background:var(--grad);border:none;color:#0b0f1a;font-size:1.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px var(--glow);transition:.3s}
+.fab-main:hover{transform:scale(1.1)}
+.fab-main.active{transform:rotate(45deg)}
+.fab-menu{position:fixed;bottom:92px;left:24px;z-index:399;display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transform:translateY(20px);transition:.3s}
+.fab-menu.show{opacity:1;pointer-events:auto;transform:translateY(0)}
+.fab-action{display:flex;align-items:center;gap:10px;padding:11px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;font-family:inherit;color:var(--text);font-size:.86rem;font-weight:600;box-shadow:var(--shadow);transition:.25s;white-space:nowrap}
+.fab-action:hover{background:var(--grad-soft);border-color:var(--cyan);transform:translateX(4px)}
+
+.ai-fab{position:fixed;bottom:92px;left:24px;z-index:400;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#f472b6);border:none;color:#fff;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(167,139,250,.5);transition:.3s}
+.ai-fab:hover{transform:scale(1.1) rotate(-8deg)}
+.ai-fab.hidden{opacity:0;pointer-events:none;transform:scale(.5)}
+.ai-panel{position:fixed;bottom:160px;left:24px;z-index:399;width:380px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 200px);background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;transform:scale(.9) translateY(20px);opacity:0;pointer-events:none;transition:.3s;overflow:hidden}
+.ai-panel.show{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
+.ai-header{padding:14px 18px;background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(244,114,182,.15));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.ai-header .ai-avatar{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#a78bfa,#f472b6);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.ai-header .ai-info{flex:1}
+.ai-header .ai-name{font-weight:800;font-size:.92rem}
+.ai-header .ai-status{font-size:.7rem;color:var(--green);display:flex;align-items:center;gap:5px}
+.ai-header .ai-status::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%}
+.ai-close{background:transparent;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer}
+.ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ai-msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:.85rem;line-height:1.6;white-space:pre-line}
+.ai-msg.bot{background:var(--card2);border:1px solid var(--border);align-self:flex-start;border-bottom-right-radius:4px}
+.ai-msg.user{background:linear-gradient(135deg,#a78bfa,#f472b6);color:#fff;align-self:flex-end;font-weight:600;border-bottom-left-radius:4px}
+.ai-suggestions{padding:8px 14px 12px;display:flex;flex-wrap:wrap;gap:6px;max-height:110px;overflow-y:auto}
+.ai-suggestion{padding:5px 11px;background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:20px;cursor:pointer;font-family:inherit;font-size:.7rem;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.ai-suggestion:hover{border-color:var(--purple);color:var(--purple)}
+.ai-input-wrap{padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--card2)}
+.ai-input-wrap input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:12px;font-family:inherit;font-size:.85rem;outline:none}
+.ai-input-wrap input:focus{border-color:var(--purple)}
+.ai-input-wrap button{width:42px;height:42px;background:linear-gradient(135deg,#a78bfa,#f472b6);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:1rem}
+.ai-dots{display:inline-flex;gap:4px;align-items:center;height:12px}
+.ai-dots span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:aiDot 1.2s infinite}
+.ai-dots span:nth-child(2){animation-delay:.2s}
+.ai-dots span:nth-child(3){animation-delay:.4s}
+@keyframes aiDot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.ai-msg b{color:var(--cyan);font-weight:800}
+.ai-msg.user b{color:#fff}
+
+.backup-badge{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:300;padding:6px 14px;border-radius:20px;background:var(--card);border:1px solid var(--border);font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:8px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+.backup-badge.show{opacity:1}
+.backup-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+@media(max-width:600px){
+  .topbar{top:8px;right:8px;left:8px;height:54px;padding:0 12px;gap:8px}
+  main{margin-top:74px;padding:14px 12px 130px}
+  .sidebar{top:72px}
+}
+@media(max-width:400px){
+  .icon-btn{width:32px;height:32px;font-size:.8rem}
+  .grid-4{grid-template-columns:1fr 1fr}
+}
+
+.budget-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.budget-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;text-align:center;position:relative;overflow:hidden}
+.budget-card::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;background:var(--grad);opacity:.75}
+.budget-card.income::before{background:linear-gradient(90deg,#10b981,#34d399)}
+.budget-card.expense::before{background:linear-gradient(90deg,#ef4444,#f87171)}
+.budget-card.balance::before{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.budget-card .bc-icon{font-size:1.8rem;margin-bottom:6px}
+.budget-card .bc-val{font-size:1.5rem;font-weight:800;color:var(--cyan)}
+.budget-card .bc-lbl{font-size:.72rem;color:var(--muted);margin-top:4px}
+.budget-card.income .bc-val{color:var(--green)}
+.budget-card.expense .bc-val{color:var(--red)}
+.budget-card.balance .bc-val{color:var(--amber)}
+.budget-card.balance.neg .bc-val{color:var(--red)}
+
+.task{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;transition:.2s;position:relative;overflow:hidden}
+.task:hover{border-color:var(--cyan);transform:translateX(-3px)}
+.task.done{opacity:.5}
+.task.done .task-title{text-decoration:line-through}
+.task.overdue{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.04)}
+.task-check{width:22px;height:22px;border:2px solid var(--border2);border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
+.task.done .task-check{background:var(--green);border-color:var(--green)}
+.task.done .task-check::after{content:'✓';color:#0b0f1a;font-weight:900;font-size:.8rem}
+.task-body{flex:1;min-width:0}
+.task-title{font-size:.88rem;font-weight:600}
+.task-meta{font-size:.73rem;color:var(--muted);display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.badge{font-size:.66rem;padding:2px 8px;border-radius:5px;font-weight:700;background:var(--bg2);color:var(--cyan)}
+.task-actions{display:flex;gap:4px}
+
+.note-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px}
+.note-card input{width:100%;background:transparent;border:none;color:var(--text);font-family:inherit;font-size:1rem;font-weight:700;outline:none;padding:4px 0}
+.note-card textarea{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px;font-family:inherit;font-size:.86rem;resize:vertical;min-height:70px;outline:none;margin-top:8px}
+
+.course-file-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;transition:.2s}
+.course-file-item:hover{border-color:var(--cyan)}
+.upload-course-btn{padding:8px 12px;background:var(--grad-soft);border:1px dashed var(--glow);border-radius:10px;color:var(--cyan);cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:700;width:100%;margin-top:8px;transition:.2s}
+.upload-course-btn:hover{background:var(--grad);color:#0b0f1a;border-style:solid}
+.upload-progress-bar{height:6px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-top:8px;display:none}
+.upload-progress-bar .inner{height:100%;background:var(--grad);width:0;transition:width .3s}
+</style>
+</head>
+<body>
+
+<!-- Welcome -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-card">
+    <div class="welcome-icon">💼</div>
+    <h1 id="welcomeTitle">أهلاً بك في تطوير أعمالي</h1>
+    <p id="welcomeSub">منصة شاملة لتطوير الأعمال والمشاريع المستدامة</p>
+    <input id="welcomeName" placeholder="اكتب اسمك..." autocomplete="off" maxlength="40">
+    <select id="welcomeCountry">
+      <option value="QA">🇶🇦 قطر</option>
+      <option value="AE">🇦🇪 الإمارات</option>
+      <option value="SA">🇸🇦 السعودية</option>
+      <option value="JO">🇯🇴 الأردن</option>
+      <option value="EG">🇪🇬 مصر</option>
+      <option value="MA">🇲🇦 المغرب</option>
+      <option value="KW">🇰🇼 الكويت</option>
+      <option value="BH">🇧🇭 البحرين</option>
+      <option value="OM">🇴🇲 عمان</option>
+    </select>
+    <button id="welcomeBtn" type="button">ابدأ رحلتك 🚀</button>
+  </div>
+</div>
+
+<!-- Topbar -->
+<header class="topbar">
+  <button class="icon-btn menu-toggle" id="menuToggle" title="القائمة">☰</button>
+  <div class="brand">
+    <div class="brand-icon">💼</div>
+    <div class="brand-name">تطوير أعمالي</div>
+  </div>
+  <div class="search-wrap">
+    <input type="search" id="searchInput" placeholder="ابحث..." autocomplete="off">
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="serverStatus" title="جاري الفحص...">⏳</button>
+    <div class="settings-wrap">
+      <button class="icon-btn" id="settingsBtn" title="الإعدادات">⚙️</button>
+      <div class="settings-menu" id="settingsMenu">
+        <button class="settings-item" id="pwaInstallBtn" style="display:none"><span>📲</span> تثبيت التطبيق</button>
+        <button class="settings-item" id="syncCodeBtn"><span>☁️</span> المزامنة السحابية</button>
+        <button class="settings-item" id="themeBtn"><span>🎨</span> الثيمات</button>
+        <div class="settings-divider"></div>
+        <button class="settings-item" id="pdfBtn"><span>🖨️</span> تصدير PDF</button>
+        <button class="settings-item" id="backupBtn"><span>💾</span> تصدير نسخة</button>
+        <button class="settings-item" id="restoreBtn"><span>📥</span> استيراد نسخة</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Theme Panel -->
+<div class="theme-panel" id="themePanel">
+  <h4>🎨 اختر الثيم</h4>
+  <div class="theme-grid" id="themeGrid"></div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="nav-item active" data-tab="dashboard"><span class="ic">📊</span><span class="label">لوحة التحكم</span></div>
+  <div class="nav-section">الأفكار والمشاريع</div>
+  <div class="nav-item" data-tab="ideas"><span class="ic">💡</span><span class="label">أفكاري</span></div>
+  <div class="nav-item" data-tab="roadmap"><span class="ic">🗺️</span><span class="label">خريطة الطريق</span></div>
+  <div class="nav-section">الاستراتيجية</div>
+  <div class="nav-item" data-tab="strategy"><span class="ic">🎯</span><span class="label">الاستراتيجية</span></div>
+  <div class="nav-item" data-tab="impact"><span class="ic">📈</span><span class="label">قياس الأثر</span></div>
+  <div class="nav-item" data-tab="stakeholders"><span class="ic">👥</span><span class="label">أصحاب المصلحة</span></div>
+  <div class="nav-section">المبيعات والقيادة</div>
+  <div class="nav-item" data-tab="sales"><span class="ic">💼</span><span class="label">المبيعات</span></div>
+  <div class="nav-item" data-tab="leadership"><span class="ic">🎓</span><span class="label">القيادة</span></div>
+  <div class="nav-section">الإدارة</div>
+  <div class="nav-item" data-tab="tasks"><span class="ic">📝</span><span class="label">المهام</span></div>
+  <div class="nav-item" data-tab="budget"><span class="ic">💰</span><span class="label">الميزانية</span></div>
+  <div class="nav-item" data-tab="files"><span class="ic">📁</span><span class="label">الملفات</span></div>
+  <div class="nav-item" data-tab="notes"><span class="ic">📔</span><span class="label">ملاحظاتي</span></div>
+  <div class="nav-section">المراجع</div>
+  <div class="nav-item" data-tab="countries"><span class="ic">🌍</span><span class="label">الدول والأطر</span></div>
+  <div class="nav-item" data-tab="reports"><span class="ic">📊</span><span class="label">التقارير</span></div>
+</aside>
+
+<!-- Main -->
+<main>
+  <!-- Dashboard -->
+  <section id="dashboard" class="section active">
+    <div class="page-head">
+      <h2 class="page-title">📊 لوحة التحكم</h2>
+      <p class="page-sub" id="greetLine">—</p>
+    </div>
+    <div class="daily-quote" style="background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:16px">
+      <div style="font-size:.95rem;font-style:italic;line-height:1.7" id="dailyQuoteText">—</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:8px;font-weight:600" id="dailyQuoteAuthor">—</div>
+    </div>
+    <div class="grid grid-4" style="margin-bottom:16px" id="dashStats"></div>
+    <div class="grid grid-2" style="margin-bottom:16px">
+      <div class="card">
+        <div class="card-head"><h3>📌 مهام قادمة</h3></div>
+        <div id="dashTasks"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>💼 القمع البيعي</h3></div>
+        <div id="dashSales"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><h3>💡 آخر الأفكار</h3></div>
+      <div id="dashIdeas"></div>
+    </div>
+  </section>
+
+  <!-- Ideas -->
+  <section id="ideas" class="section">
+    <div class="page-head"><h2 class="page-title">💡 أفكاري</h2>
+      <p class="page-sub">أفكارك ومشاريعك</p></div>
+    <div class="controls">
+      <button class="btn" id="btnAddIdea">+ فكرة جديدة</button>
+    </div>
+    <div class="grid grid-2" id="ideasGrid"></div>
+  </section>
+
+  <!-- Roadmap -->
+  <section id="roadmap" class="section">
+    <div class="page-head"><h2 class="page-title">🗺️ خريطة الطريق</h2>
+      <p class="page-sub">مراحل PRiSM للمشاريع</p></div>
+    <div id="roadmapBody"></div>
+  </section>
+
+  <!-- Strategy -->
+  <section id="strategy" class="section">
+    <div class="page-head"><h2 class="page-title">🎯 الاستراتيجية</h2>
+      <p class="page-sub">SWOT · PESTEL · OKRs</p></div>
+    <div id="strategySelector"></div>
+    <div id="strategyTools"></div>
+  </section>
+
+  <!-- Impact -->
+  <section id="impact" class="section">
+    <div class="page-head"><h2 class="page-title">📈 قياس الأثر</h2>
+      <p class="page-sub">SDG · ESG · P5</p></div>
+    <div id="impactBody"></div>
+  </section>
+
+  <!-- Stakeholders -->
+  <section id="stakeholders" class="section">
+    <div class="page-head"><h2 class="page-title">👥 أصحاب المصلحة</h2>
+      <p class="page-sub">خريطة الأطراف المعنية</p></div>
+    <div class="card">
+      <div class="card-head"><h3>👥 قائمة أصحاب المصلحة</h3>
+        <button class="btn btn-sm" id="btnAddStakeholder">+ جديد</button></div>
+      <div id="stakeholdersList"></div>
+    </div>
+  </section>
+
+  <!-- Sales -->
+  <section id="sales" class="section">
+    <div class="page-head"><h2 class="page-title">💼 المبيعات</h2>
+      <p class="page-sub">Pipeline · MEDDIC · SPIN</p></div>
+    <div class="controls">
+      <button class="btn" id="btnAddDeal">+ فرصة جديدة</button>
+    </div>
+    <div id="salesBody"></div>
+  </section>
+
+  <!-- Leadership -->
+  <section id="leadership" class="section">
+    <div class="page-head"><h2 class="page-title">🎓 القيادة</h2>
+      <p class="page-sub">اكتشف نمط قيادتك</p></div>
+    <div id="leadershipBody"></div>
+  </section>
+
+  <!-- Tasks -->
+  <section id="tasks" class="section">
+    <div class="page-head"><h2 class="page-title">📝 المهام</h2>
+      <p class="page-sub">تابع مهامك</p></div>
+    <div class="controls">
+      <button class="btn" id="btnAddTask">+ مهمة</button>
+      <button class="chip active" data-tf="all">الكل</button>
+      <button class="chip" data-tf="pending">قيد الانتظار</button>
+      <button class="chip" data-tf="done">مكتملة</button>
+    </div>
+    <div id="tasksList"></div>
+  </section>
+
+  <!-- Budget -->
+  <section id="budget" class="section">
+    <div class="page-head"><h2 class="page-title">💰 الميزانية</h2>
+      <p class="page-sub">دخل ومصاريف ورصيد</p></div>
+    <div class="budget-summary" id="budgetSummary"></div>
+    <div class="controls">
+      <button class="btn" id="btnAddIncome">+ دخل</button>
+      <button class="btn" id="btnAddExpense">+ مصروف</button>
+    </div>
+    <div id="budgetList"></div>
+  </section>
+
+  <!-- Files -->
+  <section id="files" class="section">
+    <div class="page-head"><h2 class="page-title">📁 الملفات</h2>
+      <p class="page-sub">ملفات مشاريعك</p></div>
+    <div id="filesBody"></div>
+  </section>
+
+  <!-- Notes -->
+  <section id="notes" class="section">
+    <div class="page-head"><h2 class="page-title">📔 ملاحظاتي</h2>
+      <p class="page-sub">تُحفظ تلقائياً</p></div>
+    <div class="controls">
+      <button class="btn" id="btnAddNote">+ ملاحظة</button>
+      <span style="color:var(--muted);font-size:.8rem;margin-right:auto" id="notesCount">0</span>
+    </div>
+    <div id="notesList"></div>
+  </section>
+
+  <!-- Countries -->
+  <section id="countries" class="section">
+    <div class="page-head"><h2 class="page-title">🌍 الدول والأطر</h2>
+      <p class="page-sub">مؤشرات دولية + مكتبة الأطر</p></div>
+    <div class="section-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding:5px;background:var(--bg2);border-radius:14px;border:1px solid var(--border);width:fit-content">
+      <button class="chip active" data-country-tab="countries">🌍 الدول</button>
+      <button class="chip" data-country-tab="frameworks">📚 الأطر</button>
+    </div>
+    <div id="countriesGrid" class="grid grid-2"></div>
+    <div id="frameworksGrid"></div>
+  </section>
+
+  <!-- Reports -->
+  <section id="reports" class="section">
+    <div class="page-head"><h2 class="page-title">📊 التقارير</h2>
+      <p class="page-sub">تحليلات وإحصاءات</p></div>
+    <div id="insightsBody"></div>
+  </section>
+</main>
+
+<!-- FAB -->
+<button class="fab-main" id="fabMain">+</button>
+<div class="fab-menu" id="fabMenu">
+  <button class="fab-action" data-fab="idea"><span class="fa-ic">💡</span> فكرة جديدة</button>
+  <button class="fab-action" data-fab="task"><span class="fa-ic">📝</span> مهمة جديدة</button>
+  <button class="fab-action" data-fab="deal"><span class="fa-ic">💼</span> فرصة بيعية</button>
+  <button class="fab-action" data-fab="expense"><span class="fa-ic">💰</span> مصروف</button>
+  <button class="fab-action" data-fab="note"><span class="fa-ic">📔</span> ملاحظة</button>
+</div>
+
+<!-- AI -->
+<button class="ai-fab" id="aiFab">🤖</button>
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-header">
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-info">
+      <div class="ai-name">مستشارك الذكي</div>
+      <div class="ai-status">متصل</div>
+    </div>
+    <button class="ai-close" id="aiClose">×</button>
+  </div>
+  <div class="ai-messages" id="aiMessages"></div>
+  <div class="ai-suggestions" id="aiSuggestions"></div>
+  <div class="ai-input-wrap">
+    <input id="aiInput" placeholder="اسألني عن مساحتك...">
+    <button id="aiSend">➤</button>
+  </div>
+</div>
+
+<!-- Backup badge -->
+<div class="backup-badge" id="backupBadge">
+  <span class="dot"></span>
+  <span id="backupText">تم الحفظ</span>
+</div>
+
+<!-- Toasts -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============ Scripts ============ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="supabase-client.js"></script>
+<script src="business-data.js"></script>
+
+<script src="ai-advisor.js"></script>
+<script src="strategy-builder.js"></script>
+<script src="idea-incubator.js"></script>
+<script src="impact-calculator.js"></script>
+<script src="country-adapter.js"></script>
+<script src="leadership-coach.js"></script>
+<script src="sales-toolkit.js"></script>
+<script src="project-lifecycle.js"></script>
+<script src="file-sync-plus.js"></script>
+<script src="insights.js"></script>
+<script src="calendar-sync.js"></script>
+<script src="widgets.js"></script>
+<script src="pwa.js"></script>
+
+<script>
+/* ==================== GLOBAL STATE ==================== */
+var space = null;
+var notes = [];
+var currentTaskFilter = 'all';
+var historyInitialized = false;
+var backupTimer = null;
+var lastW = window.innerWidth;
+
+var storageAvailable = (function(){
+  try{ var k='__test__'; localStorage.setItem(k,'x'); localStorage.removeItem(k); return true; }
+  catch(e){ return false; }
+})();
+var memoryStore = {};
+
+var S = {
+  get: function(k, d){
+    try{
+      if(!storageAvailable) return memoryStore[k] !== undefined ? memoryStore[k] : d;
+      var v = localStorage.getItem(k);
+      return v === null ? d : JSON.parse(v);
+    }catch(e){ return d; }
+  },
+  set: function(k, v){
+    try{
+      if(!storageAvailable){ memoryStore[k] = v; return true; }
+      localStorage.setItem(k, JSON.stringify(v));
+      scheduleBackup();
+      return true;
+    }catch(e){ return false; }
+  },
+  remove: function(k){ try{ if(storageAvailable) localStorage.removeItem(k); else delete memoryStore[k]; }catch(e){} }
+};
+
+/* ==================== SUPABASE AUTO-SAVE ==================== */
+var serverOnline = false;
+var serverSaveTimer = null;
+var serverSaveInFlight = false;
+var bootSyncing = true;
+
+function queueServerSave(){
+  if(bootSyncing) return;
+  clearTimeout(serverSaveTimer);
+  serverSaveTimer = setTimeout(doServerSave, 800);
+}
+
+function scheduleBackup(){
+  clearTimeout(backupTimer);
+  var badge = document.getElementById('backupBadge');
+  var text = document.getElementById('backupText');
+  if(badge && text){
+    text.textContent = serverOnline ? '☁️ حُفظ سحابياً' : '💾 حُفظ محلياً';
+    badge.classList.add('show');
+  }
+  backupTimer = setTimeout(function(){ if(badge) badge.classList.remove('show'); }, 1500);
+  queueServerSave();
+}
+
+function gatherSnapshot(){
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    space: space,
+    notes: notes,
+    theme: S.get('theme', 'dark'),
+    activeTab: S.get('activeTab', 'dashboard'),
+    welcomeDone: S.get('welcomeDone', false)
+  };
+}
+
+async function doServerSave(){
+  if(!window.SB) return;
+  if(serverSaveInFlight){ queueServerSave(); return; }
+  try{
+    serverSaveInFlight = true;
+    var ok = await window.SB.save(gatherSnapshot());
+    if(ok){ serverOnline = true; setServerStatus('ok'); }
+    else { serverOnline = false; setServerStatus('off'); }
+  }catch(e){ console.warn('Save failed:', e); serverOnline = false; setServerStatus('off'); }
+  finally { serverSaveInFlight = false; }
+}
+
+function setServerStatus(state){
+  var el = document.getElementById('serverStatus'); if(!el) return;
+  if(state === 'ok'){
+    el.textContent = '☁️'; el.title = '✅ متصل — حفظ تلقائي';
+    el.style.color = 'var(--green)'; el.onclick = null;
+  } else {
+    el.textContent = '💾'; el.title = '💾 حفظ محلي';
+    el.style.color = 'var(--muted)';
+    el.onclick = function(){ if(window.SB && window.SB.showSyncPanel) window.SB.showSyncPanel(); };
+  }
+}
+
+function applyServerData(data){
+  if(!data || typeof data !== 'object') return;
+  try{
+    if(data.space && typeof data.space === 'object' && !Array.isArray(data.space)){
+      space = Object.assign({}, defaultSpace, data.space);
+      S.set('space', space);
+    }
+    if(Array.isArray(data.notes)){ notes = data.notes; S.set('notes', notes); }
+    if(typeof data.theme === 'string') S.set('theme', data.theme);
+    if(typeof data.activeTab === 'string') S.set('activeTab', data.activeTab);
+    if(typeof data.welcomeDone === 'boolean') S.set('welcomeDone', data.welcomeDone);
+  }catch(e){ console.warn('applyServerData error:', e); }
+}
+
+/* ==================== HELPERS ==================== */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function esc(s){
+  if(s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function toast(msg, type, dur){
+  type = type || 'info'; dur = dur || 2600;
+  var c = document.getElementById('toastContainer'); if(!c) return;
+  var t = document.createElement('div');
+  t.className = 'toast ' + type; t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(function(){ t.classList.add('out'); setTimeout(function(){ t.remove(); }, 300); }, dur);
+}
+function customConfirm(message, onConfirm){
+  document.querySelectorAll('.modal-backdrop').forEach(function(m){ m.remove(); });
+  var bd = document.createElement('div');
+  bd.className = 'modal-backdrop show';
+  bd.innerHTML = '<div class="modal" style="max-width:400px;text-align:center">' +
+    '<div style="font-size:3rem;margin-bottom:12px">⚠️</div>' +
+    '<h3 style="margin-bottom:18px">تأكيد الحذف</h3>' +
+    '<p style="color:var(--muted);margin-bottom:22px;font-size:.9rem">' + esc(message) + '</p>' +
+    '<div class="modal-actions" style="justify-content:center">' +
+      '<button class="btn btn-sm btn-ghost" id="cCancel">إلغاء</button>' +
+      '<button class="btn btn-sm btn-danger" id="cConfirm">🗑 نعم، احذف</button>' +
+    '</div></div>';
+  document.body.appendChild(bd);
+  var close = function(){ bd.remove(); };
+  bd.querySelector('#cCancel').onclick = close;
+  bd.onclick = function(e){ if(e.target === bd) close(); };
+  bd.querySelector('#cConfirm').onclick = function(){ close(); onConfirm(); };
+}
+
+function showModal(title, fields, values, onSubmit, onDelete){
+  document.querySelectorAll('.modal-backdrop').forEach(function(m){ m.remove(); });
+  var bd = document.createElement('div');
+  bd.className = 'modal-backdrop show';
+  var fieldsHtml = '';
+  fields.forEach(function(f){
+    var val = values[f.key] !== undefined ? values[f.key] : '';
+    var inputHtml;
+    if(f.type === 'select'){
+      var opts = '';
+      f.options.forEach(function(o){
+        opts += '<option value="' + esc(o.v) + '"' + (String(val) === String(o.v) ? ' selected' : '') + '>' + esc(o.l) + '</option>';
+      });
+      inputHtml = '<select id="mf_' + f.key + '">' + opts + '</select>';
+    } else if(f.type === 'textarea'){
+      inputHtml = '<textarea id="mf_' + f.key + '" rows="3">' + esc(val) + '</textarea>';
+    } else {
+      inputHtml = '<input id="mf_' + f.key + '" type="' + (f.type || 'text') + '" value="' + esc(val) + '" placeholder="' + esc(f.placeholder || '') + '">';
+    }
+    fieldsHtml += '<div class="form-group"><label>' + esc(f.label) + '</label>' + inputHtml + '</div>';
+  });
+  bd.innerHTML = '<div class="modal"><h3>' + esc(title) + '</h3>' + fieldsHtml +
+    '<div class="modal-actions">' +
+      (onDelete ? '<button class="btn btn-sm btn-danger" id="mDel">🗑 حذف</button>' : '') +
+      '<button class="btn btn-sm btn-ghost" id="mCancel">إلغاء</button>' +
+      '<button class="btn btn-sm" id="mSave">حفظ</button>' +
+    '</div></div>';
+  document.body.appendChild(bd);
+  var close = function(){ bd.remove(); };
+  bd.querySelector('#mCancel').onclick = close;
+  bd.onclick = function(e){ if(e.target === bd) close(); };
+  bd.querySelector('#mSave').onclick = function(){
+    var data = {};
+    fields.forEach(function(f){ var el = document.getElementById('mf_' + f.key); data[f.key] = el ? el.value.trim() : ''; });
+    onSubmit(data); close();
+  };
+  if(onDelete) bd.querySelector('#mDel').onclick = function(){ onDelete(); close(); };
+  setTimeout(function(){ var i = bd.querySelector('input,select,textarea'); if(i) i.focus(); }, 100);
+}
+
+/* ==================== DEFAULT SPACE ==================== */
+var defaultSpace = {
+  profile: {name: '', country: 'QA', sector: 'tech'},
+  ideas: [],
+  projects: [],
+  salesPipeline: [],
+  tasks: [],
+  notes: [],
+  budget: [],
+  stakeholders: [],
+  leadershipAssessment: null,
+  projectFiles: {}
+};
+
+/* ==================== DATA ==================== */
+function loadAllData(){
+  try{
+    var raw = S.get('space', null);
+    if(raw && typeof raw === 'object' && !Array.isArray(raw)) space = Object.assign({}, defaultSpace, raw);
+    else space = Object.assign({}, defaultSpace);
+  }catch(e){ space = Object.assign({}, defaultSpace); }
+  if(!Array.isArray(space.ideas)) space.ideas = [];
+  if(!Array.isArray(space.projects)) space.projects = [];
+  if(!Array.isArray(space.salesPipeline)) space.salesPipeline = [];
+  if(!Array.isArray(space.tasks)) space.tasks = [];
+  if(!Array.isArray(space.budget)) space.budget = [];
+  if(!Array.isArray(space.stakeholders)) space.stakeholders = [];
+
+  try{ notes = S.get('notes', []); if(!Array.isArray(notes)) notes = []; }catch(e){ notes = []; }
+  if(!space.notes) space.notes = notes;
+}
+function saveSpace(){ S.set('space', space); }
+
+/* ==================== WELCOME ==================== */
+function showWelcome(){
+  var overlay = document.getElementById('welcomeOverlay'); if(!overlay) return;
+  overlay.classList.add('show');
+  overlay.classList.remove('hide');
+  var btn = document.getElementById('welcomeBtn');
+  var input = document.getElementById('welcomeName');
+  var country = document.getElementById('welcomeCountry');
+  setTimeout(function(){ if(input) input.focus(); }, 200);
+  var handle = function(){
+    var name = (input && input.value || '').trim();
+    if(!name){ toast('اكتب اسمك 😊', 'warn', 2500); if(input) input.focus(); return; }
+    space.profile = space.profile || {};
+    space.profile.name = name;
+    space.profile.country = country ? country.value : 'QA';
+    saveSpace();
+    S.set('welcomeDone', true);
+    overlay.classList.add('hide');
+    setTimeout(function(){ overlay.classList.remove('show'); overlay.style.display = 'none'; }, 500);
+    setTimeout(function(){ toast('أهلاً ' + name + '! 🚀', 'success', 3500); }, 400);
+    try{ renderDashboard(); }catch(e){}
+  };
+  if(btn) btn.onclick = handle;
+  if(input) input.onkeydown = function(e){ if(e.key === 'Enter') handle(); };
+}
+
+/* ==================== NAV ==================== */
+function initHistoryNavigation(){
+  if(historyInitialized) return;
+  historyInitialized = true;
+  var currentTab = S.get('activeTab', 'dashboard');
+  try{ history.replaceState({tab: currentTab}, '', '#' + currentTab); }catch(e){}
+  window.addEventListener('popstate', function(e){
+    var tab = (e.state && e.state.tab) || (location.hash ? location.hash.slice(1) : 'dashboard');
+    if(document.getElementById(tab)) switchTab(tab, false);
+  });
+}
+
+function switchTab(tab, pushHistory){
+  if(pushHistory === undefined) pushHistory = true;
+  var nav = document.querySelector('.nav-item[data-tab="' + tab + '"]');
+  var sec = document.getElementById(tab);
+  if(!nav || !sec) return;
+  document.querySelectorAll('.nav-item').forEach(function(i){ i.classList.remove('active'); });
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); s.classList.remove('tab-play'); });
+  nav.classList.add('active'); sec.classList.add('active');
+  S.set('activeTab', tab);
+  if(pushHistory){ try{ history.pushState({tab:tab}, '', '#' + tab); }catch(e){} }
+  else { try{ history.replaceState({tab:tab}, '', '#' + tab); }catch(e){} }
+  closeSidebar(); closeSettingsMenu(); window.scrollTo({top:0, behavior:'smooth'});
+  var fns = {
+    dashboard: renderDashboard,
+    budget: renderBudget,
+    tasks: renderTasks,
+    notes: renderNotes
+  };
+  if(fns[tab]){ try{ fns[tab](); }catch(e){ console.error('Render error:', tab, e); } }
+  requestAnimationFrame(function(){
+    sec.classList.add('tab-play');
+    setTimeout(function(){ sec.classList.remove('tab-play'); }, 900);
+  });
+}
+function toggleSidebar(){
+  if(window.innerWidth > 900) return;
+  var sb = document.getElementById('sidebar'); var bd = document.getElementById('sidebarBackdrop');
+  if(!sb || !bd) return;
+  sb.classList.toggle('open');
+  bd.classList.toggle('show', sb.classList.contains('open'));
+}
+function closeSidebar(){
+  var sb = document.getElementById('sidebar'); var bd = document.getElementById('sidebarBackdrop');
+  if(sb) sb.classList.remove('open'); if(bd) bd.classList.remove('show');
+}
+function toggleSettingsMenu(){
+  var m = document.getElementById('settingsMenu'); if(!m) return;
+  m.classList.toggle('show');
+}
+function closeSettingsMenu(){
+  var m = document.getElementById('settingsMenu'); if(m) m.classList.remove('show');
+}
+function toggleThemePanel(){
+  var p = document.getElementById('themePanel'); if(p) p.classList.toggle('show');
+}
+
+/* ==================== THEMES ==================== */
+var THEMES = [
+  {id:'dark',     name:'داكن',        colors:['#0b0f1a','#22d3ee','#a78bfa']},
+  {id:'dracula',  name:'دراكولا',     colors:['#191a21','#bd93f9','#ff79c6']},
+  {id:'sakura',   name:'ساكورا',      colors:['#1a0e14','#ff8fb8','#c084fc']},
+  {id:'nord',     name:'نورد',        colors:['#2e3440','#88c0d0','#b48ead']},
+  {id:'ocean',    name:'محيط',        colors:['#071a2e','#38bdf8','#3b82f6']},
+  {id:'royal',    name:'ملكي',        colors:['#0f0524','#a78bfa','#fbbf24']},
+  {id:'cyberpunk',name:'سايبربانك',   colors:['#0a0014','#22d3ee','#ec4899']},
+  {id:'midnight', name:'منتصف الليل', colors:['#050914','#0ea5e9','#8b5cf6']},
+  {id:'aurora',   name:'شفق',         colors:['#04101a','#14e0c8','#a78bfa']}
+];
+function applyTheme(t){
+  var validIds = THEMES.map(function(x){ return x.id; });
+  if(validIds.indexOf(t) === -1) t = 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  S.set('theme', t);
+  document.querySelectorAll('.theme-swatch').forEach(function(sw){
+    sw.classList.toggle('active', sw.dataset.theme === t);
+  });
+}
+function buildThemePanel(){
+  var grid = document.getElementById('themeGrid'); if(!grid) return;
+  var html = '';
+  THEMES.forEach(function(t){
+    html += '<div class="theme-swatch" data-theme="' + t.id + '" style="background:linear-gradient(135deg, ' +
+      t.colors[0] + ' 0%, ' + t.colors[0] + ' 40%, ' + t.colors[1] + ' 40%, ' + t.colors[1] + ' 70%, ' +
+      t.colors[2] + ' 70%, ' + t.colors[2] + ' 100%)">' +
+      '<div class="sw-check">✓</div><div class="sw-label">' + t.name + '</div></div>';
+  });
+  grid.innerHTML = html;
+  grid.querySelectorAll('.theme-swatch').forEach(function(sw){
+    sw.onclick = function(){
+      applyTheme(sw.dataset.theme);
+      var name = (THEMES.find(function(t){ return t.id === sw.dataset.theme; }) || {}).name || '';
+      toast('🎨 ثيم "' + name + '"', 'success', 1800);
+    };
+  });
+}
+
+/* ==================== DASHBOARD ==================== */
+function renderDailyQuote(){
+  var d = new Date();
+  var quotes = window.QUOTES || [{t:'—', a:'—'}];
+  var idx = (d.getFullYear()*365 + d.getMonth()*31 + d.getDate()) % quotes.length;
+  var q = quotes[idx];
+  var el1 = document.getElementById('dailyQuoteText'); if(el1) el1.textContent = q.t;
+  var el2 = document.getElementById('dailyQuoteAuthor'); if(el2) el2.textContent = '— ' + q.a;
+}
+
+function renderDashboard(){
+  renderDailyQuote();
+  var now = new Date();
+  var name = (space.profile && space.profile.name) || '';
+  var countryCode = (space.profile && space.profile.country) || 'QA';
+  var country = (window.COUNTRIES_DB && window.COUNTRIES_DB[countryCode]) || {flag:'🌍', name:''};
+  var gl = document.getElementById('greetLine');
+  if(gl){
+    var hour = now.getHours();
+    var greet = hour < 12 ? '☀️ صباح الخير' : '🌤️ مساء الخير';
+    gl.textContent = greet + ' ' + (name ? name + '، ' : '') + 'لديك ' +
+      (space.projects || []).length + ' مشروع و ' +
+      (space.tasks || []).filter(function(t){ return !t.done; }).length + ' مهمة · ' + country.flag + ' ' + country.name;
+  }
+
+  var el = document.getElementById('dashStats');
+  if(el) el.innerHTML =
+    '<div class="stat"><div class="ic">💼</div><div><div class="v">' + (space.projects || []).length + '</div><div class="l">مشروع</div></div></div>' +
+    '<div class="stat"><div class="ic">💡</div><div><div class="v">' + (space.ideas || []).length + '</div><div class="l">فكرة</div></div></div>' +
+    '<div class="stat"><div class="ic">📝</div><div><div class="v">' + (space.tasks || []).filter(function(t){ return !t.done; }).length + '</div><div class="l">مهمة متبقية</div></div></div>' +
+    '<div class="stat"><div class="ic">💼</div><div><div class="v">' + (space.salesPipeline || []).length + '</div><div class="l">فرصة بيعية</div></div></div>';
+
+  var dt = document.getElementById('dashTasks');
+  if(dt){
+    var today = new Date().toISOString().slice(0,10);
+    var upcoming = (space.tasks || []).filter(function(t){ return !t.done && t.due && t.due >= today; })
+      .sort(function(a,b){ return a.due.localeCompare(b.due); }).slice(0,5);
+    if(!upcoming.length){
+      dt.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">✨ لا مهام قريبة</div>';
+    } else {
+      var h = '';
+      upcoming.forEach(function(t){
+        var days = Math.ceil((new Date(t.due) - new Date(today)) / 86400000);
+        var when = days === 0 ? 'اليوم' : days === 1 ? 'غداً' : 'بعد ' + days + ' يوم';
+        var col = days <= 2 ? 'var(--red)' : days <= 5 ? 'var(--amber)' : 'var(--muted)';
+        h += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem;align-items:center">' +
+          '<span style="color:' + col + ';font-weight:700;font-size:.72rem;min-width:60px">' + when + '</span>' +
+          '<span style="flex:1">' + esc(t.title) + '</span></div>';
+      });
+      dt.innerHTML = h;
+    }
+  }
+
+  var ds = document.getElementById('dashSales');
+  if(ds){
+    var pipeline = space.salesPipeline || [];
+    var stages = window.PIPELINE_STAGES || {};
+    var stagesOrder = ['lead','qualified','proposal','negotiation','won'];
+    if(!pipeline.length){
+      ds.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">💼 لا توجد فرص</div>';
+    } else {
+      var h2 = '';
+      stagesOrder.forEach(function(k){
+        var s = stages[k];
+        if(!s) return;
+        var cnt = pipeline.filter(function(d){ return d.stage === k; }).length;
+        if(!cnt) return;
+        h2 += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.82rem">' +
+          '<span>' + s.icon + ' ' + s.name + '</span><span style="font-weight:700;color:' + s.color + '">' + cnt + '</span></div>';
+      });
+      ds.innerHTML = h2;
+    }
+  }
+
+  var di = document.getElementById('dashIdeas');
+  if(di){
+    var ideas = (space.ideas || []).slice(-3).reverse();
+    if(!ideas.length){
+      di.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">💡 لا توجد أفكار</div>';
+    } else {
+      var h3 = '';
+      ideas.forEach(function(idea){
+        h3 += '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem">' +
+          '<div style="font-weight:600">' + esc(idea.name) + '</div>' +
+          '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">' + esc((idea.description || '').slice(0, 60)) + '</div></div>';
+      });
+      di.innerHTML = h3;
+    }
+  }
+}
+
+/* ==================== TASKS ==================== */
+function renderTasks(){
+  var c = document.getElementById('tasksList'); if(!c) return;
+  var today = new Date().toISOString().slice(0,10);
+  var tasks = (space.tasks || []).slice().sort(function(a,b){
+    if(a.done !== b.done) return a.done ? 1 : -1;
+    if(!a.due) return 1; if(!b.due) return -1;
+    return a.due.localeCompare(b.due);
+  });
+  if(currentTaskFilter === 'pending') tasks = tasks.filter(function(t){ return !t.done; });
+  if(currentTaskFilter === 'done') tasks = tasks.filter(function(t){ return t.done; });
+  if(!tasks.length){
+    c.innerHTML = '<div class="empty"><div class="ic">📝</div><p>لا توجد مهام</p></div>';
+    return;
+  }
+  var html = '';
+  tasks.forEach(function(t){
+    var isOverdue = !t.done && t.due && t.due < today;
+    var daysLeft = t.due ? Math.ceil((new Date(t.due) - new Date(today)) / 86400000) : null;
+    html += '<div class="task ' + (t.done ? 'done' : '') + ' ' + (isOverdue ? 'overdue' : '') + '">' +
+      '<div class="task-check" data-toggle-task="' + t.id + '"></div>' +
+      '<div class="task-body"><div class="task-title">' + esc(t.title) + '</div>' +
+      '<div class="task-meta">' +
+      (t.project ? '<span>💼 ' + esc(t.project) + '</span>' : '') +
+      (t.due ? '<span>📅 ' + t.due + (daysLeft !== null ? ' (' + (daysLeft >= 0 ? 'بعد ' + daysLeft + ' يوم' : 'متأخر ' + Math.abs(daysLeft)) + ')' : '') + '</span>' : '') +
+      '</div></div>' +
+      '<div class="task-actions"><button class="btn btn-sm btn-ghost" data-edit-task="' + t.id + '">✏️</button>' +
+      '<button class="btn btn-sm btn-danger" data-del-task="' + t.id + '">🗑</button></div></div>';
+  });
+  c.innerHTML = html;
+  c.querySelectorAll('[data-toggle-task]').forEach(function(b){ b.onclick = function(){ toggleTask(b.dataset.toggleTask); }; });
+  c.querySelectorAll('[data-edit-task]').forEach(function(b){ b.onclick = function(){ editTask(b.dataset.editTask); }; });
+  c.querySelectorAll('[data-del-task]').forEach(function(b){ b.onclick = function(){ deleteTask(b.dataset.delTask); }; });
+}
+
+function addTask(){
+  window.showModal('📝 مهمة جديدة', [
+    {key:'title', label:'عنوان المهمة'},
+    {key:'project', label:'المشروع (اختياري)'},
+    {key:'due', label:'تاريخ التسليم', type:'date'}
+  ], {title:'', project:'', due:''}, function(data){
+    if(!data.title) return toast('أدخل عنواناً', 'warn');
+    space.tasks.push(Object.assign({id: uid(), done: false}, data));
+    saveSpace(); renderTasks(); renderDashboard();
+    toast('✓ أُضيفت المهمة', 'success');
+  });
+}
+
+function editTask(id){
+  var t = space.tasks.find(function(x){ return x.id === id; }); if(!t) return;
+  window.showModal('✏️ تعديل مهمة', [
+    {key:'title', label:'العنوان'},
+    {key:'project', label:'المشروع'},
+    {key:'due', label:'التاريخ', type:'date'}
+  ], t, function(data){
+    Object.assign(t, data);
+    saveSpace(); renderTasks(); renderDashboard();
+  }, function(){
+    window.customConfirm('حذف المهمة؟', function(){
+      space.tasks = space.tasks.filter(function(x){ return x.id !== id; });
+      saveSpace(); renderTasks(); renderDashboard();
+    });
+  });
+}
+function toggleTask(id){
+  var t = space.tasks.find(function(x){ return x.id === id; }); if(!t) return;
+  t.done = !t.done; saveSpace(); renderTasks(); renderDashboard();
+  if(t.done) toast('✓ أحسنت!', 'success', 1200);
+}
+function deleteTask(id){
+  window.customConfirm('حذف المهمة؟', function(){
+    space.tasks = space.tasks.filter(function(x){ return x.id !== id; });
+    saveSpace(); renderTasks(); renderDashboard();
+  });
+}
+
+/* ==================== BUDGET ==================== */
+function renderBudget(){
+  var sumEl = document.getElementById('budgetSummary'); if(!sumEl) return;
+  var income = (space.budget || []).filter(function(b){ return b.type === 'income'; }).reduce(function(a,b){ return a + (parseFloat(b.amount) || 0); }, 0);
+  var expense = (space.budget || []).filter(function(b){ return b.type === 'expense'; }).reduce(function(a,b){ return a + (parseFloat(b.amount) || 0); }, 0);
+  var balance = income - expense;
+  sumEl.innerHTML =
+    '<div class="budget-card income"><div class="bc-icon">📈</div><div class="bc-val">' + income.toFixed(0) + '</div><div class="bc-lbl">إجمالي الدخل</div></div>' +
+    '<div class="budget-card expense"><div class="bc-icon">📉</div><div class="bc-val">' + expense.toFixed(0) + '</div><div class="bc-lbl">إجمالي المصاريف</div></div>' +
+    '<div class="budget-card balance ' + (balance < 0 ? 'neg' : '') + '"><div class="bc-icon">💼</div><div class="bc-val">' + balance.toFixed(0) + '</div><div class="bc-lbl">الرصيد</div></div>';
+
+  var list = document.getElementById('budgetList');
+  var items = (space.budget || []).slice().sort(function(a,b){ return (b.date || '').localeCompare(a.date || ''); });
+  if(!items.length){
+    list.innerHTML = '<div class="empty"><div class="ic">💰</div><p>لا توجد عناصر</p></div>';
+    return;
+  }
+  var html = '';
+  items.forEach(function(b){
+    var cat = (window.BUDGET_CATS || []).find(function(x){ return x.v === b.category; }) || {i:'💸', l: b.category};
+    var sign = b.type === 'income' ? '+' : '-';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;gap:10px">' +
+      '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">' +
+        '<div style="width:40px;height:40px;border-radius:11px;background:var(--grad-soft);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">' + cat.i + '</div>' +
+        '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.88rem">' + esc(cat.l) + '</div>' +
+        (b.note ? '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">' + esc(b.note) + '</div>' : '') + '</div>' +
+      '</div>' +
+      '<div style="font-weight:800;font-size:.95rem;text-align:center;color:' + (b.type === 'income' ? 'var(--green)' : 'var(--red)') + '">' + sign + b.amount + '<div style="font-size:.65rem;color:var(--muted);font-weight:400">' + (b.date || '') + '</div></div>' +
+      '<div style="display:flex;gap:4px">' +
+        '<button class="btn btn-sm btn-danger" data-del-budget="' + b.id + '">🗑</button>' +
+      '</div>' +
+    '</div>';
+  });
+  list.innerHTML = html;
+  list.querySelectorAll('[data-del-budget]').forEach(function(btn){
+    btn.onclick = function(){
+      window.customConfirm('حذف العنصر؟', function(){
+        space.budget = space.budget.filter(function(x){ return x.id !== btn.dataset.delBudget; });
+        saveSpace(); renderBudget(); renderDashboard();
+      });
+    };
+  });
+}
+function addBudgetItem(type){
+  var catOpts = [];
+  (window.BUDGET_CATS || []).forEach(function(c){
+    var isIncome = ['investment','grant','loan','revenue','other-in'].indexOf(c.v) > -1;
+    if(type === 'income' && !isIncome) return;
+    if(type === 'expense' && isIncome) return;
+    catOpts.push({v:c.v, l:c.i + ' ' + c.l});
+  });
+  window.showModal('إضافة ' + (type === 'income' ? 'دخل' : 'مصروف'), [
+    {key:'category', label:'التصنيف', type:'select', options: catOpts},
+    {key:'amount', label:'المبلغ', type:'number'},
+    {key:'date', label:'التاريخ', type:'date'},
+    {key:'note', label:'ملاحظة', type:'textarea'}
+  ], {category: catOpts[0].v, amount:0, date: new Date().toISOString().slice(0,10), note:''}, function(data){
+    if(!data.amount || parseFloat(data.amount) <= 0) return toast('أدخل مبلغاً', 'warn');
+    space.budget.push({
+      id: uid(), type: type, category: data.category,
+      amount: parseFloat(data.amount),
+      date: data.date || new Date().toISOString().slice(0,10),
+      note: data.note || ''
+    });
+    saveSpace(); renderBudget(); renderDashboard();
+    toast('✓ أُضيف', 'success');
+  });
+}
+
+/* ==================== NOTES ==================== */
+function renderNotes(){
+  var c = document.getElementById('notesList'); if(!c) return;
+  var cnt = document.getElementById('notesCount'); if(cnt) cnt.textContent = notes.length + ' ملاحظة';
+  if(!notes.length){
+    c.innerHTML = '<div class="empty"><div class="ic">📔</div><p>لا توجد ملاحظات</p></div>';
+    return;
+  }
+  var html = '';
+  notes.forEach(function(n, i){
+    var dateStr = '';
+    try{ dateStr = new Date(n.ts).toLocaleDateString('ar-EG', {weekday:'long', year:'numeric', month:'short', day:'numeric'}); }catch(e){}
+    html += '<div class="note-card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+      '<span style="font-size:.72rem;color:var(--muted2)">' + dateStr + '</span>' +
+      '<button class="btn btn-sm btn-danger" data-del-note="' + i + '">✕</button></div>' +
+      '<input value="' + esc(n.title || '') + '" placeholder="عنوان..." data-note-title="' + i + '">' +
+      '<textarea placeholder="اكتب..." data-note-body="' + i + '">' + esc(n.body || '') + '</textarea></div>';
+  });
+  c.innerHTML = html;
+  c.querySelectorAll('[data-del-note]').forEach(function(b){
+    b.onclick = function(){ deleteNote(parseInt(b.dataset.delNote)); };
+  });
+  c.querySelectorAll('[data-note-title]').forEach(function(inp){
+    inp.oninput = function(){ notes[parseInt(inp.dataset.noteTitle)].title = inp.value; S.set('notes', notes); space.notes = notes; };
+  });
+  c.querySelectorAll('[data-note-body]').forEach(function(t){
+    t.oninput = function(){ notes[parseInt(t.dataset.noteBody)].body = t.value; S.set('notes', notes); space.notes = notes; };
+  });
+}
+function addNote(){
+  notes.unshift({title:'', body:'', ts: Date.now()});
+  S.set('notes', notes); space.notes = notes;
+  renderNotes(); renderDashboard();
+  toast('✓ أُضيفت', 'success', 1500);
+}
+function deleteNote(i){
+  window.customConfirm('حذف الملاحظة؟', function(){
+    notes.splice(i, 1);
+    S.set('notes', notes); space.notes = notes;
+    renderNotes(); renderDashboard();
+  });
+}
+
+/* ==================== STAKEHOLDERS ==================== */
+function renderStakeholders(){
+  var el = document.getElementById('stakeholdersList'); if(!el) return;
+  var list = space.stakeholders || [];
+  if(!list.length){
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">لا يوجد أصحاب مصلحة</div>';
+    return;
+  }
+  var html = '';
+  list.forEach(function(s){
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg2);border-radius:10px;margin-bottom:8px">' +
+      '<div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#0b0f1a;font-weight:800">' + (s.name || '؟').charAt(0) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-weight:700;font-size:.9rem">' + esc(s.name) + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted)">' + esc(s.role || '') + (s.org ? ' · ' + esc(s.org) : '') + '</div>' +
+      '</div>' +
+      '<button class="btn btn-sm btn-danger" data-del-sh="' + s.id + '">🗑</button>' +
+    '</div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('[data-del-sh]').forEach(function(b){
+    b.onclick = function(){
+      window.customConfirm('حذف؟', function(){
+        space.stakeholders = space.stakeholders.filter(function(x){ return x.id !== b.dataset.delSh; });
+        saveSpace(); renderStakeholders();
+      });
+    };
+  });
+}
+
+function addStakeholder(){
+  window.showModal('👥 صاحب مصلحة', [
+    {key:'name', label:'الاسم'},
+    {key:'role', label:'الدور'},
+    {key:'org', label:'الجهة'},
+    {key:'contact', label:'التواصل'}
+  ], {name:'', role:'', org:'', contact:''}, function(data){
+    if(!data.name) return toast('أدخل الاسم', 'warn');
+    if(!space.stakeholders) space.stakeholders = [];
+    space.stakeholders.push(Object.assign({id: uid()}, data));
+    saveSpace(); renderStakeholders();
+    toast('✓ أُضيف', 'success');
+  });
+}
+
+/* ==================== BACKUP ==================== */
+function downloadBackup(){
+  try{
+    var snapshot = gatherSnapshot();
+    var blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'business-dev-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast('💾 تم التنزيل', 'success', 2500);
+  }catch(e){ toast('فشل', 'warn'); }
+}
+
+function restoreFromFile(){
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = function(e){
+    var file = e.target.files[0]; if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        var data = JSON.parse(ev.target.result);
+        applyServerData(data);
+        saveSpace();
+        S.set('notes', notes);
+        toast('✅ تمت الاستعادة', 'success', 2500);
+        setTimeout(function(){ location.reload(); }, 800);
+      }catch(err){ toast('ملف تالف', 'warn', 3000); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+/* ==================== PDF ==================== */
+function exportPDF(){
+  toast('🖨️ جاري التجهيز...', 'info', 1500);
+  setTimeout(function(){ window.print(); }, 400);
+}
+
+/* ==================== SEARCH ==================== */
+function initSearch(){
+  var inp = document.getElementById('searchInput'); if(!inp) return;
+  inp.oninput = function(){
+    var q = inp.value.trim().toLowerCase();
+    if(q.length < 2) return;
+    var results = [];
+    (space.ideas || []).forEach(function(idea){
+      if((idea.name || '').toLowerCase().indexOf(q) > -1) results.push({name: idea.name, tab:'ideas'});
+    });
+    (space.projects || []).forEach(function(p){
+      if((p.name || '').toLowerCase().indexOf(q) > -1) results.push({name: p.name, tab:'roadmap'});
+    });
+    (space.tasks || []).forEach(function(t){
+      if((t.title || '').toLowerCase().indexOf(q) > -1) results.push({name: t.title, tab:'tasks'});
+    });
+    if(results.length){
+      toast('🔍 ' + results.length + ' نتيجة: ' + results[0].name, 'info', 3000);
+    }
+  };
+}
+
+/* ==================== FAB ==================== */
+function toggleFabMenu(){
+  var m = document.getElementById('fabMenu');
+  var f = document.getElementById('fabMain');
+  var ai = document.getElementById('aiFab');
+  if(!m || !f) return;
+  var isOpen = m.classList.contains('show');
+  if(isOpen){ m.classList.remove('show'); f.classList.remove('active'); if(ai) ai.classList.remove('hidden'); }
+  else { var ap = document.getElementById('aiPanel'); if(ap) ap.classList.remove('show'); m.classList.add('show'); f.classList.add('active'); if(ai) ai.classList.add('hidden'); }
+}
+
+/* ==================== EVENTS ==================== */
+function bindAllEvents(){
+  document.querySelectorAll('.nav-item').forEach(function(item){
+    item.onclick = function(){ switchTab(item.dataset.tab); };
+  });
+  var mt = document.getElementById('menuToggle'); if(mt) mt.onclick = toggleSidebar;
+  var sbd = document.getElementById('sidebarBackdrop'); if(sbd) sbd.onclick = closeSidebar;
+  var tb = document.getElementById('themeBtn');
+  if(tb) tb.onclick = function(e){ e.stopPropagation(); closeSettingsMenu(); toggleThemePanel(); };
+  var sb = document.getElementById('settingsBtn');
+  if(sb) sb.onclick = function(e){ e.stopPropagation(); toggleSettingsMenu(); };
+  document.addEventListener('click', function(e){
+    var p = document.getElementById('themePanel');
+    if(p && p.classList.contains('show') && !e.target.closest('#themePanel') && !e.target.closest('#themeBtn')) p.classList.remove('show');
+    if(!e.target.closest('.settings-wrap')) closeSettingsMenu();
+  });
+  var bb = document.getElementById('backupBtn'); if(bb) bb.onclick = function(){ closeSettingsMenu(); downloadBackup(); };
+  var rb = document.getElementById('restoreBtn'); if(rb) rb.onclick = function(){ closeSettingsMenu(); restoreFromFile(); };
+  var pdfBtn = document.getElementById('pdfBtn'); if(pdfBtn) pdfBtn.onclick = function(){ closeSettingsMenu(); exportPDF(); };
+
+  function bind(id, fn){ var el = document.getElementById(id); if(el) el.onclick = fn; }
+  bind('btnAddIdea', addIdea);
+  bind('btnAddTask', addTask);
+  bind('btnAddDeal', addDeal);
+  bind('btnAddStakeholder', addStakeholder);
+  bind('btnAddIncome', function(){ addBudgetItem('income'); });
+  bind('btnAddExpense', function(){ addBudgetItem('expense'); });
+  bind('btnAddNote', addNote);
+
+  document.querySelectorAll('[data-tf]').forEach(function(chip){
+    chip.onclick = function(){
+      currentTaskFilter = chip.dataset.tf;
+      document.querySelectorAll('[data-tf]').forEach(function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      renderTasks();
+    };
+  });
+
+  // Country tabs
+  document.querySelectorAll('[data-country-tab]').forEach(function(btn){
+    btn.onclick = function(){
+      var k = btn.dataset.countryTab;
+      document.querySelectorAll('[data-country-tab]').forEach(function(b){ b.classList.toggle('active', b === btn); });
+      var cg = document.getElementById('countriesGrid');
+      var fg = document.getElementById('frameworksGrid');
+      if(cg) cg.style.display = k === 'countries' ? '' : 'none';
+      if(fg) fg.style.display = k === 'frameworks' ? '' : 'none';
+      if(k === 'frameworks' && typeof window.renderFrameworks === 'function') window.renderFrameworks();
+      if(k === 'countries' && typeof window.renderCountries === 'function') window.renderCountries();
+    };
+  });
+
+  var fm = document.getElementById('fabMain');
+  if(fm) fm.onclick = toggleFabMenu;
+  document.querySelectorAll('.fab-action').forEach(function(b){
+    b.onclick = function(){
+      var type = b.dataset.fab;
+      toggleFabMenu();
+      if(type === 'idea'){ switchTab('ideas'); setTimeout(addIdea, 250); }
+      else if(type === 'task'){ switchTab('tasks'); setTimeout(addTask, 250); }
+      else if(type === 'deal'){ switchTab('sales'); setTimeout(addDeal, 250); }
+      else if(type === 'expense'){ switchTab('budget'); setTimeout(function(){ addBudgetItem('expense'); }, 250); }
+      else if(type === 'note'){ switchTab('notes'); setTimeout(addNote, 250); }
+    };
+  });
+}
+
+/* ==================== BOOT ==================== */
+function safeRun(label, fn){
+  try{ fn(); }catch(err){ console.error('❌ Failed: ' + label, err); }
+}
+
+async function boot(){
+  console.log('🚀 Booting Business Dev V1...');
+
+  safeRun('Load local data', loadAllData);
+
+  var serverData = null;
+  if(window.SB){
+    try{ serverData = await window.SB.load(); }catch(e){}
+  }
+
+  if(serverData && serverData.data){
+    console.log('☁️ Loaded from Supabase');
+    serverOnline = true;
+    safeRun('Apply server data', function(){ applyServerData(serverData.data); });
+  } else { serverOnline = false; }
+
+  safeRun('Build theme panel', function(){ buildThemePanel(); applyTheme(S.get('theme', 'dark')); });
+  safeRun('History', initHistoryNavigation);
+  safeRun('Bind events', bindAllEvents);
+  safeRun('Search', initSearch);
+
+  safeRun('Dashboard', renderDashboard);
+  safeRun('Tasks', renderTasks);
+  safeRun('Budget', renderBudget);
+  safeRun('Notes', renderNotes);
+  safeRun('Stakeholders', renderStakeholders);
+  safeRun('Countries', function(){ if(window.renderCountries) window.renderCountries(); });
+  safeRun('Frameworks', function(){ if(window.renderFrameworks) window.renderFrameworks(); });
+  safeRun('AI bindings', function(){ if(typeof window.bindAIEvents === 'function') window.bindAIEvents(); });
+
+  safeRun('Initial tab', function(){
+    var tab = location.hash.slice(1) || S.get('activeTab', 'dashboard');
+    if(document.getElementById(tab)) switchTab(tab, false);
+    else switchTab('dashboard', false);
+  });
+
+  safeRun('Welcome', function(){
+    var welcomeDone = S.get('welcomeDone', false);
+    var hasName = space.profile && space.profile.name;
+    if(!welcomeDone || !hasName) showWelcome();
+    else {
+      setTimeout(function(){
+        try{
+          var hour = new Date().getHours();
+          var greet = hour < 12 ? 'صباح الخير' : 'مساء الخير';
+          toast(greet + ' ' + space.profile.name.split(' ')[0] + '! 💼', 'success', 3000);
+        }catch(e){}
+      }, 800);
+    }
+  });
+
+  safeRun('Initial sync', function(){
+    bootSyncing = false;
+    setServerStatus(serverOnline ? 'ok' : 'off');
+    if(!serverData && window.SB) doServerSave();
+  });
+
+  if(navigator.serviceWorker){
+    navigator.serviceWorker.addEventListener('message', function(e){
+      if(e.data && e.data.type === 'navigate' && e.data.tab) switchTab(e.data.tab);
+    });
+  }
+
+  console.log('✅ Boot complete');
+}
+
+if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', boot); }
+else { boot(); }
+</script>
+</body>
+</html>
