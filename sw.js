@@ -1,24 +1,20 @@
 /* ============================================================
-   ⚙️ sw.js — Service Worker v2 (bilingual)
+   ⚙️ sw.js — Service Worker v18
    ============================================================ */
-var CACHE_NAME = 'bd-cache-v2';
+var CACHE_NAME = 'ss-cache-v20';   // ← غيّره من v19
 var URLS_TO_CACHE = [
   './',
   './index.html',
-  './business-data.js',
-  './i18n.js',
-  './strategy-builder.js',
-  './idea-incubator.js',
-  './impact-calculator.js',
-  './country-adapter.js',
-  './leadership-coach.js',
-  './sales-toolkit.js',
-  './project-lifecycle.js',
-  './file-sync-plus.js',
-  './insights.js',
+  './courses-data.js',
+  './ai-assistant.js',
+  './ai-smart.js',   // بدل ai-assistant-plus.js
+  './plan-simulator.js',
+  './plan-enhance.js',
   './calendar-sync.js',
+  './insights.js',
+  './courses-files-plus.js',
+  './qc-fix.js',                    // 🆕
   './widgets.js',
-  './ai-advisor.js',
   './supabase-config.js',
   './supabase-client.js',
   './pwa.js',
@@ -47,6 +43,7 @@ self.addEventListener('fetch', function(e){
   var url = e.request.url;
   if(url.indexOf('supabase.co') > -1) return;
   if(url.indexOf('cdn.jsdelivr.net') > -1) return;
+  if(url.indexOf('translate.google.com') > -1) return;
   if(url.indexOf('api.qrserver.com') > -1) return;
   if(url.indexOf('open-meteo.com') > -1) return;
   if(url.indexOf('aladhan.com') > -1) return;
