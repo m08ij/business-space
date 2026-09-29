@@ -25,7 +25,7 @@
 
   window.addEventListener('appinstalled', function(){
     hideInstallBtn();
-    if(window.toast) window.toast('🎉 تم تثبيت التطبيق', 'success', 2500);
+      if(window.toast) window.toast(window.t ? window.t('toast_app_installed') : '🎉 App installed', 'success', 2500);
   });
 
   function showInstallBtn(){
@@ -45,7 +45,7 @@
       var menu = document.getElementById('settingsMenu');
       if(menu) menu.classList.remove('show');
       if(!deferredPrompt){
-        if(window.toast) window.toast('التطبيق مثبت بالفعل أو غير مدعوم', 'info', 2200);
+        if(window.toast) window.toast(window.t ? window.t('toast_app_installed_already') : 'Already installed', 'info', 2200);
         return;
       }
       deferredPrompt.prompt();

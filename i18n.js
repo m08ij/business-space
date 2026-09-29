@@ -352,7 +352,13 @@
       toast_backup_failed: 'فشل',
       toast_pdf_preparing: '🖨️ جاري التجهيز...',
       toast_search_results: '🔍 {n} نتيجة: {name}',
+      // ar:
+       toast_app_installed: '🎉 تم تثبيت التطبيق',
+       toast_app_installed_already: 'التطبيق مثبت بالفعل أو غير مدعوم',
 
+// en:
+       toast_app_installed: '🎉 App installed',
+       toast_app_installed_already: 'Already installed or not supported',
       // FAB
       fab_idea: 'فكرة جديدة',
       fab_task: 'مهمة جديدة',
