@@ -37,6 +37,8 @@ var URLS_TO_CACHE = [
   './archive.js',
   './demo-project.js',
   './pwa.js'
+  './translation-interceptor.js',
+  './smart-project-wizard.js',
 ];
 
 self.addEventListener('install', function(e){
