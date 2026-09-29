@@ -22,7 +22,7 @@
     cls_cannot_undo:'⚠️ لا يمكن التراجع!',
     cls_deleting:'🗑 جاري الحذف',
     cls_deleted:'✅ تم حذف كل شيء بنجاح',
-    cls_not_found:'⚠️ العنصر غير موجود'
+    cls_not_found:'⚠️ العنصر غير موجود',
 	sh_project: 'المشروع المرتبط',
     sh_no_project: '— بدون —',
   });
@@ -39,7 +39,7 @@
     cls_cannot_undo:'⚠️ Cannot be undone!',
     cls_deleting:'🗑 Deleting',
     cls_deleted:'✅ Everything deleted',
-    cls_not_found:'⚠️ Not found'
+    cls_not_found:'⚠️ Not found',
     sh_project: 'Linked Project',
     sh_no_project: '— None —',	
   });

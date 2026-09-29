@@ -1,47 +1,15 @@
 /* ============================================================
-   ⚙️ sw.js — Service Worker v2 (bilingual)
+   ⚙️ sw.js — Service Worker v12 (bundled)
    ============================================================ */
-var CACHE_NAME = 'bd-cache-v7';
+var CACHE_NAME = 'bd-cache-v12';
 var URLS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  // Core
-  './business-data.js',
-  './i18n.js',
-  './i18n-patch.js',
-  './supabase-config.js',
-  './supabase-client.js',
-  // Fixes
-  './qc-fix.js',
-  './fix-buttons.js',
-  // Global countries
-  './countries-global.js',
-  './country-patch.js',
-  // Modules
-  './ai-advisor.js',
-  './strategy-builder.js',
-  './idea-incubator.js',
-  './impact-calculator.js',
-  './country-adapter.js',
-  './leadership-coach.js',
-  './sales-toolkit.js',
-  './project-lifecycle.js',
-  './milestones.js',
-  './risk-register.js',
-  './email-digest.js',
-  './file-sync-plus.js',
-  './insights.js',
-  './calendar-sync.js',
-  './widgets.js',
-  './archive.js',
-  './demo-project.js',
-  './pwa.js'
-  './translation-interceptor.js',
-  './smart-project-wizard.js',
-  './kb-i18n-patch.js',
-  './project-knowledge-base.js',
-  './project-classifier.js',
+  './core.js',
+  './modules.js',
+  './smart.js',
+  './widgets-pwa.js'
 ];
 
 self.addEventListener('install', function(e){
@@ -67,8 +35,6 @@ self.addEventListener('fetch', function(e){
   if(url.indexOf('supabase.co') > -1) return;
   if(url.indexOf('cdn.jsdelivr.net') > -1) return;
   if(url.indexOf('api.qrserver.com') > -1) return;
-  if(url.indexOf('open-meteo.com') > -1) return;
-  if(url.indexOf('aladhan.com') > -1) return;
   if(e.request.method !== 'GET') return;
 
   e.respondWith(
@@ -81,25 +47,6 @@ self.addEventListener('fetch', function(e){
         return response;
       }).catch(function(){ return cached; });
       return cached || fetchPromise;
-    })
-  );
-});
-
-self.addEventListener('notificationclick', function(e){
-  e.notification.close();
-  var data = e.notification.data || {};
-  var tab = data.tab || 'dashboard';
-  e.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list){
-      for(var i = 0; i < list.length; i++){
-        var c = list[i];
-        if(c.url.indexOf('index.html') > -1 || c.url.indexOf(location.origin) === 0){
-          c.focus();
-          c.postMessage({type:'navigate', tab: tab});
-          return;
-        }
-      }
-      if(clients.openWindow) return clients.openWindow('./index.html#' + tab);
     })
   );
 });
