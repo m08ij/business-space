@@ -609,7 +609,10 @@ html[dir="ltr"] .task:hover{transform:translateX(3px)}
 /* ==================== HELPERS ==================== */
 function tr(key, params){ return window.t ? window.t(key, params) : key; }
 
-/* ==================== GLOBAL STATE ==================== */
+/* ==================== STORAGE (PREFIXED) ==================== */
+/* كل مفاتيح التطبيق الجديد تبدأ بـ bd_ لتجنب التعارض مع التطبيقات الأخرى على نفس الدومين */
+var STORAGE_PREFIX = 'bd_';
+
 var space = null;
 var notes = [];
 var currentTaskFilter = 'all';
@@ -627,19 +630,24 @@ var S = {
   get: function(k, d){
     try{
       if(!storageAvailable) return memoryStore[k] !== undefined ? memoryStore[k] : d;
-      var v = localStorage.getItem(k);
+      var v = localStorage.getItem(STORAGE_PREFIX + k);
       return v === null ? d : JSON.parse(v);
     }catch(e){ return d; }
   },
   set: function(k, v){
     try{
       if(!storageAvailable){ memoryStore[k] = v; return true; }
-      localStorage.setItem(k, JSON.stringify(v));
+      localStorage.setItem(STORAGE_PREFIX + k, JSON.stringify(v));
       scheduleBackup();
       return true;
     }catch(e){ return false; }
   },
-  remove: function(k){ try{ if(storageAvailable) localStorage.removeItem(k); else delete memoryStore[k]; }catch(e){} }
+  remove: function(k){
+    try{
+      if(storageAvailable) localStorage.removeItem(STORAGE_PREFIX + k);
+      else delete memoryStore[k];
+    }catch(e){}
+  }
 };
 
 /* ==================== SUPABASE AUTO-SAVE ==================== */

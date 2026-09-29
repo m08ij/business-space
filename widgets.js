@@ -1,8 +1,13 @@
 /* ============================================================
    🎯 widgets.js — Widgets جانبية قابلة للتخصيص (AR/EN)
+   مع prefix bd_w_ لتجنب التعارض مع التطبيقات الأخرى على نفس الدومين
    ============================================================ */
 (function(){
   'use strict';
+
+  /* ==================== PREFIX ==================== */
+  /* كل مفاتيح localStorage في هذا الملف تبدأ بـ bd_w_ */
+  var WIDGET_PREFIX = 'bd_w_';
 
   function tr(k){ return window.t ? window.t(k) : k; }
   function getSpace(){ return window.space || {profile:{},projects:[],tasks:[]}; }
@@ -167,11 +172,19 @@
   };
 
   var enabledWidgets = [];
+
+  /* ============ محفوظات مع prefix ============ */
   function loadEnabled(){
-    try{ var v = JSON.parse(localStorage.getItem('lw_enabled_widgets') || 'null'); if(Array.isArray(v)) return v; }catch(e){}
+    try{
+      var v = JSON.parse(localStorage.getItem(WIDGET_PREFIX + 'lw_enabled_widgets') || 'null');
+      if(Array.isArray(v)) return v;
+    }catch(e){}
     return Object.keys(WIDGETS).filter(function(k){ return WIDGETS[k].default; });
   }
-  function saveEnabled(){ try{ localStorage.setItem('lw_enabled_widgets', JSON.stringify(enabledWidgets)); }catch(e){} }
+
+  function saveEnabled(){
+    try{ localStorage.setItem(WIDGET_PREFIX + 'lw_enabled_widgets', JSON.stringify(enabledWidgets)); }catch(e){}
+  }
 
   function injectHTML(){
     if(document.getElementById('lwSidebar')) return;
@@ -252,7 +265,7 @@
     sidebar.classList.toggle('open', v);
     expandBtn.classList.toggle('hidden', v);
     if(backdrop) backdrop.classList.toggle('show', v);
-    try{ localStorage.setItem('lw_sidebar_open', JSON.stringify(v)); }catch(e){}
+    try{ localStorage.setItem(WIDGET_PREFIX + 'lw_sidebar_open', JSON.stringify(v)); }catch(e){}
   }
 
   function initSidebar(){
@@ -260,15 +273,22 @@
     var backdrop = document.getElementById('lwBackdrop');
     if(!expandBtn) return;
     var open = false;
-    try{ var saved = localStorage.getItem('lw_sidebar_open'); if(saved !== null) open = JSON.parse(saved); }catch(e){}
+    try{
+      var saved = localStorage.getItem(WIDGET_PREFIX + 'lw_sidebar_open');
+      if(saved !== null) open = JSON.parse(saved);
+    }catch(e){}
     setSidebarOpen(open);
     expandBtn.onclick = function(){ setSidebarOpen(true); };
     if(backdrop) backdrop.onclick = function(){ setSidebarOpen(false); };
   }
 
   /* ============ Quote ============ */
-  var QUOTE_INDEX_KEY = 'lw_quote_index_v2';
-  function getQuotes(){ return (window.QUOTES || [{t:'لا تنتظر الفرصة، اصنعها.', tEn:'Don\'t wait for opportunity, create it.', a:'—'}]); }
+  var QUOTE_INDEX_KEY = WIDGET_PREFIX + 'lw_quote_index_v2';
+
+  function getQuotes(){
+    return (window.QUOTES || [{t:'لا تنتظر الفرصة، اصنعها.', tEn:"Don't wait for opportunity, create it.", a:'—'}]);
+  }
+
   function rotateQuote(advance){
     var quotes = getQuotes();
     var idx = 0;
@@ -278,6 +298,7 @@
     window._lwCurrentQuote = quotes[idx];
     renderQuote();
   }
+
   function renderQuote(){
     var t = document.getElementById('lwQuoteText'); if(!t) return;
     var q = window._lwCurrentQuote || getQuotes()[0];
@@ -407,5 +428,6 @@
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
-  console.log('🎯 Widgets loaded (AR/EN)');
+
+  console.log('🎯 Widgets loaded (AR/EN) — prefix:', WIDGET_PREFIX);
 })();
