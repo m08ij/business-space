@@ -6,7 +6,6 @@
   'use strict';
 
   function getSpace(){ return window.space || {profile:{},ideas:[],projects:[],salesPipeline:[],tasks:[],budget:[],stakeholders:[]}; }
-  function getS(){ return window.S || {get:function(k,d){return d;},set:function(){}}; }
   function getFrameworks(){ return window.FRAMEWORKS_DB || {}; }
   function getCountries(){ return window.COUNTRIES_DB || {}; }
   function getSectors(){ return window.SECTORS_DB || {}; }

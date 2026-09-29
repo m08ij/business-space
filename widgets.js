@@ -520,7 +520,16 @@
       renderSidebar();
     } catch(e){}
   });
-
+  /* ✅ تحديث تلقائي عند تغيير البيانات */
+  document.addEventListener('spacesave', function(){
+    try{
+      if(enabledWidgets.indexOf('stats') > -1) renderStatsBody();
+      if(enabledWidgets.indexOf('upcoming') > -1) renderUpcomingBody();
+      if(enabledWidgets.indexOf('sales') > -1) renderSalesBody();
+      if(enabledWidgets.indexOf('budget') > -1) renderBudgetBody();
+      if(enabledWidgets.indexOf('impact') > -1) renderImpactBody();
+    }catch(e){}
+  });
   if(document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

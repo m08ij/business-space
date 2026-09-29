@@ -1,22 +1,24 @@
 /* ============================================================
    🔧 fix-buttons.js — إصلاح الكبسات المعطوبة + تحسينات UX
+   ✅ مُصلَّح: Memory Leak في clone
    ============================================================ */
 (function(){
   'use strict';
 
   function fix(){
-    /* 1) إصلاح تكرار ربط أحداث التاب في الشريط الجانبي */
+    /* 1) إصلاح التاب — بدون Memory Leak */
     document.querySelectorAll('.nav-item').forEach(function(item){
       if(item._fixed) return;
       item._fixed = true;
       var clone = item.cloneNode(true);
+      clone._fixed = true;  // ✅ منع المعالجة المكرّرة
       item.parentNode.replaceChild(clone, item);
       clone.addEventListener('click', function(){
         if(window.switchTab) window.switchTab(clone.dataset.tab);
       });
     });
 
-    /* 2) إصلاح أزرار country-tab (تأكد من الرندر) */
+    /* 2) country-tab */
     document.querySelectorAll('[data-country-tab]').forEach(function(btn){
       if(btn._fixed) return;
       btn._fixed = true;
@@ -32,7 +34,7 @@
       });
     });
 
-    /* 3) إصلاح chips المرشّحات */
+    /* 3) task filter chips */
     document.querySelectorAll('[data-tf]').forEach(function(chip){
       if(chip._fixed) return;
       chip._fixed = true;
@@ -42,7 +44,7 @@
       });
     });
 
-    /* 4) FAB Menu — إغلاق عند النقر خارجها */
+    /* 4) FAB Menu */
     document.addEventListener('click', function(e){
       var fm = document.getElementById('fabMenu');
       if(!fm || !fm.classList.contains('show')) return;
@@ -54,7 +56,7 @@
       if(ai) ai.classList.remove('hidden');
     }, true);
 
-    /* 5) AI Panel — إغلاق عند النقر خارجه */
+    /* 5) AI Panel */
     document.addEventListener('click', function(e){
       var ap = document.getElementById('aiPanel');
       if(!ap || !ap.classList.contains('show')) return;
@@ -62,19 +64,14 @@
       ap.classList.remove('show');
     }, true);
 
-    /* 6) تعطيل السكرول الأفقي عند فتح مودال */
+    /* 6) Modal scroll lock */
     var observer = new MutationObserver(function(){
       var anyModal = document.querySelector('.modal-backdrop.show');
       document.body.style.overflow = anyModal ? 'hidden' : '';
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    /* 7) إصلاح الـ theme panel — لا يغلق عند النقر على swatch */
-    document.addEventListener('click', function(e){
-      if(e.target.closest('.theme-swatch')) return;
-    }, true);
-
-    /* 8) زر langBtn — تأكد من الربط */
+    /* 7) langBtn */
     var langBtn = document.getElementById('langBtn');
     if(langBtn && !langBtn._fixed){
       langBtn._fixed = true;
@@ -86,14 +83,12 @@
     console.log('🔧 fix-buttons: applied');
   }
 
-  /* تطبيق أولي */
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', function(){ setTimeout(fix, 1200); });
   } else {
     setTimeout(fix, 1200);
   }
 
-  /* إعادة التطبيق عند تغيير التاب */
   window.addEventListener('hashchange', function(){ setTimeout(fix, 200); });
 
   console.log('🔧 Fix Buttons module loaded');

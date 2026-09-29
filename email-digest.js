@@ -203,7 +203,7 @@
   }
 
   function addEmail(d, listKey){
-    window.showModal(tr('digest_add_' + (listKey === 'recipients' ? 'recipient' : 'cc')), [
+    window.showModal(listKey === 'recipients' ? tr('digest_new_recipient') : tr('digest_new_cc'), [
       {key:'name', label: tr('digest_name')},
       {key:'email', label: tr('digest_email')}
     ], {name:'', email:''}, function(data){

@@ -847,7 +847,10 @@ function loadAllData(){
   try{ notes = S.get('notes', []); if(!Array.isArray(notes)) notes = []; }catch(e){ notes = []; }
   if(!space.notes) space.notes = notes;
 }
-function saveSpace(){ S.set('space', space); }
+function saveSpace(){ 
+  S.set('space', space); 
+  document.dispatchEvent(new CustomEvent('spacesave'));
+}
 
 /* ==================== WELCOME ==================== */
 function showWelcome(){
