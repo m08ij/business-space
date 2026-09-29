@@ -1,15 +1,19 @@
 /* ============================================================
-   🎯 widgets.js — Widgets جانبية قابلة للتخصيص (AR/EN)
-   مع prefix bd_w_ لتجنب التعارض مع التطبيقات الأخرى على نفس الدومين
+   🎯 widgets.js — نسخة محسّنة مع debug logging
    ============================================================ */
 (function(){
   'use strict';
 
-  /* ==================== PREFIX ==================== */
-  /* كل مفاتيح localStorage في هذا الملف تبدأ بـ bd_w_ */
   var WIDGET_PREFIX = 'bd_w_';
+  var DEBUG = true;
+  
+  function log(){ if(DEBUG) console.log.apply(console, ['[Widgets]'].concat(Array.prototype.slice.call(arguments))); }
+  function warn(){ if(DEBUG) console.warn.apply(console, ['[Widgets]'].concat(Array.prototype.slice.call(arguments))); }
 
-  function tr(k){ return window.t ? window.t(k) : k; }
+  function tr(k){ 
+    var v = window.t ? window.t(k) : k;
+    return v || k;
+  }
   function getSpace(){ return window.space || {profile:{},projects:[],tasks:[]}; }
   function toast(m,t){ if(typeof window.toast === 'function') window.toast(m, t || 'info', 2200); }
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -21,6 +25,7 @@
 
   function injectCSS(){
     if(document.getElementById('lw-style')) return;
+    log('injecting CSS');
     var css = `
     .lw-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:401;opacity:0;pointer-events:none;transition:opacity .3s}
     .lw-backdrop.show{opacity:1;pointer-events:auto}
@@ -41,8 +46,6 @@
     .lw-card:hover{border-color:var(--border2)}
     .lw-title{font-size:.74rem;font-weight:700;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
     .lw-title .lw-ic{font-size:1rem}
-    .lw-title .lw-refresh{margin-inline-start:auto;cursor:pointer;opacity:.5;font-size:.78rem;padding:2px 6px;border-radius:6px;background:transparent;border:none;color:inherit;font-family:inherit;transition:.2s}
-    .lw-title .lw-refresh:hover{opacity:1;color:var(--cyan);background:var(--card2);transform:rotate(90deg)}
     .lw-quote{background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(244,114,182,.08));border-color:rgba(167,139,250,.22);text-align:center}
     .lw-quote-text{font-size:.82rem;font-style:italic;line-height:1.7;color:var(--text);margin:4px 2px 8px;min-height:56px;display:flex;align-items:center;justify-content:center}
     .lw-quote-author{font-size:.66rem;color:var(--muted);font-weight:700;margin-bottom:9px}
@@ -89,7 +92,7 @@
     focus: {
       titleKey:'widgets_focus_title', icon:'🎯', default:true,
       html: function(){
-        return '<div class="lw-card" style="background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border-color:var(--glow)">' +
+        return '<div class="lw-card" data-widget="focus" style="background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border-color:var(--glow)">' +
           '<div style="display:flex;align-items:center;gap:12px">' +
             '<div style="font-size:1.6rem">🎯</div>' +
             '<div style="flex:1"><div style="font-weight:800;font-size:.86rem">' + tr('widgets_focus_title') + '</div>' +
@@ -122,7 +125,7 @@
     stats: {
       titleKey:'widgets_stats_title', icon:'📊', default:true,
       html: function(){
-        return '<div class="lw-card">' +
+        return '<div class="lw-card" data-widget="stats">' +
           '<div class="lw-title"><span class="lw-ic">📊</span> ' + tr('widgets_stats_title') + '</div>' +
           '<div id="lwStatsBody"></div>' +
         '</div>';
@@ -132,7 +135,7 @@
     upcoming: {
       titleKey:'widgets_upcoming_title', icon:'📅', default:true,
       html: function(){
-        return '<div class="lw-card">' +
+        return '<div class="lw-card" data-widget="upcoming">' +
           '<div class="lw-title"><span class="lw-ic">📅</span> ' + tr('widgets_upcoming_title') + '</div>' +
           '<div id="lwUpcomingBody"></div>' +
         '</div>';
@@ -142,7 +145,7 @@
     sales: {
       titleKey:'widgets_sales_title', icon:'💼', default:false,
       html: function(){
-        return '<div class="lw-card">' +
+        return '<div class="lw-card" data-widget="sales">' +
           '<div class="lw-title"><span class="lw-ic">💼</span> ' + tr('widgets_sales_title') + '</div>' +
           '<div id="lwSalesBody"></div>' +
         '</div>';
@@ -152,7 +155,7 @@
     impact: {
       titleKey:'widgets_impact_title', icon:'🌱', default:false,
       html: function(){
-        return '<div class="lw-card">' +
+        return '<div class="lw-card" data-widget="impact">' +
           '<div class="lw-title"><span class="lw-ic">🌱</span> ' + tr('widgets_impact_title') + '</div>' +
           '<div id="lwImpactBody"></div>' +
         '</div>';
@@ -162,7 +165,7 @@
     budget: {
       titleKey:'widgets_budget_title', icon:'💰', default:false,
       html: function(){
-        return '<div class="lw-card">' +
+        return '<div class="lw-card" data-widget="budget">' +
           '<div class="lw-title"><span class="lw-ic">💰</span> ' + tr('widgets_budget_title') + '</div>' +
           '<div id="lwBudgetBody"></div>' +
         '</div>';
@@ -173,11 +176,10 @@
 
   var enabledWidgets = [];
 
-  /* ============ محفوظات مع prefix ============ */
   function loadEnabled(){
     try{
       var v = JSON.parse(localStorage.getItem(WIDGET_PREFIX + 'lw_enabled_widgets') || 'null');
-      if(Array.isArray(v)) return v;
+      if(Array.isArray(v) && v.length) return v;
     }catch(e){}
     return Object.keys(WIDGETS).filter(function(k){ return WIDGETS[k].default; });
   }
@@ -187,7 +189,8 @@
   }
 
   function injectHTML(){
-    if(document.getElementById('lwSidebar')) return;
+    if(document.getElementById('lwSidebar')){ log('sidebar already exists'); return; }
+    log('injecting HTML');
     var backdrop = document.createElement('div');
     backdrop.className = 'lw-backdrop'; backdrop.id = 'lwBackdrop';
     document.body.appendChild(backdrop);
@@ -201,7 +204,9 @@
   }
 
   function renderSidebar(){
-    var sidebar = document.getElementById('lwSidebar'); if(!sidebar) return;
+    var sidebar = document.getElementById('lwSidebar'); 
+    if(!sidebar){ warn('sidebar not found'); return; }
+    log('rendering sidebar with', enabledWidgets.length, 'widgets:', enabledWidgets.join(', '));
     var html = '<div class="lw-close-row"><span class="lw-close-title">' + tr('widgets_quick_tools') + '</span><div class="lw-close-actions"><button class="lw-close-btn" id="lwCustomizeBtn" title="⚙">⚙</button><button class="lw-close-btn" id="lwCloseBtn" title="×">×</button></div></div>';
     if(!enabledWidgets.length){
       html += '<div class="lw-empty-mini" style="padding:40px 16px"><div class="lw-em-ic">🎨</div><div>' + tr('widgets_no_widgets') + '</div></div>';
@@ -213,10 +218,14 @@
     if(closeBtn) closeBtn.onclick = function(){ setSidebarOpen(false); };
     var custBtn = sidebar.querySelector('#lwCustomizeBtn');
     if(custBtn) custBtn.onclick = openCustomizePanel;
+    // ✅ استخدم data-widget لكل الويدجت (أكثر أماناً)
     enabledWidgets.forEach(function(id){
       var w = WIDGETS[id]; if(!w) return;
-      var card = sidebar.querySelector('[data-widget="' + id + '"]') || sidebar.querySelectorAll('.lw-card')[enabledWidgets.indexOf(id)];
-      if(card && w.attach) w.attach(card);
+      var card = sidebar.querySelector('[data-widget="' + id + '"]');
+      if(card && w.attach) {
+        try { w.attach(card); log('attached:', id); }
+        catch(e){ warn('attach failed for', id, e); }
+      }
     });
   }
 
@@ -278,11 +287,13 @@
       if(saved !== null) open = JSON.parse(saved);
     }catch(e){}
     setSidebarOpen(open);
-    expandBtn.onclick = function(){ setSidebarOpen(true); };
+    expandBtn.onclick = function(){ 
+      log('expand button clicked');
+      setSidebarOpen(true); 
+    };
     if(backdrop) backdrop.onclick = function(){ setSidebarOpen(false); };
   }
 
-  /* ============ Quote ============ */
   var QUOTE_INDEX_KEY = WIDGET_PREFIX + 'lw_quote_index_v2';
 
   function getQuotes(){
@@ -306,7 +317,6 @@
     var a = document.getElementById('lwQuoteAuthor'); if(a) a.textContent = '— ' + (q.a || '—');
   }
 
-  /* ============ Stats ============ */
   function renderStatsBody(){
     var el = document.getElementById('lwStatsBody'); if(!el) return;
     var sp = getSpace();
@@ -320,7 +330,6 @@
     '</div>';
   }
 
-  /* ============ Upcoming ============ */
   function renderUpcomingBody(){
     var el = document.getElementById('lwUpcomingBody'); if(!el) return;
     var sp = getSpace();
@@ -349,7 +358,6 @@
     el.innerHTML = html;
   }
 
-  /* ============ Sales ============ */
   function renderSalesBody(){
     var el = document.getElementById('lwSalesBody'); if(!el) return;
     var sp = getSpace();
@@ -364,7 +372,6 @@
     '</div>';
   }
 
-  /* ============ Impact ============ */
   function renderImpactBody(){
     var el = document.getElementById('lwImpactBody'); if(!el) return;
     var sp = getSpace();
@@ -387,7 +394,6 @@
     el.innerHTML = html;
   }
 
-  /* ============ Budget ============ */
   function renderBudgetBody(){
     var el = document.getElementById('lwBudgetBody'); if(!el) return;
     var sp = getSpace();
@@ -406,20 +412,22 @@
   }
 
   function init(){
-    injectCSS();
-    injectHTML();
+    log('init started, readyState:', document.readyState);
+    try{ injectCSS(); log('CSS injected'); } catch(e){ warn('injectCSS failed', e); }
+    try{ injectHTML(); log('HTML injected'); } catch(e){ warn('injectHTML failed', e); }
     enabledWidgets = loadEnabled();
-    renderSidebar();
-    initSidebar();
-    rotateQuote(false);
+    log('enabled:', enabledWidgets);
+    try{ renderSidebar(); log('sidebar rendered'); } catch(e){ warn('renderSidebar failed', e); }
+    try{ initSidebar(); log('sidebar initialized'); } catch(e){ warn('initSidebar failed', e); }
+    try{ rotateQuote(false); } catch(e){ warn('rotateQuote failed', e); }
     setInterval(function(){ rotateQuote(true); }, 5 * 60 * 1000);
     setInterval(function(){
       if(enabledWidgets.indexOf('stats') > -1) renderStatsBody();
       if(enabledWidgets.indexOf('upcoming') > -1) renderUpcomingBody();
     }, 60 * 1000);
+    log('init completed');
   }
 
-  /* إعادة الرندر عند تغيير اللغة */
   document.addEventListener('languagechange', function(){
     var expandBtn = document.getElementById('lwExpandBtn');
     if(expandBtn) expandBtn.title = tr('widgets_quick_tools');
